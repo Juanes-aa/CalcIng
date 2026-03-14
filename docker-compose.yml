@@ -1,0 +1,27 @@
+services:
+  math-engine:
+    build: ./services/math-engine
+    ports:
+      - '8001:8001'
+    environment:
+      - DATABASE_URL=postgresql://calcIng:secret@postgres:5432/calcIng
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./services/math-engine:/app
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: calcIng
+      POSTGRES_USER: calcIng
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+volumes:
+  postgres_data:

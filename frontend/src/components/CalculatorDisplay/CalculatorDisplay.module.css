@@ -1,0 +1,36 @@
+.display {
+  background-color: #1a1a2e;
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-align: right;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.expression {
+  font-size: 0.9rem;
+  color: #8888aa;
+  min-height: 1.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #e0e0ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result.error {
+  color: #ff6b6b;
+  font-size: 1.2rem;
+}

@@ -1,0 +1,133 @@
+/* ─── Variables locales (consistentes con CalculatorDisplay) ─────────────────
+   Paleta base:  fondo #1a1a2e · texto principal #e0e0ff · acento #8888aa
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  background-color: #121220;
+  border-radius: 8px;
+}
+
+/* ─── Base de tecla ──────────────────────────────────────────────────────────*/
+
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease, transform 80ms ease, opacity 120ms ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.key:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ─── Categorías ─────────────────────────────────────────────────────────────*/
+
+.number {
+  background-color: #252540;
+  color: #e0e0ff;
+}
+
+.number:hover:not(:disabled) {
+  background-color: #2e2e52;
+}
+
+.operator {
+  background-color: #1e1e3a;
+  color: #a0a8ff;
+  font-size: 1.15rem;
+}
+
+.operator:hover:not(:disabled) {
+  background-color: #28285a;
+}
+
+.function {
+  background-color: #1a1a30;
+  color: #8888aa;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+}
+
+.function:hover:not(:disabled) {
+  background-color: #22223c;
+  color: #aaaacc;
+}
+
+.action {
+  background-color: #2a1f3d;
+  color: #cc99ff;
+  font-weight: 600;
+}
+
+.action:hover:not(:disabled) {
+  background-color: #362650;
+}
+
+/* Tecla = destacada */
+.key.action[aria-pressed] {
+  /* no aplica — solo =, C, ⌫ son action; aria-pressed es solo para mode */
+}
+
+/* ─── Modo ángulo ─────────────────────────────────────────────────────────── */
+
+.mode {
+  background-color: #1a1a2e;
+  color: #8888aa;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border: 1px solid #2a2a48;
+}
+
+.mode:hover:not(:disabled) {
+  background-color: #22223a;
+  color: #aaaacc;
+}
+
+.mode.active {
+  background-color: #2a2a50;
+  color: #c0c8ff;
+  border-color: #6666cc;
+}
+
+/* ─── Layout especial: RAD y DEG ocupan las dos primeras columnas ────────────
+   Las dos teclas de modo están al principio del array → ocupan col 1 y 2.
+   Queremos que las 2 últimas columnas de esa fila queden vacías visualmente.
+   Solución: span de 1 col cada una, y dejamos las otras con un pseudo-vacío
+   usando el grid natural — el contenido real empieza en col 1.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Primeras dos teclas (RAD, DEG) solo en las dos primeras columnas */
+.keypad > .key:nth-child(1),
+.keypad > .key:nth-child(2) {
+  /* ocupan col 1 y 2 naturalmente */
+}
+
+/* Forzamos que la fila de modos solo muestre 2 celdas y deja 2 vacías */
+.keypad > .key:nth-child(2) {
+  grid-column: 2;
+}
+
+/* Empujamos el primer ítem científico a que comience la siguiente fila */
+.keypad > .key:nth-child(3) {
+  grid-column: 1;
+}
