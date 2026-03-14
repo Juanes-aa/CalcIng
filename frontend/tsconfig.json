@@ -17,7 +17,7 @@
       "@engine/*": ["src/engine/*"],
       "@/*": ["src/*"]
     },
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "skipLibCheck": true
   },
   "include": ["vite.config.ts", "src", "tests"],
