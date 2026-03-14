@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.env.*
+!.env.example
+venv/
+*.db
+*.sqlite3
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Alembic
+# NO ignorar alembic/ ni alembic.ini — deben subir al repo
+
+# Tests / CI
+.pytest_cache/
+_tmp_docx/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
