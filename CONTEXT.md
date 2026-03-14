@@ -1,17 +1,16 @@
 # CalcIng — CONTEXT.md
-**Última actualización:** Sesión actual — Backend-5a completo, 646 tests frontend + 102 backend pasando
+**Última actualización:** Sprint B6-1 COMPLETO. 656 tests frontend + 112 backend pasando
 **Fecha:** Marzo 2026
 
 ---
 
 ## Estado del proyecto
 
-### FASE ACTUAL — Backend-5b
-Backend-5a completada: Alembic configurado, migración inicial
-generada (tablas users + problems), 5 tests nuevos pasando.
-Backend-5b pendiente: GitHub Actions CI/CD.
+### FASE ACTUAL — Backend-6 Sprint B6-1 COMPLETO ✅
+Estado: Rate limiting por IP activo con slowapi. 112 tests backend pasando. 656 frontend.
+Próxima fase: Backend-6, Sprint B6-2 (por definir)
 
-### Fases completadas: 0 ✅, 1 ✅, 2 ✅, 3 ✅, 4 ✅, Backend-1 ✅, Backend-2 ✅, Backend-3a ✅, Backend-3b ✅, Backend-3c ✅, Backend-4 ✅, Backend-5a ✅
+### Fases completadas: 0 ✅, 1 ✅, 2 ✅, 3 ✅, 4 ✅, Backend-1 ✅, Backend-2 ✅, Backend-3a ✅, Backend-3b ✅, Backend-3c ✅, Backend-4 ✅, Backend-5a ✅, Backend-5b ✅, Backend-5c ✅, Backend-5d ✅, Backend-5e ✅, Backend-6-B6-1 ✅
 
 ---
 
@@ -25,12 +24,12 @@ Backend-5b pendiente: GitHub Actions CI/CD.
 
 ### calcIng/frontend/ (proyecto nuevo — activo)
 - Stack: Vite + React + TypeScript strict
-- **646 tests totales — 646 pasando** (0 fallas)
+- **656 tests totales — 656 pasando** (0 fallas)
 - `npx vitest run` corre todos los tests
 
 ### services/math-engine/ (backend — activo)
 - Stack: Python 3.13 + FastAPI + SymPy
-- **102 tests backend — 102 pasando** (0 fallas)
+- **106 tests backend — 106 pasando** (0 fallas)
 - `pytest` corre todos los tests desde `services/math-engine/`
 
 ---
@@ -102,11 +101,11 @@ Requiere backend existente. Gate de monetización (plan premium).
 
 ---
 
-## Fase 5 — Backend ⏳ EN PROGRESO (Horizonte 2)
+## Fase 5 — Backend ✅ COMPLETA
 
 ### Estado actual del proyecto
-- Tests backend: 102 passing, 0 failing
-- Tests frontend: 646 passing, 0 failing
+- Tests backend: 106 passing, 0 failing
+- Tests frontend: 656 passing, 0 failing
 
 ### Fases completadas
 
@@ -171,11 +170,43 @@ Requiere backend existente. Gate de monetización (plan premium).
 - `alembic/versions/<hash>_initial.py` — migración inicial con op.create_table("users") y op.create_table("problems")
 - Tests: 5 nuevos en tests/test_alembic.py — total 102 passing
 
+#### Backend-5b ✅ — GitHub Actions CI/CD — verde (frontend + backend, 40s)
+
+#### Backend-5c ✅ — Render.com deploy
+- Web service activo: https://calcing.onrender.com
+- Docker deploy desde services/math-engine
+- Variables de entorno configuradas: DATABASE_URL, APP_ENV, MAX_WORKERS, JWT_PRIVATE_KEY, JWT_PUBLIC_KEY
+- Health check confirmado: {"status":"ok","version":"1.0.0"}
+
+#### Backend-5d ✅ — Upstash Redis en producción
+- REDIS_URL configurada en Render.com
+- Caché verificado: 1501ms → 395ms (4x speedup)
+- rediss:// TLS — alert-pup-71146.upstash.io:6379
+
+#### Backend-5e ✅ — PWA migrada al frontend React
+- vite-plugin-pwa instalado con Workbox
+- manifest.json en public/ (theme #6666cc, bg #0a0a14, íconos 192/512 + maskable)
+- NetworkFirst para API calls a Render.com
+- CacheFirst para assets estáticos
+- index.html con meta tags PWA + Apple
+- 10 tests nuevos en tests/pwa/ — total 656 frontend passing
+
+#### Backend-6 Sprint B6-1 ✅ — Rate limiting por IP (slowapi) — 6 tests nuevos
+- SlowAPIMiddleware agregado al app (sin él hit() nunca se llama)
+- Orden de decoradores corregido en routers/math.py: @router.post outer, @limiter.limit inner
+- @limiter.exempt en /health — exento de rate limiting
+- Handler custom con header Retry-After en test_rate_limit.py
+- Estrategia de parcheo corregida: se parchea el objeto original (enabled + storage), no el atributo del módulo
+- test_app_env_default corregido: verifica Settings.model_fields["APP_ENV"].default en vez del singleton
+- Archivos modificados: routers/math.py, tests/test_rate_limit.py, tests/test_config.py
+
 ### Stack nuevo que se agrega
 - Python + FastAPI
-- PostgreSQL
-- Redis
+- PostgreSQL (Supabase)
+- Redis (Upstash)
 - Docker / Docker Compose
+- Render.com (deploy)
+- vite-plugin-pwa + Workbox (PWA)
 
 ---
 
@@ -184,7 +215,9 @@ Requiere backend existente. Gate de monetización (plan premium).
 | Archivo | Tests | Estado |
 |---------|-------|--------|
 | `tests/engine/math.test.ts` | 93 | ✅ |
-| `src/App.test.tsx` | 17 | ✅ |
+| `tests/pwa/manifest.test.ts` | 5 | ✅ |
+| `tests/pwa/pwa-config.test.ts` | 5 | ✅ |
+| `src/App.test.tsx` | 21 | ✅ |
 | `src/components/CalculatorDisplay/...test.tsx` | 8 | ✅ |
 | `src/components/CalculatorKeypad/...test.tsx` | 40 | ✅ |
 | `src/hooks/useCalculator.test.ts` | 36 | ✅ |
@@ -192,19 +225,19 @@ Requiere backend existente. Gate de monetización (plan premium).
 | `src/hooks/useCAS.steps.test.ts` | 7 | ✅ |
 | `src/engine/cas/casEngine.test.ts` | 10 | ✅ |
 | `src/engine/cas/nerdamerAdapter.test.ts` | 183 | ✅ |
-| `src/components/CASPanel/CASPanel.test.tsx` | 25 | ✅ |
-| `src/components/CASPanel/StepViewer.test.tsx` | 12 | ✅ |
+| `src/components/CASPanel/CASPanel.test.tsx` | 29 | ✅ |
+| `src/components/CASPanel/StepViewer.test.tsx` | 17 | ✅ |
 | `src/engine/stepEngine/stepEngine.test.ts` | 68 | ✅ |
-| `src/engine/graphEngine/evaluator.test.ts` | tests ✅ | ✅ |
-| `src/components/GraphViewer/GraphViewer.test.tsx` | tests ✅ | ✅ |
+| `src/engine/graphEngine/evaluator.test.ts` | 34 | ✅ |
+| `src/components/GraphViewer/GraphViewer.test.tsx` | 61 | ✅ |
 | `src/services/mathService.test.ts` | 17 | ✅ |
 | `services/math-engine/tests/test_math.py` | 22 | ✅ |
 | `services/math-engine/tests/test_db.py` | 10 | ✅ |
 | `services/math-engine/tests/test_auth.py` | 12 | ✅ |
 | `services/math-engine/tests/test_history.py` | 12 | ✅ |
 | `services/math-engine/tests/test_alembic.py` | 5 | ✅ |
-| **Total frontend** | **646** | **✅ 0 fallas** |
-| **Total backend** | **102** | **✅ 0 fallas** |
+| **Total frontend** | **656** | **✅ 0 fallas** |
+| **Total backend** | **112** | **✅ 0 fallas** |
 
 ---
 
@@ -214,7 +247,7 @@ Requiere backend existente. Gate de monetización (plan premium).
 - ESLint configurado: `eslint.config.js` con `typescript-eslint`
 - `npx vitest run` → todos los tests
 - `npm run typecheck` → tsc --noEmit
-- `tsconfig.json`: `skipLibCheck: true`, `types: ["node"]`
+- `tsconfig.json`: `skipLibCheck: true`, `types: ["node", "vite/client"]`
 - Alias: `@engine` → `src/engine`
 
 ---
@@ -231,8 +264,8 @@ Requiere backend existente. Gate de monetización (plan premium).
 - CASPanel muestra selector de nivel aunque no haya pasos — cosmético
 - App.test.tsx genera stderr de canvas en jsdom — ruido, no fallo
 - sampleParametric/samplePolar: n fijo 200 puntos vs adaptativo — revisar en Graph-4
-- **Backend:** `max_workers=4` hardcodeado en ProcessPoolExecutor — mover a variable de entorno en Backend-4
 - `python-jose` usa `datetime.utcnow()` deprecado — DeprecationWarning en tests de refresh, sin impacto funcional
+- Cursor de paginación basado en timestamp: timestamps duplicados exactos podrían causar items repetidos o saltados
 
 ---
 
@@ -285,4 +318,9 @@ npm run dev
 | Fase 5 — Backend-3b | ✅ Completa | 44 | JWT RS256, register, login, refresh |
 | Fase 5 — Backend-3c | ✅ Completa | 56 | GET /users/me/history, require_auth, optional_auth |
 | Fase 5 — Backend-4 | ✅ Completa | 97 | Redis, pydantic-settings, Docker Compose completo |
-| Fase 5 — Backend-5a | ✅ Completa | 102 | Alembic migrations. alembic init + env.py configurado + migración inicial users+problems. 5 tests nuevos. Total backend: 102 passing. |
+| Fase 5 — Backend-5a | ✅ Completa | 102 | Alembic migrations. alembic init + env.py + migración inicial users+problems |
+| Fase 5 — Backend-5b | ✅ Completa | — | GitHub Actions CI/CD verde |
+| Fase 5 — Backend-5c | ✅ Completa | — | Render.com deploy — https://calcing.onrender.com |
+| Fase 5 — Backend-5d | ✅ Completa | — | Upstash Redis — 4x speedup verificado |
+| Fase 5 — Backend-5e | ✅ Completa | 656 | PWA — vite-plugin-pwa + manifest.json + Workbox |
+| Backend-6 — Sprint B6-1 | ✅ Completa | 112 | Rate limiting por IP (slowapi). SlowAPIMiddleware, @limiter.exempt en /health, Retry-After header, storage aislado por test |

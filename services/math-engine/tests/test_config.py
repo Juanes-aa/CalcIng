@@ -24,9 +24,10 @@ class TestSettingsDefaults:
         from core.config import settings
         assert isinstance(settings.MAX_WORKERS, int)
 
-    def test_app_env_default(self):
-        from core.config import settings
-        assert settings.APP_ENV == "development"
+    def test_app_env_default(self) -> None:
+        from core.config import Settings
+        field = Settings.model_fields["APP_ENV"]
+        assert field.default == "development"
 
     def test_database_url_field_exists(self):
         from core.config import settings
