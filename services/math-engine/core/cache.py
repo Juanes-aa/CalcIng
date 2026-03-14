@@ -1,6 +1,6 @@
 """
 core/cache.py — Helper de caché Redis para CalcIng Math Engine.
-Expone: make_cache_key, get_cached, set_cached, redis_client
+Expone: make_cache_key, get_cached, set_cached, get_redis_client
 """
 import hashlib
 import json
@@ -10,18 +10,27 @@ import redis.asyncio as aioredis
 
 from core.config import settings
 
-# Singleton — se sobreescribe en tests via patch.object
-redis_client: aioredis.Redis = aioredis.from_url(
-    settings.REDIS_URL,
-    encoding="utf-8",
-    decode_responses=True,
-)
+_redis_client: aioredis.Redis | None = None
+
+
+def get_redis_client() -> aioredis.Redis:
+    """
+    Retorna el cliente Redis singleton.
+    La conexión se crea en el primer uso, no al importar.
+    """
+    global _redis_client
+    if _redis_client is None:
+        _redis_client = aioredis.from_url(
+            settings.REDIS_URL,
+            encoding="utf-8",
+            decode_responses=True,
+        )
+    return _redis_client
 
 
 def make_cache_key(operation: str, *args: Any) -> str:
     """
     Genera una clave de caché determinista para una operación CAS.
-    Ejemplo: make_cache_key("differentiate", "x^2", "x", 1)
     """
     raw = json.dumps({"op": operation, "args": list(args)}, sort_keys=True)
     digest = hashlib.sha256(raw.encode()).hexdigest()[:16]
@@ -48,3 +57,5 @@ async def set_cached(
     Guarda un valor en el caché con TTL en segundos.
     """
     await client.set(key, json.dumps(payload), ex=ttl)
+# Alias p�blico requerido por tests
+redis_client = get_redis_client
