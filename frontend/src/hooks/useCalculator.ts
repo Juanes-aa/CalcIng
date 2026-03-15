@@ -21,8 +21,18 @@ const APPENDABLE_TOKENS = new Set([
   '+', '-', '*', '/', '%', '^', '(', ')',
   // Punto decimal
   '.',
-  // Funciones
+  // Coma — necesaria para funciones con múltiples argumentos: mean(1,2,3)
+  ',',
+  // Constante e (Euler)
+  'e',
+  // Funciones básicas
   'sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt(', 'pi',
+  // Funciones matemáticas adicionales
+  'abs(', 'ceil(', 'floor(', 'round(', 'factorial(',
+  // Estadística (registradas en mathEngine via _registrarFuncionesExtendidas)
+  'mean(', 'median(', 'mode(', 'variance(', 'stdDev(', 'range(',
+  // Conversión de bases (registradas en mathEngine)
+  'decToBin(', 'decToHex(', 'decToOct(',
 ]);
 
 /** Determina si el resultado del engine representa un error. */

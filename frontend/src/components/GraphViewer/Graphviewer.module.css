@@ -1,0 +1,187 @@
+.viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: #1a1a2e;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 102, 204, 0.15);
+  position: relative;
+}
+
+/* Selector de modo */
+.modeSelect {
+  width: 100%;
+  padding: 8px 10px;
+  background-color: #121220;
+  color: #e0e0ff;
+  border: 1px solid #2a2a48;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+}
+.modeSelect:focus-visible {
+  border-color: #6666cc;
+  box-shadow: 0 0 0 2px rgba(102, 102, 204, 0.2);
+}
+
+/* Fila de función (input + botón eliminar) */
+.fnRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Input de función / expresión */
+.fnInput {
+  flex: 1;
+  padding: 7px 10px;
+  background-color: #121220;
+  color: #e0e0ff;
+  border: 1px solid #2a2a48;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: border-color 150ms;
+}
+.fnInput:focus-visible {
+  border-color: #6666cc;
+  box-shadow: 0 0 0 2px rgba(102, 102, 204, 0.2);
+}
+.fnInput::placeholder {
+  color: #44445a;
+}
+
+/* Input numérico (tMin, tMax, área, rango) */
+.numInput {
+  width: 80px;
+  padding: 7px 8px;
+  background-color: #121220;
+  color: #e0e0ff;
+  border: 1px solid #2a2a48;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: border-color 150ms;
+}
+.numInput:focus-visible {
+  border-color: #6666cc;
+  box-shadow: 0 0 0 2px rgba(102, 102, 204, 0.2);
+}
+
+/* Fila de controles (tMin/tMax, rango) */
+.rangeRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.rangeLabel {
+  font-size: 0.72rem;
+  color: #8888aa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Toggle labels (checkbox + texto) */
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #8888aa;
+  cursor: pointer;
+  user-select: none;
+}
+.toggleLabel input[type='checkbox'] {
+  accent-color: #6666cc;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* Área info */
+.areaValue {
+  font-size: 0.82rem;
+  color: #e0e0ff;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Fila de botones de acción */
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Botón primario */
+.btnPrimary {
+  padding: 8px 14px;
+  background-color: #6666cc;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 120ms;
+}
+.btnPrimary:hover {
+  background-color: #7777dd;
+}
+
+/* Botón secundario */
+.btnSecondary {
+  padding: 8px 12px;
+  background-color: transparent;
+  color: #8888aa;
+  border: 1px solid #2a2a48;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+}
+.btnSecondary:hover {
+  color: #e0e0ff;
+  border-color: #8888aa;
+}
+
+/* Botón icono (zoom, eliminar) */
+.btnIcon {
+  padding: 7px 10px;
+  background-color: transparent;
+  color: #8888aa;
+  border: 1px solid #2a2a48;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+  line-height: 1;
+}
+.btnIcon:hover {
+  color: #e0e0ff;
+  border-color: #8888aa;
+}
+
+/* Fila de zoom */
+.zoomRow {
+  display: flex;
+  gap: 4px;
+}
+
+/* Canvas */
+.canvas {
+  display: block;
+  width: 100%;
+  height: 300px;
+  border-radius: 6px;
+  border: 1px solid #2a2a48;
+}

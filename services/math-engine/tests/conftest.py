@@ -58,14 +58,12 @@ from unittest.mock import patch
 @pytest.fixture(autouse=True)
 def patch_redis_client():
     """
-    Parchea redis_client globalmente en todos los tests para evitar
+    Parchea get_redis_client globalmente en todos los tests para evitar
     conexiones reales a Redis (que no está corriendo en CI/test).
-    Los fixtures que necesiten un fake_redis específico lo inyectan
-    directamente via patch.object adicional.
     """
     from core import cache as cache_module
     fake = fakeredis.aioredis.FakeRedis(decode_responses=True)
-    with patch.object(cache_module, "redis_client", fake):
+    with patch.object(cache_module, "get_redis_client", return_value=fake):
         yield fake
 
 
@@ -73,7 +71,7 @@ def patch_redis_client():
 async def fake_redis(patch_redis_client):
     """
     Redis falso para tests — devuelve la misma instancia que patch_redis_client
-    ya instaló en core.cache.redis_client, garantizando que router y test
+    ya instaló en core.cache.get_redis_client, garantizando que router y test
     comparten el mismo store.
     """
     yield patch_redis_client

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sympy import SympifyError
 
 import core.cache as _cache
-from core.auth_deps import optional_auth
+from core.auth_deps import optional_auth, get_plan_from_token
 from core.config import settings
 from core.limiter import limiter
 from db.database import get_db
@@ -36,7 +36,7 @@ _executor = ProcessPoolExecutor(max_workers=settings.MAX_WORKERS)
 
 
 def _sanitize(expression: str) -> str:
-    """Sanitización básica: rechaza tokens peligrosos."""
+    """Sanitización básica: rechaza tokens peligrosos y AST profundo."""
     forbidden = ["import", "exec", "eval", "open", "os.", "sys.", "__"]
     for token in forbidden:
         if token in expression:
@@ -44,6 +44,20 @@ def _sanitize(expression: str) -> str:
                 status_code=400,
                 detail=f"Expresión no permitida: contiene '{token}'",
             )
+    # Validación de profundidad AST — máx. 100 nodos
+    try:
+        from sympy import sympify, preorder_traversal
+        parsed = sympify(expression)
+        node_count = sum(1 for _ in preorder_traversal(parsed))
+        if node_count > 100:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Expresión demasiado compleja: {node_count} nodos (máx. 100)",
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # Si sympify falla aquí, el error real vendrá después
     return expression.strip()
 
 
@@ -141,6 +155,7 @@ async def solve_expression(
 async def differentiate(
     request: Request,
     req: DifferentiateRequest,
+    plan: str = Depends(get_plan_from_token),
 ) -> DifferentiateResponse:
     expr_str = _sanitize(req.expression)
     var_str = _sanitize(req.variable)
@@ -148,7 +163,15 @@ async def differentiate(
     cache_key = _cache.make_cache_key("differentiate", expr_str, var_str, req.order)
     cached = await _cache.get_cached(_cache.get_redis_client(), cache_key)
     if cached is not None:
-        return DifferentiateResponse(**cached)
+        cached_steps = cached["steps"]
+        cached_level = "beginner" if plan == "free" else cached.get("level", req.level)
+        if plan == "free":
+            cached_steps = cached_steps[:3]
+        return DifferentiateResponse(
+            result=cached["result"],
+            steps=cached_steps,
+            level=cached_level,
+        )
 
     loop = asyncio.get_event_loop()
     try:
@@ -168,13 +191,21 @@ async def differentiate(
         raise HTTPException(status_code=400, detail=str(e))
 
     steps = [f"d/d{var_str}({expr_str}) orden {req.order} = {result}"]
+
     await _cache.set_cached(
         _cache.get_redis_client(),
         cache_key,
         {"result": result, "steps": steps},
     )
 
-    return DifferentiateResponse(result=result, steps=steps)
+    # Gate aplicado DESPUÉS del cache, solo al retornar
+    if plan == "free":
+        steps = steps[:3]
+        level_out = "beginner"
+    else:
+        level_out = req.level
+
+    return DifferentiateResponse(result=result, steps=steps, level=level_out)
 
 
 @router.post("/integrate", response_model=IntegrateResponse)
@@ -182,6 +213,7 @@ async def differentiate(
 async def integrate_expression(
     request: Request,
     req: IntegrateRequest,
+    plan: str = Depends(get_plan_from_token),
 ) -> IntegrateResponse:
     expr_str = _sanitize(req.expression)
     var_str = _sanitize(req.variable)
@@ -189,7 +221,15 @@ async def integrate_expression(
     cache_key = _cache.make_cache_key("integrate", expr_str, var_str)
     cached = await _cache.get_cached(_cache.get_redis_client(), cache_key)
     if cached is not None:
-        return IntegrateResponse(**cached)
+        cached_steps = cached["steps"]
+        cached_level = "beginner" if plan == "free" else cached.get("level", req.level)
+        if plan == "free":
+            cached_steps = cached_steps[:3]
+        return IntegrateResponse(
+            result=cached["result"],
+            steps=cached_steps,
+            level=cached_level,
+        )
 
     loop = asyncio.get_event_loop()
     try:
@@ -208,13 +248,21 @@ async def integrate_expression(
         raise HTTPException(status_code=400, detail=str(e))
 
     steps = [f"∫({expr_str})d{var_str} = {result} + C"]
+
     await _cache.set_cached(
         _cache.get_redis_client(),
         cache_key,
         {"result": result, "steps": steps},
     )
 
-    return IntegrateResponse(result=result, steps=steps)
+    # Gate aplicado DESPUÉS del cache, solo al retornar
+    if plan == "free":
+        steps = steps[:3]
+        level_out = "beginner"
+    else:
+        level_out = req.level
+
+    return IntegrateResponse(result=result, steps=steps, level=level_out)
 
 
 @router.post("/solve-equation", response_model=SolveEquationResponse)
@@ -222,6 +270,7 @@ async def integrate_expression(
 async def solve_equation(
     request: Request,
     req: SolveEquationRequest,
+    plan: str = Depends(get_plan_from_token),
 ) -> SolveEquationResponse:
     expr_str = _sanitize(req.equation)
     var_str = _sanitize(req.variable)
@@ -248,6 +297,11 @@ async def solve_equation(
         raise HTTPException(status_code=400, detail=str(e))
 
     steps = [f"Resolviendo {expr_str} = 0 para {var_str}"]
+
+    # Gate: free recibe máximo 3 steps
+    if plan == "free":
+        steps = steps[:3]
+
     await _cache.set_cached(
         _cache.get_redis_client(),
         cache_key,

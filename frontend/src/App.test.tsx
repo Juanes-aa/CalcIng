@@ -7,8 +7,8 @@
  * npm install. Se excluyen automáticamente del runner sin dependencias.
  */
 
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, test } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
@@ -204,3 +204,23 @@ it('GraphViewer oculto por defecto — no está en el DOM al renderizar', () => 
   render(<App />);
   expect(screen.queryByTestId('graph-viewer')).not.toBeInTheDocument();
 });
+
+// ─── AdvancedPanel toggle ─────────────────────────────────────────────────────
+
+describe('App — AdvancedPanel toggle', () => {
+
+  test('botón Avanzado existe en el header con aria-pressed="false" por defecto', () => {
+    render(<App />)
+    const btn = screen.getByTestId('advanced-toggle')
+    expect(btn).toBeInTheDocument()
+    expect(btn).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test('clicking Avanzado toggle muestra el AdvancedPanel', () => {
+    render(<App />)
+    expect(screen.queryByTestId('advanced-panel')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId('advanced-toggle'))
+    expect(screen.getByTestId('advanced-panel')).toBeInTheDocument()
+  })
+
+})

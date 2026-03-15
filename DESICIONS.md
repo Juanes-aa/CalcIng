@@ -273,3 +273,36 @@ Consecuencias:
   FastAPI usa asyncpg (async) — coexistencia limpia sin conflicto
 + Un solo alembic.ini y env.py para todos los entornos
 - psycopg2 debe estar disponible en el entorno de producción junto a asyncpg
+
+---
+
+DECISION-021 — vite/client en tsconfig.json types[] para ImportMeta.env en CI
+Fecha: 2026-03-13
+Fase: Backend-5b
+Estado: APROBADA ✅
+
+Problema:
+`npx tsc --noEmit` fallaba en GitHub Actions con:
+  error TS2339: Property 'env' does not exist on type 'ImportMeta'
+El tsconfig.json tenía `"types": ["node"]`. Al listar `types` explícitamente,
+TypeScript excluye todo lo que no figure en la lista — incluido `vite/client`,
+que es quien declara `ImportMeta.env`. El error no aparecía en desarrollo
+porque Vite inyecta los tipos en runtime, pero CI corre `tsc` directamente.
+
+Decisión:
+Agregar `"vite/client"` al array `types` en `frontend/tsconfig.json`:
+  "types": ["node", "vite/client"]
+
+Alternativas descartadas:
+- Triple-slash reference `/// <reference types="vite/client" />` en cada archivo:
+  solución local, no sistémica; cualquier archivo nuevo vuelve a fallar en CI.
+- Eliminar el campo `types` completamente: TypeScript incluiría todos los @types/*
+  instalados, lo que puede introducir conflictos de tipos no deseados (p.ej.
+  `@types/node` vs DOM para `fetch`, `Buffer`, etc.).
+
+Consecuencias:
++ `tsc --noEmit` pasa limpio en CI sin depender del runtime de Vite
++ `import.meta.env.VITE_*` está correctamente tipado en todo el proyecto
++ El test `mathService.typecheck.test.ts` actúa como guardia permanente:
+  falla en CI si `vite/client` se elimina accidentalmente del tsconfig
+- Ninguna consecuencia negativa conocida

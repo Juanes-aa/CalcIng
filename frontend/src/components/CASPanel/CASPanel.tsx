@@ -26,6 +26,7 @@ export function CASPanel(): JSX.Element {
         data-testid="cas-operation-select"
         value={operation}
         onChange={(e) => setOperation(e.target.value as CASOperation)}
+        className={styles.select}
       >
         <option value="simplify">Simplificar</option>
         <option value="differentiate">Derivar</option>
@@ -35,52 +36,76 @@ export function CASPanel(): JSX.Element {
         <option value="factor">Factorizar</option>
       </select>
 
-      <input
-        data-testid="cas-expression-input"
-        type="text"
-        value={expression}
-        onChange={(e) => setExpression(e.target.value)}
-      />
+      <label className={styles.field}>
+        <span className={styles.fieldLabel}>Expresión</span>
+        <input
+          data-testid="cas-expression-input"
+          type="text"
+          value={expression}
+          placeholder="ej: x^2 + 2*x - 1"
+          onChange={(e) => setExpression(e.target.value)}
+          className={styles.input}
+        />
+      </label>
 
-      <input
-        data-testid="cas-variable-input"
-        type="text"
-        value={variable}
-        onChange={(e) => setVariable(e.target.value)}
-        hidden={hideVariable}
-      />
+      <label className={styles.field}>
+        <span className={styles.fieldLabel}>Variable</span>
+        <input
+          data-testid="cas-variable-input"
+          type="text"
+          value={variable}
+          placeholder="ej: x"
+          hidden={hideVariable}
+          onChange={(e) => setVariable(e.target.value)}
+          className={styles.input}
+        />
+      </label>
 
-      <input
-        data-testid="cas-order-input"
-        type="number"
-        value={order}
-        onChange={(e) => setOrder(Number(e.target.value))}
-        hidden={hideOrder}
-      />
+      <label className={styles.field}>
+        <span className={styles.fieldLabel}>Orden</span>
+        <input
+          data-testid="cas-order-input"
+          type="number"
+          value={order}
+          placeholder="1"
+          hidden={hideOrder}
+          onChange={(e) => setOrder(Number(e.target.value))}
+          className={styles.input}
+        />
+      </label>
 
-      <button
-        data-testid="cas-execute-button"
-        onClick={() => execute()}
-        disabled={isLoading}
-      >
-        Ejecutar
-      </button>
+      <div className={styles.actions}>
+        <button
+          data-testid="cas-execute-button"
+          onClick={() => execute()}
+          disabled={isLoading}
+          className={styles.btnExecute}
+        >
+          Ejecutar
+        </button>
 
-      <button
-        data-testid="cas-reset-button"
-        onClick={() => reset()}
-        disabled={isLoading}
-      >
-        Reset
-      </button>
+        <button
+          data-testid="cas-reset-button"
+          onClick={() => reset()}
+          disabled={isLoading}
+          className={styles.btnReset}
+        >
+          Reset
+        </button>
+      </div>
 
-      {status === 'success' && <div data-testid="cas-result">{result}</div>}
-      {status === 'error'   && <div data-testid="cas-error">{errorMsg}</div>}
+      {status === 'success' && (
+        <div data-testid="cas-result" className={styles.result}>{result}</div>
+      )}
+      {status === 'error' && (
+        <div data-testid="cas-error" className={styles.error}>{errorMsg}</div>
+      )}
 
       <select
         data-testid="cas-detail-level-select"
         value={level}
         onChange={(e) => setLevel(e.target.value as DetailLevel)}
+        className={styles.levelSelect}
       >
         <option value="beginner">Principiante</option>
         <option value="intermediate">Intermedio</option>

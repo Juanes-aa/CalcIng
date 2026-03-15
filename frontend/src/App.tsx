@@ -4,12 +4,14 @@ import { CalculatorDisplay } from './components/CalculatorDisplay';
 import { CalculatorKeypad } from './components/CalculatorKeypad';
 import { CASPanel } from './components/CASPanel/CASPanel';
 import { GraphViewer } from './components/GraphViewer/GraphViewer';
+import { AdvancedPanel } from './components/AdvancedPanel';
 import styles from './App.module.css';
 
 export default function App() {
   const { expression, result, isError, angleMode, handleKeyPress } = useCalculator();
-  const [showCAS, setShowCAS] = useState(false);
-  const [showGraph, setShowGraph] = useState(false);
+  const [showCAS,      setShowCAS]      = useState(false);
+  const [showGraph,    setShowGraph]    = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <div className={styles.shell}>
@@ -35,6 +37,15 @@ export default function App() {
           >
             Graficar
           </button>
+          <button
+            data-testid="advanced-toggle"
+            onClick={() => setShowAdvanced(v => !v)}
+            aria-pressed={showAdvanced}
+            aria-label="Avanzado"
+            className={styles.casToggle}
+          >
+            Avanzado
+          </button>
         </header>
 
         <CalculatorDisplay
@@ -48,8 +59,9 @@ export default function App() {
           angleMode={angleMode}
         />
 
-        {showCAS && <CASPanel />}
-        {showGraph && <GraphViewer />}
+        {showCAS      && <CASPanel />}
+        {showGraph    && <GraphViewer />}
+        {showAdvanced && <AdvancedPanel onInsert={handleKeyPress} />}
       </main>
     </div>
   );

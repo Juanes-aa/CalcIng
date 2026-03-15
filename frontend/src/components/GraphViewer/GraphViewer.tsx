@@ -7,6 +7,7 @@ import {
   numericalIntegral,
 } from '@engine/graphEngine/evaluator';
 import type { Point } from '@engine/graphEngine/evaluator';
+import styles from './GraphViewer.module.css';
 
 interface ZoomWindow {
   xMin: number; xMax: number;
@@ -83,15 +84,12 @@ export function GraphViewer() {
     const H = canvas.height = canvas.offsetHeight || 300;
     const z = zoom;
 
-    // Transformaciones canvas
     const toCanvasX = (x: number) => ((x - z.xMin) / (z.xMax - z.xMin)) * W;
     const toCanvasY = (y: number) => H - ((y - z.yMin) / (z.yMax - z.yMin)) * H;
 
-    // Fondo
     ctx.fillStyle = '#0d1117';
     ctx.fillRect(0, 0, W, H);
 
-    // Grilla
     ctx.strokeStyle = '#1f2937';
     ctx.lineWidth = 1;
     for (let x = Math.ceil(z.xMin); x <= z.xMax; x++) {
@@ -103,7 +101,6 @@ export function GraphViewer() {
       ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
     }
 
-    // Ejes
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
     const axisY = toCanvasY(0);
@@ -111,7 +108,6 @@ export function GraphViewer() {
     const axisX = toCanvasX(0);
     ctx.beginPath(); ctx.moveTo(axisX, 0); ctx.lineTo(axisX, H); ctx.stroke();
 
-    // Sombreado del área bajo la curva (antes de las curvas, queda por debajo)
     if (showArea && mode === 'cartesian' && exprs[0]?.trim()) {
       ctx.save();
       ctx.fillStyle = 'rgba(0, 229, 255, 0.25)';
@@ -130,7 +126,6 @@ export function GraphViewer() {
       ctx.restore();
     }
 
-    // Curvas según modo
     if (mode === 'cartesian') {
       exprs.forEach((expr, idx) => {
         if (expr.trim() === '') return;
@@ -138,7 +133,6 @@ export function GraphViewer() {
         drawCurve(ctx, pts, COLORS[idx % COLORS.length], W, H, z);
       });
 
-      // Derivada superpuesta (solo función[0])
       if (showDeriv && exprs[0].trim() !== '') {
         const expr = exprs[0];
         const derivPts = adaptiveSample(expr, z.xMin, z.xMax).map(({ x }) => {
@@ -156,7 +150,6 @@ export function GraphViewer() {
         drawCurve(ctx, pts, COLORS[idx % COLORS.length], W, H, z);
       });
     } else {
-      // polar
       polarExprs.forEach((re, idx) => {
         const pts = samplePolar(re, tMin, tMax);
         drawCurve(ctx, pts, COLORS[idx % COLORS.length], W, H, z);
@@ -259,7 +252,7 @@ export function GraphViewer() {
     setZoom(DEFAULT_ZOOM);
   }
 
-  // ── Gestión de funciones cartesianas ──────────────────────────────────────
+  // ── Gestión de funciones ──────────────────────────────────────────────────
   function addFn() {
     if (exprs.length < MAX_FNS) {
       setExprs(e => [...e, '']);
@@ -310,13 +303,14 @@ export function GraphViewer() {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <section data-testid="graph-viewer" style={{ position: 'relative' }}>
+    <section data-testid="graph-viewer" className={styles.viewer}>
 
       {/* Selector de modo */}
       <select
         data-testid="graph-mode-select"
         value={mode}
         onChange={e => setMode(e.target.value as 'cartesian' | 'parametric' | 'polar')}
+        className={styles.modeSelect}
       >
         <option value="cartesian">Cartesiano</option>
         <option value="parametric">Paramétrico</option>
@@ -325,31 +319,34 @@ export function GraphViewer() {
 
       {/* Inputs condicionales por modo */}
       {mode === 'cartesian' && exprs.map((expr, i) => (
-        <div key={i}>
+        <div key={i} className={styles.fnRow}>
           <input
             data-testid={`graph-fn-input-${i}`}
             type="text"
             value={expr}
             onChange={e => updateExpr(i, e.target.value)}
             placeholder={`f${i + 1}(x) = ...`}
+            className={styles.fnInput}
           />
           {exprs.length > 1 && (
             <button
               data-testid={`graph-remove-fn-${i}`}
               onClick={() => removeFn(i)}
+              className={styles.btnIcon}
             >✕</button>
           )}
         </div>
       ))}
 
       {mode === 'parametric' && paramExprs.map((pe, i) => (
-        <div key={i}>
+        <div key={i} className={styles.fnRow}>
           <input
             data-testid={`graph-param-x-${i}`}
             type="text"
             value={pe.x}
             onChange={e => updateParamX(i, e.target.value)}
             placeholder={`x${i + 1}(t) = ...`}
+            className={styles.fnInput}
           />
           <input
             data-testid={`graph-param-y-${i}`}
@@ -357,29 +354,33 @@ export function GraphViewer() {
             value={pe.y}
             onChange={e => updateParamY(i, e.target.value)}
             placeholder={`y${i + 1}(t) = ...`}
+            className={styles.fnInput}
           />
           {paramExprs.length > 1 && (
             <button
               data-testid={`graph-remove-fn-${i}`}
               onClick={() => removeFn(i)}
+              className={styles.btnIcon}
             >✕</button>
           )}
         </div>
       ))}
 
       {mode === 'polar' && polarExprs.map((re, i) => (
-        <div key={i}>
+        <div key={i} className={styles.fnRow}>
           <input
             data-testid={`graph-polar-r-${i}`}
             type="text"
             value={re}
             onChange={e => updatePolar(i, e.target.value)}
             placeholder={`r${i + 1}(θ) = ...`}
+            className={styles.fnInput}
           />
           {polarExprs.length > 1 && (
             <button
               data-testid={`graph-remove-fn-${i}`}
               onClick={() => removeFn(i)}
+              className={styles.btnIcon}
             >✕</button>
           )}
         </div>
@@ -387,26 +388,30 @@ export function GraphViewer() {
 
       {/* tMin / tMax — solo en paramétrico y polar */}
       {(mode === 'parametric' || mode === 'polar') && (
-        <>
+        <div className={styles.rangeRow}>
+          <span className={styles.rangeLabel}>t:</span>
           <input
             data-testid="graph-tmin"
             type="number"
             value={tMin}
             onChange={e => setTMin(Number(e.target.value))}
+            className={styles.numInput}
           />
+          <span className={styles.rangeLabel}>→</span>
           <input
             data-testid="graph-tmax"
             type="number"
             value={tMax}
             onChange={e => setTMax(Number(e.target.value))}
+            className={styles.numInput}
           />
-        </>
+        </div>
       )}
 
       {/* Toggle derivada y área — solo cartesiano */}
       {mode === 'cartesian' && (
         <>
-          <label>
+          <label className={styles.toggleLabel}>
             <input
               data-testid="graph-deriv-toggle"
               type="checkbox"
@@ -416,7 +421,7 @@ export function GraphViewer() {
             Mostrar f'(x)
           </label>
 
-          <label>
+          <label className={styles.toggleLabel}>
             <input
               data-testid="graph-area-toggle"
               type="checkbox"
@@ -425,49 +430,83 @@ export function GraphViewer() {
             />
             Mostrar área
           </label>
+
           {showArea && (
-            <>
+            <div className={styles.rangeRow}>
+              <span className={styles.rangeLabel}>a:</span>
               <input
                 data-testid="graph-area-a"
                 type="number"
                 value={areaA}
                 onChange={e => setAreaA(Number(e.target.value))}
+                className={styles.numInput}
               />
+              <span className={styles.rangeLabel}>b:</span>
               <input
                 data-testid="graph-area-b"
                 type="number"
                 value={areaB}
                 onChange={e => setAreaB(Number(e.target.value))}
+                className={styles.numInput}
               />
-              <span data-testid="graph-area-value">
+              <span data-testid="graph-area-value" className={styles.areaValue}>
                 {areaValue !== null ? areaValue.toFixed(6) : '—'}
               </span>
-            </>
+            </div>
           )}
         </>
       )}
 
-      {/* Botón agregar función */}
-      {exprs.length < MAX_FNS && (
-        <button data-testid="graph-add-fn" onClick={addFn}>+ función</button>
-      )}
+      {/* Botones de acción */}
+      <div className={styles.actions}>
+        {exprs.length < MAX_FNS && (
+          <button
+            data-testid="graph-add-fn"
+            onClick={addFn}
+            className={styles.btnSecondary}
+          >+ función</button>
+        )}
+        <button
+          data-testid="graph-plot-button"
+          onClick={draw}
+          className={styles.btnPrimary}
+        >Graficar</button>
+        <button
+          data-testid="graph-clear-button"
+          onClick={handleClear}
+          className={styles.btnSecondary}
+        >Limpiar</button>
+        <button
+          data-testid="graph-export-button"
+          onClick={handleExport}
+          className={styles.btnSecondary}
+        >Exportar PNG</button>
+      </div>
 
-      <button data-testid="graph-plot-button"   onClick={draw}>Graficar</button>
-      <button data-testid="graph-clear-button"  onClick={handleClear}>Limpiar</button>
-      <button data-testid="graph-export-button" onClick={handleExport}>Exportar PNG</button>
+      {/* Controles de zoom */}
+      <div className={styles.zoomRow}>
+        <button data-testid="graph-zoom-in"    onClick={zoomIn}                    className={styles.btnIcon}>+</button>
+        <button data-testid="graph-zoom-out"   onClick={zoomOut}                   className={styles.btnIcon}>-</button>
+        <button data-testid="graph-zoom-reset" onClick={() => setZoom(DEFAULT_ZOOM)} className={styles.btnIcon}>⌂</button>
+      </div>
 
-      <button data-testid="graph-zoom-in"    onClick={zoomIn}>+</button>
-      <button data-testid="graph-zoom-out"   onClick={zoomOut}>-</button>
-      <button data-testid="graph-zoom-reset" onClick={() => setZoom(DEFAULT_ZOOM)}>⌂</button>
-
-      <input data-testid="graph-xmin" type="number" value={xMin}
-        onChange={e => setXMin(Number(e.target.value))} onBlur={applyRange} />
-      <input data-testid="graph-xmax" type="number" value={xMax}
-        onChange={e => setXMax(Number(e.target.value))} onBlur={applyRange} />
-      <input data-testid="graph-ymin" type="number" value={yMin}
-        onChange={e => setYMin(Number(e.target.value))} onBlur={applyRange} />
-      <input data-testid="graph-ymax" type="number" value={yMax}
-        onChange={e => setYMax(Number(e.target.value))} onBlur={applyRange} />
+      {/* Rango manual */}
+      <div className={styles.rangeRow}>
+        <span className={styles.rangeLabel}>x:</span>
+        <input data-testid="graph-xmin" type="number" value={xMin}
+          onChange={e => setXMin(Number(e.target.value))} onBlur={applyRange}
+          className={styles.numInput} />
+        <input data-testid="graph-xmax" type="number" value={xMax}
+          onChange={e => setXMax(Number(e.target.value))} onBlur={applyRange}
+          className={styles.numInput} />
+        <span className={styles.rangeLabel}>y:</span>
+        <input data-testid="graph-ymin" type="number" value={yMin}
+          onChange={e => setYMin(Number(e.target.value))} onBlur={applyRange}
+          className={styles.numInput} />
+        <input data-testid="graph-ymax" type="number" value={yMax}
+          onChange={e => setYMax(Number(e.target.value))} onBlur={applyRange}
+          className={styles.numInput} />
+      </div>
 
       {/* Tooltip HTML overlay */}
       <div
@@ -494,7 +533,8 @@ export function GraphViewer() {
       <canvas
         data-testid="graph-canvas"
         ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: '300px', cursor: isPanning ? 'grabbing' : 'crosshair' }}
+        className={styles.canvas}
+        style={{ cursor: isPanning ? 'grabbing' : 'crosshair' }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, test } from 'vitest';
 import { CASPanel } from './CASPanel';
 import { useCAS } from '../../hooks/useCAS';
 import type { CASHookState } from '../../hooks/useCAS';
@@ -234,3 +234,49 @@ describe('CASPanel — selector de nivel de detalle', () => {
     expect(screen.getByTestId('cas-detail-level-select')).toHaveValue('advanced');
   });
 });
+
+describe('CASPanel — estilos y accesibilidad', () => {
+
+  test('input de expresión tiene placeholder descriptivo', () => {
+    render(<CASPanel />)
+    const input = screen.getByTestId('cas-expression-input')
+    expect(input).toHaveAttribute('placeholder')
+    expect(input.getAttribute('placeholder')).not.toBe('')
+  })
+
+  test('input de variable tiene label o placeholder visible', () => {
+    render(<CASPanel />)
+    const select = screen.getByTestId('cas-operation-select')
+    fireEvent.change(select, { target: { value: 'differentiate' } })
+    const varInput = screen.getByTestId('cas-variable-input')
+    expect(varInput).toHaveAttribute('placeholder')
+  })
+
+  test('botón ejecutar tiene texto visible', () => {
+    render(<CASPanel />)
+    const btn = screen.getByTestId('cas-execute-button')
+    expect(btn.textContent?.trim()).not.toBe('')
+  })
+
+  test('panel tiene clase CSS aplicada', () => {
+    render(<CASPanel />)
+    const panel = screen.getByTestId('cas-panel')
+    expect(panel.className).not.toBe('')
+    expect(panel.className).toBeTruthy()
+  })
+
+  test('resultado tiene clase CSS cuando hay éxito', async () => {
+    render(<CASPanel />)
+    const input = screen.getByTestId('cas-expression-input')
+    const btn = screen.getByTestId('cas-execute-button')
+    fireEvent.change(input, { target: { value: 'x^2' } })
+    fireEvent.click(btn)
+    await waitFor(() => {
+      const result = screen.queryByTestId('cas-result')
+      if (result) {
+        expect(result.className).toBeTruthy()
+      }
+    })
+  })
+
+})

@@ -1,0 +1,88 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background-color: #1a1a2e;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 102, 204, 0.15);
+  margin-top: 4px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tab {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  background: transparent;
+  color: #8888aa;
+  border: 1px solid #2a2a48;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+}
+.tab:hover {
+  color: #e0e0ff;
+  border-color: #8888aa;
+}
+.tabActive {
+  color: #e0e0ff;
+  border-color: #6666cc;
+  background-color: rgba(102, 102, 204, 0.1);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.constantItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #121220;
+  border-radius: 4px;
+  font-size: 0.82rem;
+}
+.constantSymbol {
+  color: #6666cc;
+  font-weight: 700;
+  min-width: 24px;
+}
+.constantLabel {
+  color: #e0e0ff;
+  flex: 1;
+}
+.constantValue {
+  color: #8888aa;
+  font-size: 0.75rem;
+}
+.constantUnit {
+  color: #44445a;
+  font-size: 0.72rem;
+  min-width: 40px;
+}
+.insertBtn {
+  padding: 2px 6px;
+  background: transparent;
+  color: #6666cc;
+  border: 1px solid #6666cc;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.insertBtn:hover {
+  background: rgba(102, 102, 204, 0.15);
+}
+
+.complexRow {
+  display: flex;
+  gap: 8px;
+}

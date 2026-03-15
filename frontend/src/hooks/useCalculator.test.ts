@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, test } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCalculator } from './useCalculator';
 
@@ -332,5 +332,119 @@ describe('useCalculator', () => {
       expect(result.current.expression).toBe('5');
     });
   });
+
+  // --- APPENDABLE_TOKENS — funciones avanzadas ---
+
+  describe('APPENDABLE_TOKENS — funciones avanzadas', () => {
+
+    test('abs( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('abs('))
+      expect(result.current.expression).toBe('abs(')
+    })
+
+    test('mean( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('mean('))
+      expect(result.current.expression).toBe('mean(')
+    })
+
+    test('stdDev( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('stdDev('))
+      expect(result.current.expression).toBe('stdDev(')
+    })
+
+    test('median( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('median('))
+      expect(result.current.expression).toBe('median(')
+    })
+
+    test('mode( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('mode('))
+      expect(result.current.expression).toBe('mode(')
+    })
+
+    test('variance( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('variance('))
+      expect(result.current.expression).toBe('variance(')
+    })
+
+    test('range( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('range('))
+      expect(result.current.expression).toBe('range(')
+    })
+
+    test('decToBin( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('decToBin('))
+      expect(result.current.expression).toBe('decToBin(')
+    })
+
+    test('decToHex( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('decToHex('))
+      expect(result.current.expression).toBe('decToHex(')
+    })
+
+    test('decToOct( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('decToOct('))
+      expect(result.current.expression).toBe('decToOct(')
+    })
+
+    test('ceil( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('ceil('))
+      expect(result.current.expression).toBe('ceil(')
+    })
+
+    test('floor( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('floor('))
+      expect(result.current.expression).toBe('floor(')
+    })
+
+    test('round( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('round('))
+      expect(result.current.expression).toBe('round(')
+    })
+
+    test('factorial( se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('factorial('))
+      expect(result.current.expression).toBe('factorial(')
+    })
+
+    test('e se inserta en la expresión', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('e'))
+      expect(result.current.expression).toBe('e')
+    })
+
+    test('token desconocido "FUNCION_NUEVA" sigue siendo descartado', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => result.current.handleKeyPress('FUNCION_NUEVA'))
+      expect(result.current.expression).toBe('')
+    })
+
+    test('secuencia: mean( + 1 + , + 2 + ) construye expresión correcta', () => {
+      const { result } = renderHook(() => useCalculator())
+      act(() => {
+        result.current.handleKeyPress('mean(')
+        result.current.handleKeyPress('1')
+        result.current.handleKeyPress(',')
+        result.current.handleKeyPress('2')
+        result.current.handleKeyPress(')')
+      })
+      expect(result.current.expression).toBe('mean(1,2)')
+    })
+
+  })
 
 });

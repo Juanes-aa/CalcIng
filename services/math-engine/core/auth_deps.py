@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from core.security import ALGORITHM
@@ -59,3 +59,23 @@ async def optional_auth(
         return payload.get("sub")
     except JWTError:
         return None
+
+
+async def get_plan_from_token(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> str:
+    """Extrae el claim 'plan' del JWT. Retorna 'free' si no hay token,
+    si el token es inválido, o si el claim 'plan' no está presente."""
+    if credentials is None:
+        return "free"
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            get_public_key(),
+            algorithms=[ALGORITHM],
+        )
+        if payload.get("type") != "access":
+            return "free"
+        return payload.get("plan", "free")
+    except JWTError:
+        return "free"

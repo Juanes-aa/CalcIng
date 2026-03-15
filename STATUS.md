@@ -1,17 +1,26 @@
-## Tests
-Frontend: 646 passing, 0 failing
-Backend:  102 passing, 0 failing
+## Estado actual
+Tests frontend: 656 passing, 0 failing
+Tests backend:  106 passing, 0 failing
 
 ## Bloqueadores activos
 
 NINGUNO
 
-## Backend-5a ✅ COMPLETA — Alembic migrations
-- alembic.ini + alembic/env.py + migración inicial
-- Tablas users + problems listas para alembic upgrade head
-- env.py soporta -x db_url= (tests) y DATABASE_URL (producción)
-- Conversión automática asyncpg→psycopg2 y aiosqlite→sqlite
-- 5 tests nuevos: 102 backend passing, 0 failing
+## Fases completadas
+Backend-5a  ✅ Alembic migrations (tablas users + problems en Supabase)
+Backend-5b  ✅ GitHub Actions CI/CD — verde (frontend + backend)
+Backend-5c  ✅ Render.com deploy — live en https://calcing.onrender.com
+Backend-5d  ✅ Upstash Redis — caché verificado (1501ms → 395ms, 4x speedup)
+             rediss:// TLS — alert-pup-71146.upstash.io:6379
+Backend-5e  ✅ PWA migrada al frontend React
+             - vite-plugin-pwa instalado con Workbox
+             - manifest.json en public/ (theme #6666cc, bg #0a0a14)
+             - NetworkFirst para API calls a Render.com
+             - CacheFirst para assets estáticos
+             - index.html con meta tags PWA + Apple
+
+## Próxima fase
+Backend-6 — Sprint B6-1: Rate limiting por IP y usuario (slowapi)
 
 ## Backend-3: COMPLETO ✅
 
@@ -32,12 +41,6 @@ NINGUNO
   POST /auth/refresh
   GET  /users/me/history    (requiere JWT, paginado con cursor)
 
-## Próxima fase: Backend-5b — GitHub Actions CI/CD
-
-Tareas pendientes Backend-5b:
-- [ ] GitHub Actions workflow para CI (pytest en cada PR)
-- [ ] GitHub Actions workflow para CD (build Docker en merge a main)
-
 ## Deuda técnica conocida
 - max_workers=4 hardcodeado en ProcessPoolExecutor — mover a variable de entorno en Backend-4
 - Integración real useCAS.ts → mathService.ts pendiente (corte de nerdamer → backend)
@@ -47,9 +50,3 @@ Tareas pendientes Backend-5b:
   sin impacto funcional. Revisar alternativa (p.ej. PyJWT) en Backend-4.
 - Cursor de paginación basado en timestamp: timestamps duplicados exactos podrían
   causar items repetidos o saltados. Revisar en Backend-4 si se agrega desempate por UUID.
-
-Backend-4 Sub-fase 1 ✅ — Configuración centralizada (pydantic-settings)
-Tests backend: 73 passing, 0 failing
-
-Backend-4 ✅ Sub-fase 3 — Docker Compose con postgres:16 +
-               redis:7-alpine. asyncpg agregado a requirements.txt.
