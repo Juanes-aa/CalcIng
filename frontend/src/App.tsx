@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCalculator } from './hooks/useCalculator';
 import { CalculatorDisplay } from './components/CalculatorDisplay';
 import { CalculatorKeypad } from './components/CalculatorKeypad';
@@ -6,12 +6,34 @@ import { CASPanel } from './components/CASPanel/CASPanel';
 import { GraphViewer } from './components/GraphViewer/GraphViewer';
 import { AdvancedPanel } from './components/AdvancedPanel';
 import styles from './App.module.css';
+import { getStoredToken, logout } from './services/authService';
+import AuthModal from './components/AuthModal/AuthModal';
 
 export default function App() {
   const { expression, result, isError, angleMode, handleKeyPress } = useCalculator();
   const [showCAS,      setShowCAS]      = useState(false);
   const [showGraph,    setShowGraph]    = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    const token = getStoredToken();
+    const email = localStorage.getItem('calcing_email');
+    if (token && email) setUserEmail(email);
+  }, []);
+
+  function handleLoginSuccess(email: string): void {
+    localStorage.setItem('calcing_email', email);
+    setUserEmail(email);
+    setShowAuthModal(false);
+  }
+
+  async function handleLogout(): Promise<void> {
+    await logout();
+    localStorage.removeItem('calcing_email');
+    setUserEmail(null);
+  }
 
   return (
     <div className={styles.shell}>
@@ -46,6 +68,16 @@ export default function App() {
           >
             Avanzado
           </button>
+          <div data-testid="auth-section">
+            {userEmail ? (
+              <>
+                <span data-testid="user-email">{userEmail}</span>
+                <button onClick={handleLogout}>Cerrar sesión</button>
+              </>
+            ) : (
+              <button onClick={() => setShowAuthModal(true)}>Login</button>
+            )}
+          </div>
         </header>
 
         <CalculatorDisplay
@@ -62,6 +94,12 @@ export default function App() {
         {showCAS      && <CASPanel />}
         {showGraph    && <GraphViewer />}
         {showAdvanced && <AdvancedPanel onInsert={handleKeyPress} />}
+        {showAuthModal && (
+          <AuthModal
+            onClose={() => setShowAuthModal(false)}
+            onSuccess={handleLoginSuccess}
+          />
+        )}
       </main>
     </div>
   );
