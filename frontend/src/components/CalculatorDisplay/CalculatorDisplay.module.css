@@ -1,36 +1,76 @@
 .display {
-  background-color: #1a1a2e;
-  border-radius: 8px;
-  padding: 16px 20px;
-  text-align: right;
+  position: relative;
+  background-color: var(--color-surface-low);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-outline);
+  padding: var(--space-4) var(--space-5);
+  padding-top: var(--space-8);
   width: 100%;
   box-sizing: border-box;
-  min-height: 80px;
+  min-height: 96px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 4px;
+  gap: var(--space-2);
+}
+
+.display::before {
+  content: "INPUT: MAIN_BUFFER";
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.14em;
+  color: var(--color-on-surface-dim);
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.display::after {
+  content: "⧉";
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-on-surface-dim);
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity var(--transition-normal);
+}
+
+.display:hover::after {
+  opacity: 0.8;
 }
 
 .expression {
-  font-size: 0.9rem;
-  color: #8888aa;
-  min-height: 1.2em;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--color-on-surface-dim);
+  min-height: 1.4em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: right;
+  display: block;
 }
 
 .result {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #e0e0ff;
+  font-family: var(--font-mono);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-success);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: right;
+  display: block;
+  line-height: 1.1;
+  transition: color var(--transition-fast);
 }
 
 .result.error {
-  color: #ff6b6b;
-  font-size: 1.2rem;
+  color: var(--color-error);
+  font-size: var(--text-2xl);
 }
