@@ -2,10 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { VitePWA } from 'vite-plugin-pwa';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png'],
@@ -18,10 +20,7 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60,
-              },
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
             },
           },
           {
@@ -29,10 +28,7 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'backend-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60,
-              },
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
             },
           },
         ],

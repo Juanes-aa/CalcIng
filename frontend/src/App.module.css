@@ -1,185 +1,136 @@
-/* ─── Shell ──────────────────────────────────────────────────────────────── */
+/* ─── Variables globales ─────────────────────────────────────────────────────
+   Paleta consistente con CalculatorDisplay y CalculatorKeypad.
+   Fuente: JetBrains Mono para el wordmark — carácter técnico, no decorativo.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500&display=swap');
+
+:root {
+  --bg-void:        #0a0a14;
+  --bg-surface:     #121220;
+  --bg-raised:      #1a1a2e;
+  --text-primary:   #e0e0ff;
+  --text-secondary: #8888aa;
+  --text-dim:       #44445a;
+  --accent:         #6666cc;
+  --accent-glow:    rgba(102, 102, 204, 0.15);
+}
+
+/* ─── Reset mínimo ───────────────────────────────────────────────────────────*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Shell — ocupa toda la ventana, centra la calculadora ───────────────────*/
 
 .shell {
   min-height: 100dvh;
   width: 100%;
-  background-color: var(--color-surface);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ─── Header ─────────────────────────────────────────────────────────────── */
-
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background-color: var(--color-surface-low);
-  border-bottom: 1px solid var(--color-outline);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-4);
-  gap: var(--space-6);
-  z-index: var(--z-raised);
+  justify-content: center;
+  background-color: var(--bg-void);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(102, 102, 204, 0.08) 0%, transparent 70%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(255, 255, 255, 0.015) 39px,
+      rgba(255, 255, 255, 0.015) 40px
+    );
+  font-family: 'Outfit', sans-serif;
+  padding: 24px 16px;
+}
+
+/* ─── Calculadora — contenedor principal ─────────────────────────────────────*/
+
+.calculator {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(102, 102, 204, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 24px 64px rgba(0, 0, 0, 0.6),
+    0 0 80px var(--accent-glow);
+
+  /* Entrada suave */
+  animation: emerge 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes emerge {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────────*/
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .wordmark {
-  font-family: var(--font-mono);
-  font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
-  letter-spacing: 0.12em;
-  color: var(--color-on-surface);
-  text-transform: uppercase;
-  margin-right: var(--space-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  opacity: 0.9;
 }
 
 .tagline {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: var(--color-on-surface-dim);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  flex: 1;
+  font-size: 0.65rem;
+  font-weight: 300;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
 }
 
+/* ─── CAS Toggle Button ──────────────────────────────────────────────────── */
 .casToggle {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.08em;
-  color: var(--color-on-surface-dim);
+  color: var(--text-secondary);
   background: transparent;
-  border: none;
-  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--text-dim);
+  border-radius: 4px;
+  padding: 2px 6px;
   cursor: pointer;
-  transition: color var(--transition-normal);
-  text-transform: uppercase;
+  transition: color 150ms, border-color 150ms;
 }
-
-.casToggle:hover {
-  color: var(--color-on-surface);
-}
-
 .casToggle[aria-pressed="true"] {
-  color: var(--color-primary);
-  border-bottom: 2px solid var(--color-primary-cta);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.casToggle:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 
-.header [data-testid="auth-section"] {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* ─── Calculator — grid principal ────────────────────────────────────────── */
-
-.calculator {
-  margin-top: 48px;
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  grid-template-rows: 1fr;
-  min-height: calc(100dvh - 48px);
-  width: 100%;
-  background-color: var(--color-surface-low);
-}
-
+/* ─── CAS Panel visible — expande el contenedor ──────────────────────────── */
 .casVisible {
-  grid-template-columns: 280px 1fr 320px;
-}
-
-/* ─── Main content wrapper (fase futura) ─────────────────────────────────── */
-
-.mainContent {
-  background-color: var(--color-surface);
-  padding: var(--space-4);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-/* ─── Bottom tab bar (solo móvil) ────────────────────────────────────────── */
-
-.bottomTabBar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 56px;
-  background-color: var(--color-surface-low);
-  border-top: 1px solid var(--color-outline);
-  display: none;
-  z-index: var(--z-raised);
-}
-
-.bottomTabItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.08em;
-  color: var(--color-on-surface-dim);
-  text-transform: uppercase;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: var(--space-2);
-  min-width: 56px;
-}
-
-.bottomTabItem.active {
-  color: var(--color-primary);
-}
-
-/* ─── Mobile (max-width: 767px) ──────────────────────────────────────────── */
-
-@media (max-width: 767px) {
-  .calculator {
-    grid-template-columns: 1fr;
-    padding-bottom: 56px;
-  }
-
-  .casVisible {
-    grid-template-columns: 1fr;
-  }
-
-  .tagline {
-    display: none;
-  }
-
-  .bottomTabBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-  }
-}
-
-/* ─── Tablet (768px – 1023px) ────────────────────────────────────────────── */
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .calculator {
-    grid-template-columns: 240px 1fr;
-  }
-
-  .casVisible {
-    grid-template-columns: 240px 1fr 280px;
-  }
-}
-
-/* ─── Desktop (min-width: 1024px) ────────────────────────────────────────── */
-
-@media (min-width: 1024px) {
-  .calculator {
-    grid-template-columns: 280px 1fr;
-  }
-
-  .casVisible {
-    grid-template-columns: 280px 1fr 320px;
-  }
+  max-width: 480px;
 }
