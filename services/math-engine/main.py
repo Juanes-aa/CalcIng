@@ -31,6 +31,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://localhost:5174",
         "https://calcing.netlify.app",
         "https://calcing.vercel.app",
     ],
