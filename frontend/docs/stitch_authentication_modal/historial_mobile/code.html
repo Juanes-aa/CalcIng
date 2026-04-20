@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#6bff8f",
+              "on-surface-variant": "#c3c6d7",
+              "secondary-fixed-dim": "#4ae176",
+              "surface-container-high": "#282a30",
+              "inverse-primary": "#0053db",
+              "surface-container-lowest": "#0c0e14",
+              "surface": "#111319",
+              "on-tertiary-container": "#ffecea",
+              "tertiary-fixed-dim": "#ffb3ad",
+              "on-primary-fixed": "#00174b",
+              "surface-dim": "#111319",
+              "surface-container": "#1e1f26",
+              "primary": "#b4c5ff",
+              "secondary-container": "#00b954",
+              "on-tertiary-fixed": "#410004",
+              "on-surface": "#e2e2eb",
+              "surface-container-highest": "#33343b",
+              "surface-container-low": "#191b22",
+              "tertiary-fixed": "#ffdad7",
+              "surface-bright": "#373940",
+              "tertiary": "#ffb3ad",
+              "inverse-on-surface": "#2e3037",
+              "background": "#111319",
+              "on-primary-container": "#eeefff",
+              "outline": "#8d90a0",
+              "on-secondary": "#003915",
+              "outline-variant": "#434655",
+              "primary-fixed-dim": "#b4c5ff",
+              "secondary": "#4ae176",
+              "primary-fixed": "#dbe1ff",
+              "on-secondary-fixed": "#002109",
+              "surface-tint": "#b4c5ff",
+              "on-background": "#e2e2eb",
+              "on-primary-fixed-variant": "#003ea8",
+              "surface-variant": "#33343b",
+              "primary-container": "#2563eb",
+              "tertiary-container": "#cf2c30",
+              "on-error": "#690005",
+              "error": "#ffb4ab",
+              "on-primary": "#002a78",
+              "on-error-container": "#ffdad6",
+              "error-container": "#93000a",
+              "on-secondary-container": "#004119",
+              "on-tertiary-fixed-variant": "#930013",
+              "on-tertiary": "#68000a",
+              "on-secondary-fixed-variant": "#005321",
+              "inverse-surface": "#e2e2eb"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(55, 57, 64, 0.7);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] docked full-width top-0 z-50 border-b border-white/10 flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-headline">CalcIng</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors text-slate-400">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors text-slate-400">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-16 pb-20 min-h-screen">
+<!-- Search & Filter Section -->
+<div class="px-6 py-6 sticky top-16 bg-surface/80 backdrop-blur-md z-40 space-y-4">
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-white/10 focus:border-primary focus:ring-0 text-on-surface font-body py-4 pl-12 transition-all placeholder:text-slate-600" placeholder="Search calculations..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs font-headline font-bold uppercase tracking-widest whitespace-nowrap">All Logs</button>
+<button class="bg-surface-container-high text-slate-400 px-4 py-2 rounded-lg text-xs font-headline font-bold uppercase tracking-widest whitespace-nowrap">Orbital Dynamics</button>
+<button class="bg-surface-container-high text-slate-400 px-4 py-2 rounded-lg text-xs font-headline font-bold uppercase tracking-widest whitespace-nowrap">Fluid Mechanics</button>
+<button class="bg-surface-container-high text-slate-400 px-4 py-2 rounded-lg text-xs font-headline font-bold uppercase tracking-widest whitespace-nowrap">Quantum Lab</button>
+</div>
+</div>
+<!-- History List -->
+<div class="px-4 space-y-4">
+<!-- Entry 1 -->
+<div class="bg-surface-container-low rounded-xl p-5 border-l-2 border-primary group active:bg-white/5 transition-all">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="font-headline text-[10px] uppercase tracking-widest text-primary font-bold">Orbital Dynamics</span>
+<span class="text-slate-500 text-[10px] font-label mt-0.5">2m ago • RESULT_024</span>
+</div>
+<button class="text-slate-500">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg mb-3">
+<p class="font-mono text-sm text-on-surface-variant overflow-x-auto whitespace-nowrap">v_esc = sqrt((2 * G * M) / R)</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-mono text-lg font-bold text-secondary-container">11.186 km/s</span>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="bg-surface-container-low rounded-xl p-5 border-l-2 border-slate-700 group active:bg-white/5 transition-all">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="font-headline text-[10px] uppercase tracking-widest text-slate-400 font-bold">Fluid Mechanics</span>
+<span class="text-slate-500 text-[10px] font-label mt-0.5">45m ago • RESULT_023</span>
+</div>
+<button class="text-slate-500">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg mb-3">
+<p class="font-mono text-sm text-on-surface-variant overflow-x-auto whitespace-nowrap">Re = (ρ * v * L) / μ</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-mono text-lg font-bold text-secondary-container">2,341.5 (Laminar)</span>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Entry 3 -->
+<div class="bg-surface-container-low rounded-xl p-5 border-l-2 border-slate-700 group active:bg-white/5 transition-all">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="font-headline text-[10px] uppercase tracking-widest text-slate-400 font-bold">General Laboratory</span>
+<span class="text-slate-500 text-[10px] font-label mt-0.5">3h ago • RESULT_022</span>
+</div>
+<button class="text-slate-500">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg mb-3">
+<p class="font-mono text-sm text-on-surface-variant overflow-x-auto whitespace-nowrap">sum(force_vectors) / total_mass</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-mono text-lg font-bold text-secondary-container">9.81 m/s²</span>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Visual Break / Technical Decoration -->
+<div class="py-8 flex flex-col items-center gap-4 opacity-30">
+<div class="h-px w-full bg-gradient-to-r from-transparent via-outline-variant to-transparent"></div>
+<span class="font-headline text-[10px] uppercase tracking-[0.2em]">End of Transmission</span>
+<div class="h-px w-full bg-gradient-to-r from-transparent via-outline-variant to-transparent"></div>
+</div>
+<!-- Entry 4 (Yesterday) -->
+<div class="bg-surface-container-low rounded-xl p-5 border-l-2 border-slate-700 group active:bg-white/5 transition-all">
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="font-headline text-[10px] uppercase tracking-widest text-slate-400 font-bold">Structural Analysis</span>
+<span class="text-slate-500 text-[10px] font-label mt-0.5">Yesterday • RESULT_021</span>
+</div>
+<button class="text-slate-500">
+<span class="material-symbols-outlined text-lg" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg mb-3">
+<p class="font-mono text-sm text-on-surface-variant overflow-x-auto whitespace-nowrap">sigma = (M * y) / I</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-mono text-lg font-bold text-secondary-container">145.2 MPa</span>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-[#111319]/90 backdrop-blur-xl fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 border-t border-white/10 shadow-2xl md:hidden">
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded-lg tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="calculate">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded-lg tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="data_object">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded-lg tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="monitoring">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</a>
+<!-- ACTIVE TAB: History mapping to Export/Log flow -->
+<a class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded-lg tap:scale-90 duration-100 border-t-2 border-blue-400 rounded-none -mt-px" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold">History</span>
+</a>
+</nav>
+</body></html>

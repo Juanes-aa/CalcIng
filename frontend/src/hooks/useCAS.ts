@@ -4,6 +4,7 @@ import { nerdamerAdapter } from '@engine/cas/nerdamerAdapter';
 import type { MathStep } from '@engine/stepEngine/types';
 import { buildSteps } from '@engine/stepEngine/stepBuilder';
 import type { StepOperation } from '@engine/stepEngine/types';
+import { formatResult } from './formatResult';
 
 export type CASOperation =
   | 'simplify'
@@ -28,7 +29,7 @@ export interface CASHookState {
   setVariable:    (v: string) => void;
   setOrder:       (n: number) => void;
   setOperation:   (op: CASOperation) => void;
-  execute:        () => Promise<void>;
+  execute:        (overrideOp?: CASOperation) => Promise<void>;
   reset:          () => void;
 }
 
@@ -47,14 +48,20 @@ export function useCAS(engine: CASEngine = nerdamerAdapter): CASHookState {
   const [errorMsg,   setErrorMsg]   = useState<string>('');
   const [steps,      setSteps]      = useState<MathStep[]>([]);
 
-  const execute = useCallback(async (): Promise<void> => {
+  const execute = useCallback(async (overrideOp?: CASOperation): Promise<void> => {
     if (expression.trim() === '') return;
+
+    // Si viene override, sincroniza el estado visual antes de ejecutar.
+    // Esto resuelve el race condition donde setOperation + execute() en el
+    // mismo ciclo haría que execute corriera con la operación anterior.
+    const activeOp = overrideOp ?? operation;
+    if (overrideOp !== undefined) setOperation(overrideOp);
 
     setStatus('loading');
 
     try {
       let casResult: CASResult;
-      switch (operation) {
+      switch (activeOp) {
         case 'simplify':
           casResult = await engine.simplify(expression);
           break;
@@ -74,17 +81,18 @@ export function useCAS(engine: CASEngine = nerdamerAdapter): CASHookState {
           casResult = await engine.factor(expression);
           break;
         default: {
-          const _exhaustive: never = operation;
+          const _exhaustive: never = activeOp;
           throw new Error(`Operación no soportada: ${_exhaustive}`);
         }
       }
 
       if (casResult.status === 'success') {
-        setResult(casResult.result);
+        const formatted = formatResult(casResult.result, activeOp, variable);
+        setResult(formatted);
         setErrorMsg('');
         setStatus('success');
         const builtSteps = buildSteps({
-          operation: operation as StepOperation,
+          operation: activeOp as StepOperation,
           expression,
           variable,
           order,

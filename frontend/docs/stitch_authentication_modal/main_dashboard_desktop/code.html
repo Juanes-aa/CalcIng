@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - Dashboard de Ingeniería</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#33343b",
+                        "outline-variant": "#434655",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-secondary-fixed": "#002109",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-low": "#191b22",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "outline": "#8d90a0",
+                        "secondary-container": "#00b954",
+                        "surface-container": "#1e1f26",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#005321",
+                        "surface-dim": "#111319",
+                        "surface-bright": "#373940",
+                        "error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "surface-container-high": "#282a30",
+                        "tertiary-container": "#cf2c30",
+                        "inverse-on-surface": "#2e3037",
+                        "on-secondary": "#003915",
+                        "on-primary-fixed": "#00174b",
+                        "surface-tint": "#b4c5ff",
+                        "on-secondary-container": "#004119",
+                        "secondary": "#4ae176",
+                        "inverse-primary": "#0053db",
+                        "surface-variant": "#33343b",
+                        "on-tertiary-fixed": "#410004",
+                        "primary-container": "#2563eb",
+                        "surface": "#111319",
+                        "on-surface": "#e2e2eb",
+                        "inverse-surface": "#e2e2eb",
+                        "primary": "#b4c5ff",
+                        "secondary-fixed": "#6bff8f",
+                        "on-background": "#e2e2eb",
+                        "surface-container-lowest": "#0c0e14",
+                        "error": "#ffb4ab",
+                        "on-primary-container": "#eeefff",
+                        "on-tertiary-container": "#ffecea",
+                        "on-primary": "#002a78",
+                        "tertiary": "#ffb3ad",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "background": "#111319",
+                        "on-surface-variant": "#c3c6d7",
+                        "on-tertiary": "#68000a",
+                        "primary-fixed": "#dbe1ff",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#ffdad7"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .math-glow:focus-within {
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
+            border-color: rgba(37, 99, 235, 0.5);
+        }
+        .btn-active-state:active {
+            transform: scale(0.95);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111319;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #33343b;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-[#111319] border-b border-blue-900/15 fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex flex-col">
+<span class="text-xl font-mono font-bold text-[#b4c5ff] uppercase tracking-tighter">CalcIng</span>
+<span class="text-[10px] text-slate-500 font-medium tracking-[0.2em] uppercase -mt-1">Motor de cálculo de ingeniería</span>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#b4c5ff] border-b-2 border-[#2563eb] pb-1 font-['Space_Grotesk'] tracking-tight" href="#">Calculadora</a>
+<a class="text-slate-400 font-medium hover:text-slate-200 transition-colors font-['Space_Grotesk'] tracking-tight" href="#">Gráficos</a>
+<a class="text-slate-400 font-medium hover:text-slate-200 transition-colors font-['Space_Grotesk'] tracking-tight" href="#">Documentos</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-blue-900/10 p-2 rounded-lg transition-all">help_outline</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-blue-900/10 p-2 rounded-lg transition-all">settings</button>
+<button class="bg-primary-container text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 active:scale-95">Acceso</button>
+</div>
+</header>
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-16 bottom-0 w-[280px] hidden md:flex flex-col py-4 bg-[#111319] border-r border-blue-900/15 z-40">
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low border border-outline-variant/10">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">engineering</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface font-['Space_Grotesk']">Cálculo Simbólico</h3>
+<p class="text-[10px] text-slate-500 uppercase tracking-widest">Ingeniería de Precisión</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="bg-blue-900/20 text-[#b4c5ff] border-r-4 border-[#2563eb] font-bold px-4 py-3 flex items-center gap-3 font-['Space_Grotesk'] text-sm uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+                Cálculo
+            </a>
+<a class="text-slate-500 hover:bg-slate-800/50 px-4 py-3 flex items-center gap-3 transition-all font-['Space_Grotesk'] text-sm uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined" data-icon="show_chart">show_chart</span>
+                Gráficos
+            </a>
+<a class="text-slate-500 hover:bg-slate-800/50 px-4 py-3 flex items-center gap-3 transition-all font-['Space_Grotesk'] text-sm uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                Historial
+            </a>
+<a class="text-slate-500 hover:bg-slate-800/50 px-4 py-3 flex items-center gap-3 transition-all font-['Space_Grotesk'] text-sm uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined" data-icon="functions">functions</span>
+                Variables
+            </a>
+<a class="text-slate-500 hover:bg-slate-800/50 px-4 py-3 flex items-center gap-3 transition-all font-['Space_Grotesk'] text-sm uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined" data-icon="straighten">straighten</span>
+                Constantes
+            </a>
+<a class="text-slate-500 hover:bg-slate-800/50 px-4 py-3 flex items-center gap-3 transition-all font-['Space_Grotesk'] text-sm uppercase tracking-widest" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Ajustes
+            </a>
+</nav>
+<div class="px-6 pt-4 border-t border-blue-900/10">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-primary-container text-primary-container font-bold hover:bg-primary-container/10 transition-all text-sm uppercase tracking-tighter">
+<span class="material-symbols-outlined text-sm">add_circle</span>
+                Nuevo Proyecto
+            </button>
+<div class="mt-4 flex flex-col gap-1">
+<a class="text-slate-500 hover:text-white flex items-center gap-2 text-xs font-['Space_Grotesk'] uppercase tracking-widest py-2" href="#">
+<span class="material-symbols-outlined text-sm">description</span> Documentación
+                </a>
+<a class="text-slate-500 hover:text-white flex items-center gap-2 text-xs font-['Space_Grotesk'] uppercase tracking-widest py-2" href="#">
+<span class="material-symbols-outlined text-sm">contact_support</span> Soporte
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-0 md:ml-[280px] mt-16 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100vh-64px)] pb-20 md:pb-4">
+<!-- Center Flex: Calculator + Keypad -->
+<section class="lg:col-span-8 flex flex-col gap-4">
+<!-- Expression Display Area -->
+<div class="bg-surface-container-low rounded-xl border border-blue-900/15 p-6 flex flex-col justify-between min-h-[240px] math-glow transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="text-[10px] text-primary/50 font-mono tracking-widest uppercase">Input: Main_Buffer</span>
+<button class="material-symbols-outlined text-slate-600 hover:text-white transition-colors">content_copy</button>
+</div>
+<div class="flex flex-col gap-4">
+<!-- User Input -->
+<div class="font-mono text-2xl text-on-surface/90 break-all leading-relaxed">
+                        ∫(sin(x)² + cos(x)²) dx + Σ(n=1, 10, 1/n²)
+                    </div>
+<!-- Result -->
+<div class="flex items-center gap-3 border-t border-blue-900/10 pt-4">
+<span class="material-symbols-outlined text-secondary">subdirectory_arrow_right</span>
+<div class="font-mono text-4xl text-secondary font-medium tracking-tight">
+                            x + 1.54976...
+                        </div>
+</div>
+</div>
+</div>
+<!-- Interaction Controls: Angle Toggle & Advanced Tabs -->
+<div class="flex items-center justify-between px-2">
+<div class="inline-flex p-1 bg-surface-container-high rounded-lg border border-outline-variant/20">
+<button class="px-4 py-1.5 rounded-md text-xs font-bold bg-primary-container text-white shadow-lg">RAD</button>
+<button class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500 hover:text-slate-200 transition-colors">DEG</button>
+</div>
+<div class="flex gap-2">
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-lg">history_edu</button>
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-lg">analytics</button>
+</div>
+</div>
+<!-- Keypad Grid -->
+<div class="grid grid-cols-5 md:grid-cols-7 gap-2 bg-surface-container-low p-4 rounded-xl border border-blue-900/15">
+<!-- Functions Area -->
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">sin</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">cos</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">tan</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">log</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">ln</button>
+<button class="h-12 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">√</button>
+<button class="h-12 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">x²</button>
+<!-- Second Row -->
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">π</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">e</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">(</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">)</button>
+<button class="h-12 flex items-center justify-center rounded-lg bg-error-container/20 text-error font-mono text-sm hover:bg-error-container/30 transition-all btn-active-state">DEL</button>
+<button class="h-12 hidden md:flex items-center justify-center rounded-lg bg-error-container/20 text-error font-mono text-sm hover:bg-error-container/30 transition-all btn-active-state">AC</button>
+<button class="h-12 hidden md:flex items-center justify-center rounded-lg bg-primary-container/20 text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">x!</button>
+<!-- Number Pad Area (Simulated Grid) -->
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">7</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">8</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">9</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-primary-container/40 text-white font-mono text-xl hover:brightness-110 transition-all btn-active-state">/</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">MOD</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">EXP</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">ANS</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">4</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">5</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">6</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-primary-container/40 text-white font-mono text-xl hover:brightness-110 transition-all btn-active-state">*</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">abs</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">ceil</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">floor</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">1</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">2</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">3</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-primary-container/40 text-white font-mono text-xl hover:brightness-110 transition-all btn-active-state">-</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">rand</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">round</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">sign</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">0</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container text-white font-mono text-xl hover:bg-surface-container-high transition-all btn-active-state">.</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-primary-container text-white font-mono text-xl hover:brightness-110 transition-all btn-active-state md:col-span-1">=</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-primary-container/40 text-white font-mono text-xl hover:brightness-110 transition-all btn-active-state">+</button>
+<button class="h-14 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">nCr</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">nPr</button>
+<button class="h-14 hidden md:flex items-center justify-center rounded-lg bg-surface-container-highest text-primary font-mono text-sm hover:brightness-125 transition-all btn-active-state">%</button>
+</div>
+<!-- Bottom Advanced Panel Tabs -->
+<div class="bg-surface-container-low rounded-xl border border-blue-900/15 overflow-hidden">
+<div class="flex border-b border-blue-900/15 overflow-x-auto whitespace-nowrap">
+<button class="px-6 py-3 text-xs font-bold font-['Space_Grotesk'] text-primary border-b-2 border-primary bg-primary/10 uppercase tracking-widest">Constantes</button>
+<button class="px-6 py-3 text-xs font-bold font-['Space_Grotesk'] text-slate-500 hover:text-white uppercase tracking-widest transition-all">Estadística</button>
+<button class="px-6 py-3 text-xs font-bold font-['Space_Grotesk'] text-slate-500 hover:text-white uppercase tracking-widest transition-all">Complejos</button>
+<button class="px-6 py-3 text-xs font-bold font-['Space_Grotesk'] text-slate-500 hover:text-white uppercase tracking-widest transition-all">Matrices</button>
+<button class="px-6 py-3 text-xs font-bold font-['Space_Grotesk'] text-slate-500 hover:text-white uppercase tracking-widest transition-all">Conversiones</button>
+</div>
+<div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+<div class="p-3 bg-surface-container-highest rounded-lg flex flex-col gap-1 border border-outline-variant/10">
+<span class="text-[10px] text-primary font-mono">c (V. Luz)</span>
+<span class="text-xs font-mono">299,792,458 m/s</span>
+</div>
+<div class="p-3 bg-surface-container-highest rounded-lg flex flex-col gap-1 border border-outline-variant/10">
+<span class="text-[10px] text-primary font-mono">G (Gravitación)</span>
+<span class="text-xs font-mono">6.674×10⁻¹¹</span>
+</div>
+<div class="p-3 bg-surface-container-highest rounded-lg flex flex-col gap-1 border border-outline-variant/10">
+<span class="text-[10px] text-primary font-mono">h (Planck)</span>
+<span class="text-xs font-mono">6.626×10⁻³⁴</span>
+</div>
+<div class="p-3 bg-surface-container-highest rounded-lg flex flex-col gap-1 border border-outline-variant/10">
+<span class="text-[10px] text-primary font-mono">Na (Avogadro)</span>
+<span class="text-xs font-mono">6.022×10²³</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right CAS Panel -->
+<aside class="lg:col-span-4 flex flex-col gap-4">
+<div class="bg-surface-container-low rounded-xl border border-blue-900/15 h-full flex flex-col">
+<div class="p-1 flex gap-1 border-b border-blue-900/15 m-1">
+<button class="flex-1 py-2 text-xs font-bold uppercase tracking-widest bg-primary/10 text-primary rounded-lg">Simbólico</button>
+<button class="flex-1 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-all">Pasos</button>
+</div>
+<div class="p-4 flex flex-col gap-4 flex-1">
+<div class="space-y-2">
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">CAS Input</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant/30 focus:ring-0 focus:border-primary px-4 py-3 font-mono text-sm placeholder:text-slate-700" placeholder="Ingresa una expresión..." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button class="py-2 px-4 rounded-full border border-blue-900/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary-container">Simplificar</button>
+<button class="py-2 px-4 rounded-full border border-blue-900/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary-container">Expandir</button>
+<button class="py-2 px-4 rounded-full border border-blue-900/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary-container">Resolver</button>
+<button class="py-2 px-4 rounded-full border border-blue-900/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary-container">Derivar</button>
+</div>
+<div class="flex-1 bg-surface-container-lowest rounded-lg p-4 font-mono text-sm overflow-y-auto border border-blue-900/5">
+<div class="text-slate-500 mb-2">Respuesta simbólica:</div>
+<div class="text-on-surface leading-loose">
+                            f(x) = (x^2 + 2x + 1) / (x + 1)<br/>
+<span class="text-secondary">Simplificando...</span><br/>
+                            f(x) = (x + 1)^2 / (x + 1)<br/>
+                            f(x) = x + 1, x ≠ -1
+                        </div>
+</div>
+</div>
+<div class="p-4 border-t border-blue-900/15 bg-surface-container">
+<div class="flex items-center justify-between mb-3">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Estado del Motor</span>
+<span class="flex items-center gap-1.5 text-[10px] text-secondary font-bold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                            Online
+                        </span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-2/3"></div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden bg-[#111319]/90 backdrop-blur-xl border-t border-blue-900/30 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+<div class="flex flex-col items-center justify-center bg-[#2563eb] text-white rounded-xl p-2 scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] font-bold uppercase">Calc</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 p-2">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="font-['Space_Grotesk'] text-[10px] font-bold uppercase">Graph</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 p-2">
+<span class="material-symbols-outlined" data-icon="auto_fix_high">auto_fix_high</span>
+<span class="font-['Space_Grotesk'] text-[10px] font-bold uppercase">CAS</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 p-2">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Space_Grotesk'] text-[10px] font-bold uppercase">Docs</span>
+</div>
+</nav>
+</body></html>

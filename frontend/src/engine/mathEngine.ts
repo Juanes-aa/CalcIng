@@ -6,6 +6,7 @@
 
 import { create, all, MathJsInstance } from 'mathjs';
 import { CONSTANTS } from './constants';
+import { loadSettings } from './ajustes';
 import {
   convertDecimalToBinary, convertDecimalToHex, convertDecimalToOctal,
   convertBinaryToDecimal, convertHexToDecimal, convertOctalToDecimal,
@@ -177,8 +178,9 @@ export function evaluate(expresion: string, modoAngulo: AngleMode | boolean = 'R
     if (typeof resultado === 'object' && resultado !== null &&
         'real' in resultado && resultado.real !== undefined) {
       const r = resultado as { real: number; imag: number };
-      const re = +r.real.toFixed(10);
-      const im = +r.imag.toFixed(10);
+      const prec = loadSettings().precision;
+      const re = +r.real.toFixed(prec);
+      const im = +r.imag.toFixed(prec);
       if (im === 0) return formatearNumero(re);
       return `${formatearNumero(re)} ${im >= 0 ? '+' : '-'} ${formatearNumero(Math.abs(im))}i`;
     }
@@ -277,11 +279,23 @@ function _envolverMarcador(expr: string, marcador: string, wrapper: (inner: stri
 // ─── Formateo ─────────────────────────────────────────────────────────────────
 
 export function formatearNumero(n: number): string {
+  const { precision, sciNotation } = loadSettings();
+
   if (Number.isInteger(n) && Math.abs(n) < 1e15) return n.toString();
-  if (Math.abs(n) >= 1e12 || (Math.abs(n) < 1e-6 && n !== 0)) {
-    return n.toPrecision(10).replace(/\.?0+e/, 'e');
+
+  const absN = Math.abs(n);
+
+  // Notación científica automática (si está activada) para n > 1e9 o n < 1e-6
+  if (sciNotation && (absN >= 1e9 || (absN < 1e-6 && n !== 0))) {
+    return n.toPrecision(precision).replace(/\.?0+e/, 'e');
   }
-  return parseFloat(n.toPrecision(12)).toString();
+
+  // Fallback: números extremos siempre usan notación exponencial
+  if (absN >= 1e15 || (absN < 1e-6 && n !== 0)) {
+    return n.toPrecision(precision).replace(/\.?0+e/, 'e');
+  }
+
+  return parseFloat(n.toPrecision(precision)).toString();
 }
 
 export const formatNumber = formatearNumero;

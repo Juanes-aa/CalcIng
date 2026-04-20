@@ -1,5 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { evaluate, type AngleMode } from '@engine/mathEngine';
+import {
+  type HistoryEntry,
+  loadHistory, saveHistory, createEntry,
+} from '@engine/historial';
 
 // ─── Tipos públicos ───────────────────────────────────────────────────────────
 
@@ -8,6 +12,8 @@ export interface CalculatorState {
   result:     string;
   isError:    boolean;
   angleMode:  AngleMode;
+  history:    HistoryEntry[];
+  setHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
   handleKeyPress: (key: string) => void;
 }
 
@@ -18,7 +24,7 @@ const APPENDABLE_TOKENS = new Set([
   // Números
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
   // Operadores
-  '+', '-', '*', '/', '%', '^', '(', ')',
+  '+', '-', '*', '/', '%', '^', '^2', '(', ')',
   // Punto decimal
   '.',
   // Coma — necesaria para funciones con múltiples argumentos: mean(1,2,3)
@@ -28,7 +34,7 @@ const APPENDABLE_TOKENS = new Set([
   // Funciones básicas
   'sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt(', 'pi',
   // Funciones matemáticas adicionales
-  'abs(', 'ceil(', 'floor(', 'round(', 'factorial(',
+  'abs(', 'ceil(', 'floor(', 'round(', 'factorial(', 'mod(',
   // Estadística (registradas en mathEngine via _registrarFuncionesExtendidas)
   'mean(', 'median(', 'mode(', 'variance(', 'stdDev(', 'range(',
   // Conversión de bases (registradas en mathEngine)
@@ -47,6 +53,7 @@ export function useCalculator(): CalculatorState {
   const [result,     setResult]     = useState('');
   const [isError,    setIsError]    = useState(false);
   const [angleMode,  setAngleMode]  = useState<AngleMode>('RAD');
+  const [history,    setHistory]    = useState<HistoryEntry[]>(loadHistory);
 
   const handleKeyPress = useCallback((key: string) => {
 
@@ -65,12 +72,19 @@ export function useCalculator(): CalculatorState {
     }
 
     if (key === '=') {
-      // No evaluar si la expresión está vacía
       setExpression((prev: string) => {
         if (!prev) return prev;
         const res = evaluate(prev, angleMode);
         setResult(res);
-        setIsError(deriveIsError(res));
+        const err = deriveIsError(res);
+        setIsError(err);
+        if (!err) {
+          setHistory(hist => {
+            const updated = [createEntry(prev, res, angleMode), ...hist];
+            saveHistory(updated);
+            return updated;
+          });
+        }
         return prev;
       });
       return;
@@ -92,5 +106,5 @@ export function useCalculator(): CalculatorState {
 
   }, [angleMode]);
 
-  return { expression, result, isError, angleMode, handleKeyPress };
+  return { expression, result, isError, angleMode, history, setHistory, handleKeyPress };
 }

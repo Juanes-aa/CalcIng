@@ -34,8 +34,8 @@ describe('CalculatorKeypad', () => {
       render(<CalculatorKeypad onKeyPress={vi.fn()} />)
       expect(getKey('+')).toBeInTheDocument()
       expect(getKey('-')).toBeInTheDocument()
-      expect(getKey('×')).toBeInTheDocument()
-      expect(getKey('÷')).toBeInTheDocument()
+      expect(getKey('*')).toBeInTheDocument()
+      expect(getKey('/')).toBeInTheDocument()
     })
 
     it('renderiza la tecla de igual', () => {
@@ -51,14 +51,14 @@ describe('CalculatorKeypad', () => {
   })
 
   describe('render — acciones', () => {
-    it('renderiza la tecla Clear (C)', () => {
+    it('renderiza la tecla Clear (AC)', () => {
       render(<CalculatorKeypad onKeyPress={vi.fn()} />)
-      expect(getKey('C')).toBeInTheDocument()
+      expect(getKey('AC')).toBeInTheDocument()
     })
 
-    it('renderiza la tecla de borrar (⌫)', () => {
+    it('renderiza la tecla de borrar (DEL)', () => {
       render(<CalculatorKeypad onKeyPress={vi.fn()} />)
-      expect(getKey('⌫')).toBeInTheDocument()
+      expect(getKey('DEL')).toBeInTheDocument()
     })
   })
 
@@ -70,11 +70,11 @@ describe('CalculatorKeypad', () => {
       expect(getKey('tan')).toBeInTheDocument()
     })
 
-    it('renderiza log, ln y potencia', () => {
+    it('renderiza log, ln y cuadrado', () => {
       render(<CalculatorKeypad onKeyPress={vi.fn()} />)
       expect(getKey('log')).toBeInTheDocument()
       expect(getKey('ln')).toBeInTheDocument()
-      expect(getKey('xʸ')).toBeInTheDocument()
+      expect(getKey('x²')).toBeInTheDocument()
     })
 
     it('renderiza sqrt y pi', () => {
@@ -115,17 +115,17 @@ describe('CalculatorKeypad', () => {
       expect(onKeyPress).toHaveBeenCalledWith('-')
     })
 
-    it('llama a onKeyPress con "*" al presionar ×', async () => {
+    it('llama a onKeyPress con "*" al presionar *', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('×'))
+      await userEvent.click(getKey('*'))
       expect(onKeyPress).toHaveBeenCalledWith('*')
     })
 
-    it('llama a onKeyPress con "/" al presionar ÷', async () => {
+    it('llama a onKeyPress con "/" al presionar /', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('÷'))
+      await userEvent.click(getKey('/'))
       expect(onKeyPress).toHaveBeenCalledWith('/')
     })
 
@@ -145,17 +145,17 @@ describe('CalculatorKeypad', () => {
   })
 
   describe('onKeyPress — acciones', () => {
-    it('llama a onKeyPress con "CLEAR" al presionar C', async () => {
+    it('llama a onKeyPress con "CLEAR" al presionar AC', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('C'))
+      await userEvent.click(getKey('AC'))
       expect(onKeyPress).toHaveBeenCalledWith('CLEAR')
     })
 
-    it('llama a onKeyPress con "BACKSPACE" al presionar ⌫', async () => {
+    it('llama a onKeyPress con "BACKSPACE" al presionar DEL', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('⌫'))
+      await userEvent.click(getKey('DEL'))
       expect(onKeyPress).toHaveBeenCalledWith('BACKSPACE')
     })
   })
@@ -203,11 +203,11 @@ describe('CalculatorKeypad', () => {
       expect(onKeyPress).toHaveBeenCalledWith('sqrt(')
     })
 
-    it('llama a onKeyPress con "^" al presionar xʸ', async () => {
+    it('llama a onKeyPress con "^2" al presionar x²', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('xʸ'))
-      expect(onKeyPress).toHaveBeenCalledWith('^')
+      await userEvent.click(getKey('x²'))
+      expect(onKeyPress).toHaveBeenCalledWith('^2')
     })
 
     it('llama a onKeyPress con "pi" al presionar π', async () => {

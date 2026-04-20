@@ -25,10 +25,10 @@ beforeEach(() => {
 describe('App — auth', () => {
   // --- initial state — not logged in ---
   describe('initial state — not logged in', () => {
-    it('shows "Login" button when no token in storage', () => {
+    it('shows "Acceso" button when no token in storage', () => {
       vi.mocked(authService.getStoredToken).mockReturnValue(null)
       render(<App />)
-      expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Acceso' })).toBeInTheDocument()
     })
 
     it('does not show user email when not logged in', () => {
@@ -61,9 +61,9 @@ describe('App — auth', () => {
       expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument()
     })
 
-    it('does not show "Login" button when already logged in', () => {
+    it('does not show "Acceso" button when already logged in', () => {
       render(<App />)
-      expect(screen.queryByRole('button', { name: 'Login' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Acceso' })).not.toBeInTheDocument()
     })
   })
 
@@ -73,15 +73,15 @@ describe('App — auth', () => {
       vi.mocked(authService.getStoredToken).mockReturnValue(null)
     })
 
-    it('clicking "Login" button opens AuthModal', () => {
+    it('clicking "Acceso" button opens AuthModal', () => {
       render(<App />)
-      fireEvent.click(screen.getByRole('button', { name: 'Login' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Acceso' }))
       expect(screen.getByTestId('auth-modal')).toBeInTheDocument()
     })
 
     it('after onSuccess, hides AuthModal and shows user email in header', async () => {
       render(<App />)
-      fireEvent.click(screen.getByRole('button', { name: 'Login' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Acceso' }))
       fireEvent.click(screen.getByRole('button', { name: 'success' }))
       await waitFor(() => {
         expect(screen.queryByTestId('auth-modal')).not.toBeInTheDocument()
@@ -91,7 +91,7 @@ describe('App — auth', () => {
 
     it('after onSuccess, shows "Cerrar sesión" button', async () => {
       render(<App />)
-      fireEvent.click(screen.getByRole('button', { name: 'Login' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Acceso' }))
       fireEvent.click(screen.getByRole('button', { name: 'success' }))
       await waitFor(() => {
         expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument()
@@ -100,7 +100,7 @@ describe('App — auth', () => {
 
     it('after onSuccess, saves email to localStorage key "calcing_email"', async () => {
       render(<App />)
-      fireEvent.click(screen.getByRole('button', { name: 'Login' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Acceso' }))
       fireEvent.click(screen.getByRole('button', { name: 'success' }))
       await waitFor(() => {
         expect(localStorage.getItem('calcing_email')).toBe('user@test.com')
@@ -123,11 +123,11 @@ describe('App — auth', () => {
       })
     })
 
-    it('after logout, shows "Login" button again', async () => {
+    it('after logout, shows "Acceso" button again', async () => {
       render(<App />)
       fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Acceso' })).toBeInTheDocument()
       })
     })
 

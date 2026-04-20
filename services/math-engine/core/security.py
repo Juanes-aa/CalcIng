@@ -16,7 +16,7 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: str, plan: str = "free") -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_TTL_MINUTES
     )
@@ -24,6 +24,7 @@ def create_access_token(subject: str) -> str:
         "sub": subject,
         "exp": expire,
         "type": "access",
+        "plan": plan,
     }
     return jwt.encode(payload, get_private_key(), algorithm=ALGORITHM)
 

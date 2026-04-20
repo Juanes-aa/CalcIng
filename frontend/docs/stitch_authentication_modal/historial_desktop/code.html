@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - Calculation History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#6bff8f",
+                        "on-surface-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-high": "#282a30",
+                        "inverse-primary": "#0053db",
+                        "surface-container-lowest": "#0c0e14",
+                        "surface": "#111319",
+                        "on-tertiary-container": "#ffecea",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "on-primary-fixed": "#00174b",
+                        "surface-dim": "#111319",
+                        "surface-container": "#1e1f26",
+                        "primary": "#b4c5ff",
+                        "secondary-container": "#00b954",
+                        "on-tertiary-fixed": "#410004",
+                        "on-surface": "#e2e2eb",
+                        "surface-container-highest": "#33343b",
+                        "surface-container-low": "#191b22",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-bright": "#373940",
+                        "tertiary": "#ffb3ad",
+                        "inverse-on-surface": "#2e3037",
+                        "background": "#111319",
+                        "on-primary-container": "#eeefff",
+                        "outline": "#8d90a0",
+                        "on-secondary": "#003915",
+                        "outline-variant": "#434655",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary": "#4ae176",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#002109",
+                        "surface-tint": "#b4c5ff",
+                        "on-background": "#e2e2eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#33343b",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#cf2c30",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-primary": "#002a78",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#004119",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-tertiary": "#68000a",
+                        "on-secondary-fixed-variant": "#005321",
+                        "inverse-surface": "#e2e2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #111319;
+            color: #e2e2eb;
+            font-family: 'Inter', sans-serif;
+        }
+        .technical-gradient {
+            background: linear-gradient(135deg, #b4c5ff 0%, #2563eb 100%);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] docked full-width top-0 z-50 border-b border-white/10 flex justify-between items-center w-full px-6 h-16">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400">CalcIng</span>
+<div class="hidden md:flex items-center gap-6">
+<span class="text-slate-400 font-['Space_Grotesk'] text-sm tracking-tight hover:bg-white/5 transition-colors px-3 py-1 rounded cursor-pointer">Workspace</span>
+<span class="text-slate-400 font-['Space_Grotesk'] text-sm tracking-tight hover:bg-white/5 transition-colors px-3 py-1 rounded cursor-pointer">Library</span>
+<span class="text-blue-400 font-bold font-['Space_Grotesk'] text-sm tracking-tight px-3 py-1 rounded">History</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-surface-container-low px-3 py-1.5 rounded flex items-center gap-2 border border-white/5">
+<span class="material-symbols-outlined text-slate-500 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder-slate-500 w-48" placeholder="Global search..." type="text"/>
+</div>
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</header>
+<div class="flex h-[calc(100vh-64px)]">
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex-col py-4 bg-[#111319] dark:bg-[#111319] border-r border-white/5 z-40">
+<div class="px-6 mb-8">
+<h2 class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px] text-blue-500">CALC_LAB_01</h2>
+<p class="text-[10px] text-slate-500 font-mono">Precision Mode</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px]">Workspace</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px]">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px]">Library</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px]">History</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="functions">functions</span>
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px]">Constants</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full technical-gradient text-on-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2 text-xs uppercase tracking-tighter">
+<span class="material-symbols-outlined text-sm">add_circle</span>
+                    New Calculation
+                </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 flex flex-col md:flex-row h-full overflow-hidden">
+<!-- Central Panel: List -->
+<section class="flex-1 border-r border-white/5 flex flex-col h-full bg-surface-container-low">
+<!-- Toolbar/Filters -->
+<div class="p-6 pb-4 space-y-4">
+<div class="flex items-center justify-between">
+<h1 class="font-headline text-2xl font-bold tracking-tight">HISTORY</h1>
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-lg">
+<button class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-blue-500/10 text-blue-400 rounded">ALL</button>
+<button class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300">TODAY</button>
+<button class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300">THIS WEEK</button>
+<button class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300">STARRED</button>
+</div>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors">search</span>
+<input class="w-full bg-surface-container-lowest border-none border-b border-white/10 focus:border-blue-500 focus:ring-0 text-sm py-3 pl-10 pr-4 placeholder-slate-600 transition-all" placeholder="Filter calculations by project, variable or expression..." type="text"/>
+</div>
+</div>
+<!-- Scrollable List -->
+<div class="flex-1 overflow-y-auto px-6 space-y-3 pb-20 no-scrollbar">
+<!-- Result Item 024 - RECENT -->
+<div class="group relative bg-surface-container hover:bg-surface-container-high border-l-2 border-secondary p-4 flex flex-col gap-2 transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-mono text-slate-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-[12px]">folder</span>
+                                THERMODYNAMICS_B_04
+                            </span>
+<span class="text-[10px] font-mono text-slate-500">2 min ago</span>
+</div>
+<div class="font-mono text-sm text-on-surface-variant overflow-hidden text-ellipsis whitespace-nowrap">
+                            P = (n * R * T) / (V - (n * b)) - (a * n^2) / V^2
+                        </div>
+<div class="flex justify-between items-end mt-1">
+<div class="text-xl font-mono text-secondary-container font-medium tracking-tight">
+<span class="text-xs text-secondary-container/50 mr-1">R:</span> 1,248.452 <span class="text-xs opacity-70">kPa</span>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span></button>
+</div>
+</div>
+</div>
+<!-- Result Item 024 -->
+<div class="group relative bg-surface-container-low hover:bg-surface-container-high border-l-2 border-transparent hover:border-white/10 p-4 flex flex-col gap-2 transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-mono text-slate-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-[12px]">folder</span>
+                                ORBITAL_MECHANICS
+                            </span>
+<span class="text-[10px] font-mono text-slate-500">1 hour ago</span>
+</div>
+<div class="font-mono text-sm text-on-surface-variant">
+                            v = sqrt(G * M * (2/r - 1/a))
+                        </div>
+<div class="flex justify-between items-end mt-1">
+<div class="text-xl font-mono text-secondary-container font-medium tracking-tight">
+<span class="text-xs text-secondary-container/50 mr-1">R:</span> 7.741 <span class="text-xs opacity-70">km/s</span>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">star</span></button>
+</div>
+</div>
+</div>
+<!-- Result Item 024 -->
+<div class="group relative bg-surface-container-low hover:bg-surface-container-high border-l-2 border-transparent hover:border-white/10 p-4 flex flex-col gap-2 transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-mono text-slate-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-[12px]">folder</span>
+                                STRUCTURAL_LAB
+                            </span>
+<span class="text-[10px] font-mono text-slate-500">Yesterday</span>
+</div>
+<div class="font-mono text-sm text-on-surface-variant">
+                            σ = (M * y) / I
+                        </div>
+<div class="flex justify-between items-end mt-1">
+<div class="text-xl font-mono text-secondary-container font-medium tracking-tight">
+<span class="text-xs text-secondary-container/50 mr-1">R:</span> 240.00 <span class="text-xs opacity-70">MPa</span>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">star</span></button>
+</div>
+</div>
+</div>
+<!-- Result Item 024 -->
+<div class="group relative bg-surface-container-low hover:bg-surface-container-high border-l-2 border-transparent hover:border-white/10 p-4 flex flex-col gap-2 transition-all cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-mono text-slate-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-[12px]">folder</span>
+                                STRUCTURAL_LAB
+                            </span>
+<span class="text-[10px] font-mono text-slate-500">Yesterday</span>
+</div>
+<div class="font-mono text-sm text-on-surface-variant">
+                            E = 1/2 * k * x^2
+                        </div>
+<div class="flex justify-between items-end mt-1">
+<div class="text-xl font-mono text-secondary-container font-medium tracking-tight">
+<span class="text-xs text-secondary-container/50 mr-1">R:</span> 0.045 <span class="text-xs opacity-70">J</span>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+<button class="p-1.5 hover:bg-white/10 rounded"><span class="material-symbols-outlined text-sm">star</span></button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Panel: Details -->
+<section class="hidden lg:flex w-1/3 bg-surface flex-col h-full">
+<div class="p-6 border-b border-white/5 flex items-center justify-between">
+<h2 class="font-headline font-bold uppercase tracking-widest text-xs text-slate-400">Calculation Detail</h2>
+<div class="flex gap-2">
+<button class="text-slate-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="text-slate-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+<!-- Main Result -->
+<div class="space-y-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl border-b-2 border-primary shadow-2xl">
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-mono uppercase">Expression</span>
+<div class="h-px flex-1 bg-white/5"></div>
+</div>
+<div class="font-mono text-xl text-blue-200 mb-6 leading-relaxed">
+                                P = (n * R * T) / (V - (n * b)) - (a * n^2) / V^2
+                            </div>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Output Result</span>
+<div class="text-4xl font-mono text-secondary tracking-tighter">1,248.45203 <span class="text-lg opacity-40">kPa</span></div>
+</div>
+</div>
+</div>
+<!-- Steps / Resolution -->
+<div class="space-y-4">
+<h3 class="text-[10px] font-bold uppercase tracking-widest text-blue-500/80">Step-by-Step Resolution</h3>
+<div class="space-y-3 border-l border-white/10 ml-2 pl-4">
+<div class="relative">
+<div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-surface border border-white/20"></div>
+<div class="text-xs font-mono text-slate-400 mb-1">Compute Pressure (A): (nRT) / (V - nb)</div>
+<div class="text-sm font-mono text-on-surface">1.25 * 8.314 * 300 / (2.5 - 1.25 * 0.042)</div>
+<div class="text-xs font-mono text-secondary/60 mt-1">= 1,273.453</div>
+</div>
+<div class="relative">
+<div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-surface border border-white/20"></div>
+<div class="text-xs font-mono text-slate-400 mb-1">Compute Correction (B): (an²) / V²</div>
+<div class="text-sm font-mono text-on-surface">(0.138 * 1.25²) / 2.5²</div>
+<div class="text-xs font-mono text-secondary/60 mt-1">= 25.001</div>
+</div>
+<div class="relative">
+<div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 border border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+<div class="text-xs font-mono text-slate-400 mb-1">Final Operation: A - B</div>
+<div class="text-sm font-mono text-on-surface">1,273.453 - 25.001</div>
+<div class="text-xs font-mono text-secondary mt-1">= 1,248.452</div>
+</div>
+</div>
+</div>
+<!-- Parameters Table -->
+<div class="space-y-4">
+<h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Variables Mapping</h3>
+<div class="bg-surface-container-low rounded-lg overflow-hidden border border-white/5">
+<table class="w-full text-left font-mono text-[11px]">
+<thead class="bg-white/5 text-slate-500">
+<tr>
+<th class="p-2 pl-4">VAR</th>
+<th class="p-2">VALUE</th>
+<th class="p-2">UNIT</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="text-on-surface">
+<td class="p-2 pl-4 text-blue-400">n</td>
+<td class="p-2">1.25</td>
+<td class="p-2 text-slate-500">mol</td>
+</tr>
+<tr class="text-on-surface">
+<td class="p-2 pl-4 text-blue-400">R</td>
+<td class="p-2">8.314</td>
+<td class="p-2 text-slate-500">J/(mol·K)</td>
+</tr>
+<tr class="text-on-surface">
+<td class="p-2 pl-4 text-blue-400">T</td>
+<td class="p-2">300</td>
+<td class="p-2 text-slate-500">K</td>
+</tr>
+<tr class="text-on-surface">
+<td class="p-2 pl-4 text-blue-400">V</td>
+<td class="p-2">2.5</td>
+<td class="p-2 text-slate-500">L</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Metadata -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-3 rounded border border-white/5">
+<div class="text-[10px] text-slate-500 uppercase mb-1">PROJECT</div>
+<div class="text-xs font-mono text-on-surface">THERMO_B_04</div>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded border border-white/5">
+<div class="text-[10px] text-slate-500 uppercase mb-1">PRECISION</div>
+<div class="text-xs font-mono text-on-surface">128-BIT FLOAT</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low">
+<button class="w-full py-3 bg-surface-container-highest hover:bg-surface-bright text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">ios_share</span>
+                        Export Result Data
+                    </button>
+</div>
+</section>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 md:hidden shadow-2xl">
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</div>
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded">
+<span class="material-symbols-outlined" data-icon="data_object">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</div>
+<div class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold">History</span>
+</div>
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 p-2 rounded">
+<span class="material-symbols-outlined" data-icon="ios_share">ios_share</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Export</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#6bff8f",
+              "on-surface-variant": "#c3c6d7",
+              "secondary-fixed-dim": "#4ae176",
+              "surface-container-high": "#282a30",
+              "inverse-primary": "#0053db",
+              "surface-container-lowest": "#0c0e14",
+              "surface": "#111319",
+              "on-tertiary-container": "#ffecea",
+              "tertiary-fixed-dim": "#ffb3ad",
+              "on-primary-fixed": "#00174b",
+              "surface-dim": "#111319",
+              "surface-container": "#1e1f26",
+              "primary": "#b4c5ff",
+              "secondary-container": "#00b954",
+              "on-tertiary-fixed": "#410004",
+              "on-surface": "#e2e2eb",
+              "surface-container-highest": "#33343b",
+              "surface-container-low": "#191b22",
+              "tertiary-fixed": "#ffdad7",
+              "surface-bright": "#373940",
+              "tertiary": "#ffb3ad",
+              "inverse-on-surface": "#2e3037",
+              "background": "#111319",
+              "on-primary-container": "#eeefff",
+              "outline": "#8d90a0",
+              "on-secondary": "#003915",
+              "outline-variant": "#434655",
+              "primary-fixed-dim": "#b4c5ff",
+              "secondary": "#4ae176",
+              "primary-fixed": "#dbe1ff",
+              "on-secondary-fixed": "#002109",
+              "surface-tint": "#b4c5ff",
+              "on-background": "#e2e2eb",
+              "on-primary-fixed-variant": "#003ea8",
+              "surface-variant": "#33343b",
+              "primary-container": "#2563eb",
+              "tertiary-container": "#cf2c30",
+              "on-error": "#690005",
+              "error": "#ffb4ab",
+              "on-primary": "#002a78",
+              "on-error-container": "#ffdad6",
+              "error-container": "#93000a",
+              "on-secondary-container": "#004119",
+              "on-tertiary-fixed-variant": "#930013",
+              "on-tertiary": "#68000a",
+              "on-secondary-fixed-variant": "#005321",
+              "inverse-surface": "#e2e2eb"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #111319;
+            color: #e2e2eb;
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111319;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #33343b;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] docked full-width top-0 z-50 border-b border-white/10 flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-8 flex-1">
+<div class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-['Space_Grotesk']">
+                CalcIng
+            </div>
+<!-- Centered Search Bar -->
+<div class="hidden md:flex flex-1 max-w-2xl mx-auto items-center bg-surface-container-low border-b border-white/5 px-4 py-2 rounded-lg group focus-within:border-primary transition-all">
+<span class="material-symbols-outlined text-slate-500 group-focus-within:text-primary mr-3">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full font-body placeholder-slate-500 text-on-surface" placeholder="Search documentation, functions, or API..." type="text"/>
+<div class="flex items-center gap-1 ml-2">
+<kbd class="px-2 py-0.5 rounded bg-surface-container-highest text-[10px] font-mono text-slate-400">CMD</kbd>
+<kbd class="px-2 py-0.5 rounded bg-surface-container-highest text-[10px] font-mono text-slate-400">K</kbd>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded-full active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded-full active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<div class="flex pt-16">
+<!-- SideNavBar (Left Index) -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-white/5 flex flex-col py-4 bg-[#111319] dark:bg-[#111319] z-40 hidden md:flex">
+<div class="px-6 mb-8">
+<h2 class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px] text-blue-500">CALC_LAB_01</h2>
+<p class="text-[10px] text-slate-500 font-['Space_Grotesk']">Precision Mode v2.4</p>
+</div>
+<nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-4 py-3 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined text-sm">home</span>
+<span>INICIO</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined text-sm">calculate</span>
+<span>CALCULADORA</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 transition-transform font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined text-sm" data-weight="fill" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span>CAS SIMBÓLICO</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined text-sm">monitoring</span>
+<span>GRAFICADOR</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined text-sm">api</span>
+<span>API PÚBLICA</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined text-sm">auto_awesome_motion</span>
+<span>EJEMPLOS</span>
+</a>
+</nav>
+<div class="px-4 mt-auto pt-4">
+<button class="w-full bg-surface-container-highest text-on-surface py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all border border-white/5">
+                    New Calculation
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 mr-0 lg:mr-72 min-h-screen bg-surface px-6 md:px-12 py-12">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-xs text-slate-500 mb-8 font-label">
+<span>Docs</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary/70">CAS Simbólico</span>
+</div>
+<!-- Content -->
+<article class="max-w-4xl mx-auto">
+<header class="mb-12">
+<h1 class="font-headline text-5xl font-bold tracking-tighter text-on-surface mb-6">CAS Simbólico</h1>
+<p class="text-lg text-on-surface-variant leading-relaxed font-body max-w-2xl">
+                        El motor de álgebra computacional (CAS) de CalcIng permite la manipulación de expresiones matemáticas en forma simbólica, proporcionando resultados exactos en lugar de aproximaciones numéricas.
+                    </p>
+</header>
+<section class="space-y-12">
+<!-- Intro Card -->
+<div class="p-8 bg-surface-container-low rounded-xl border-l-4 border-primary">
+<h3 class="font-headline text-xl font-bold mb-4 text-primary">Introducción al Motor de Cálculo</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">
+                            Nuestro motor está basado en el estándar de la industria para ingeniería aeroespacial, permitiendo la resolución de derivadas de alto orden, integrales indefinidas y simplificación de polinomios complejos con latencia cero.
+                        </p>
+<div class="flex flex-wrap gap-3">
+<span class="px-3 py-1 bg-surface-container-highest text-[10px] font-mono text-blue-300 rounded uppercase tracking-wider">Exactitud: 128-bit</span>
+<span class="px-3 py-1 bg-surface-container-highest text-[10px] font-mono text-blue-300 rounded uppercase tracking-wider">Kern: v4.1.0</span>
+<span class="px-3 py-1 bg-surface-container-highest text-[10px] font-mono text-blue-300 rounded uppercase tracking-wider">Thread: Multi-core</span>
+</div>
+</div>
+<!-- Technical Example 1: Differentiation -->
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">function</span>
+                            Diferenciación Simbólica
+                        </h2>
+<p class="text-on-surface-variant mb-6">
+                            Para calcular la derivada de una función respecto a una variable dada, utilice el comando <code class="bg-surface-container-highest px-2 py-0.5 rounded text-primary font-mono text-sm">diff(f, x)</code>.
+                        </p>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-white/5">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-high border-b border-white/5">
+<span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Entrada del Laboratorio</span>
+<span class="material-symbols-outlined text-sm text-slate-500">content_copy</span>
+</div>
+<div class="p-6 font-mono text-lg space-y-4">
+<div class="flex gap-4">
+<span class="text-slate-600 select-none">In [1]:</span>
+<span class="text-on-surface">f = sin(x)**2 * exp(2*x)</span>
+</div>
+<div class="flex gap-4">
+<span class="text-slate-600 select-none">In [2]:</span>
+<span class="text-on-surface">diff(f, x)</span>
+</div>
+<div class="pt-4 mt-4 border-t border-white/5 flex gap-4">
+<span class="text-secondary select-none">Out [2]:</span>
+<span class="text-secondary-fixed">2*exp(2*x)*sin(x)**2 + 2*exp(2*x)*sin(x)*cos(x)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Grid for Constants -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container transition-colors border border-white/5">
+<div class="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary">analytics</span>
+</div>
+<h4 class="font-headline text-lg font-bold mb-2">Simplificación Automática</h4>
+<p class="text-sm text-on-surface-variant mb-4">El motor detecta identidades trigonométricas y las reduce al estado de menor entropía visual.</p>
+<div class="bg-surface-container-highest p-3 rounded font-mono text-xs text-secondary-fixed-dim">
+                                simplify(sin(x)**2 + cos(x)**2) → 1
+                            </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container transition-colors border border-white/5">
+<div class="h-12 w-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-secondary">memory</span>
+</div>
+<h4 class="font-headline text-lg font-bold mb-2">Cache de Resultados</h4>
+<p class="text-sm text-on-surface-variant mb-4">Las expresiones recurrentes se almacenan en el registro L3 para cálculos en tiempo real.</p>
+<div class="flex items-center gap-2">
+<div class="h-2 flex-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4"></div>
+</div>
+<span class="text-[10px] font-mono text-slate-500">74% HIT RATE</span>
+</div>
+</div>
+</div>
+<!-- Integration Example -->
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">integration_instructions</span>
+                            Integración Indefinida
+                        </h2>
+<p class="text-on-surface-variant mb-6">
+                            Soporte para integrales de Fresnel, funciones Gamma y integrales racionales complejas mediante el algoritmo de Risch.
+                        </p>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-white/5">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-high border-b border-white/5">
+<span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Integrador Simbólico</span>
+</div>
+<div class="p-6 font-mono text-lg space-y-4">
+<div class="flex gap-4">
+<span class="text-slate-600 select-none">In [3]:</span>
+<span class="text-on-surface">integrate(log(x), x)</span>
+</div>
+<div class="pt-4 mt-4 border-t border-white/5 flex gap-4">
+<span class="text-secondary select-none">Out [3]:</span>
+<span class="text-secondary-fixed">x*log(x) - x</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer for Docs -->
+<footer class="mt-24 pt-8 border-t border-white/10 flex justify-between items-center text-xs text-slate-500 font-label uppercase tracking-widest">
+<p>Última actualización: 12 OCT 2023</p>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Github</a>
+<a class="hover:text-primary transition-colors" href="#">Comunidad</a>
+</div>
+</footer>
+</article>
+</main>
+<!-- Right TOC Panel (Sticky) -->
+<aside class="hidden lg:block fixed right-0 top-16 h-[calc(100vh-64px)] w-72 border-l border-white/5 py-12 px-8 overflow-y-auto custom-scrollbar">
+<h5 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-6">En esta página</h5>
+<nav class="space-y-4">
+<a class="block text-sm text-primary font-medium hover:text-primary-fixed transition-colors" href="#">Introducción</a>
+<a class="block text-sm text-slate-500 hover:text-slate-300 transition-colors border-l-2 border-transparent hover:border-white/10 pl-3" href="#">Diferenciación Simbólica</a>
+<a class="block text-sm text-slate-500 hover:text-slate-300 transition-colors border-l-2 border-transparent hover:border-white/10 pl-3" href="#">Simplificación de Polinomios</a>
+<a class="block text-sm text-slate-500 hover:text-slate-300 transition-colors border-l-2 border-transparent hover:border-white/10 pl-3" href="#">Integración Indefinida</a>
+<a class="block text-sm text-slate-500 hover:text-slate-300 transition-colors border-l-2 border-transparent hover:border-white/10 pl-3" href="#">Algoritmo de Risch</a>
+</nav>
+<div class="mt-12 p-4 bg-surface-container-low rounded-lg border border-white/5">
+<p class="text-[10px] text-slate-500 mb-3 uppercase font-bold tracking-widest">Recursos Relacionados</p>
+<div class="space-y-3">
+<a class="flex items-center gap-2 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">library_books</span>
+                        Guía de API v2
+                    </a>
+<a class="flex items-center gap-2 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">data_object</span>
+                        Esquemas JSON
+                    </a>
+</div>
+</div>
+<div class="mt-8">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden grayscale opacity-50 hover:opacity-100 transition-opacity">
+<img class="object-cover w-full h-full" data-alt="abstract mathematical 3d visualization of vector fields and complex surfaces in a dark laboratory lighting aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3nP1V6YpN03u3aI5ObK101e4yU-JxkryydQWpz-pulCsVsGPwiSgCjCGe8J4R10as4EQKfImQf5XZNeSOLPyE0zsVFG9iGcRhRYMscc0LIlt5ort05vpSub7yi40s6zVoMItvsdkYFLvfYrHM79VSq186-p3FCS2wehuFgUdP92abikHgFTYNOPWbTtwYhzXxhPuJtjQ0JlN-vD8yqNLIju-Be0qm7hhsuXFbah2f6VUYfHwyifn23w6v38Sz_gsSBVASF0gj7P8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+<div class="absolute bottom-3 left-3">
+<span class="text-[8px] font-mono text-slate-400 bg-black/50 px-2 py-1 rounded">LAB_VIS_01</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 md:hidden shadow-2xl">
+<button class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</button>
+<button class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">CAS</span>
+</button>
+<button class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</button>
+<button class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90">
+<span class="material-symbols-outlined">ios_share</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Export</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - Ajustes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#6bff8f",
+              "on-surface-variant": "#c3c6d7",
+              "secondary-fixed-dim": "#4ae176",
+              "surface-container-high": "#282a30",
+              "inverse-primary": "#0053db",
+              "surface-container-lowest": "#0c0e14",
+              "surface": "#111319",
+              "on-tertiary-container": "#ffecea",
+              "tertiary-fixed-dim": "#ffb3ad",
+              "on-primary-fixed": "#00174b",
+              "surface-dim": "#111319",
+              "surface-container": "#1e1f26",
+              "primary": "#b4c5ff",
+              "secondary-container": "#00b954",
+              "on-tertiary-fixed": "#410004",
+              "on-surface": "#e2e2eb",
+              "surface-container-highest": "#33343b",
+              "surface-container-low": "#191b22",
+              "tertiary-fixed": "#ffdad7",
+              "surface-bright": "#373940",
+              "tertiary": "#ffb3ad",
+              "inverse-on-surface": "#2e3037",
+              "background": "#111319",
+              "on-primary-container": "#eeefff",
+              "outline": "#8d90a0",
+              "on-secondary": "#003915",
+              "outline-variant": "#434655",
+              "primary-fixed-dim": "#b4c5ff",
+              "secondary": "#4ae176",
+              "primary-fixed": "#dbe1ff",
+              "on-secondary-fixed": "#002109",
+              "surface-tint": "#b4c5ff",
+              "on-background": "#e2e2eb",
+              "on-primary-fixed-variant": "#003ea8",
+              "surface-variant": "#33343b",
+              "primary-container": "#2563eb",
+              "tertiary-container": "#cf2c30",
+              "on-error": "#690005",
+              "error": "#ffb4ab",
+              "on-primary": "#002a78",
+              "on-error-container": "#ffdad6",
+              "error-container": "#93000a",
+              "on-secondary-container": "#004119",
+              "on-tertiary-fixed-variant": "#930013",
+              "on-tertiary": "#68000a",
+              "on-secondary-fixed-variant": "#005321",
+              "inverse-surface": "#e2e2eb"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #111319;
+            color: #e2e2eb;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] border-b border-white/10 docked full-width top-0 z-50 flex justify-between items-center w-full px-6 h-16 sticky">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-400">arrow_back</span>
+<h1 class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-['Space_Grotesk']">CalcIng</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-white/5 transition-colors p-2 rounded-lg">
+<span class="material-symbols-outlined text-blue-500 dark:text-blue-400" data-icon="help_outline">help_outline</span>
+</button>
+<button class="hover:bg-white/5 transition-colors p-2 rounded-lg">
+<span class="material-symbols-outlined text-blue-500 dark:text-blue-400" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 pb-24 px-6 pt-6 max-w-2xl mx-auto w-full">
+<!-- Profile Anchor Section -->
+<div class="mb-8 flex items-center gap-5 p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+<div class="relative">
+<img alt="User Profile" class="w-16 h-16 rounded-full object-cover grayscale opacity-80" data-alt="Professional headshot of a person with a serious technical expression, high contrast black and white lighting, laboratory background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFcMw7RD1VuZPMdeLVO_GD65SwixnoPZGO_RUTsEaN_UzKRcMNelpaiJUdE7Bw19fcYELLHHETpk7nUplsNLnetU-0mRtdY2zCgzfKhqc5RUQnyIXsGCdYxjdkCucJlFrS99LslRaw_0D-U2_RXiAm4Hsrgv0jMkc3eVpVDW5JptU9SzNYhwlj7NdC-0MGX7aPnYqS2Gm5bAw0nOqjVpfOICZtFsiyeoJ2up2ldnlA2fCDovyvOmOqS2cB77szJ1XDYfl7D9KzKS4"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-secondary-container border-2 border-surface rounded-full"></div>
+</div>
+<div>
+<h2 class="font-headline font-bold text-lg text-on-surface">Alex Rivera</h2>
+<p class="font-label text-xs uppercase tracking-widest text-on-surface-variant/60">Lab Technician · ID-4092</p>
+</div>
+<div class="ml-auto">
+<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
+</div>
+</div>
+<!-- Settings Categories - Tonal Density Strategy -->
+<div class="space-y-4">
+<!-- Preferences -->
+<button class="w-full flex items-center justify-between p-5 bg-surface-container hover:bg-surface-container-high transition-all rounded-xl group active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="tune">tune</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-medium text-on-surface">Preferencias</span>
+<span class="block text-[11px] text-on-surface-variant uppercase tracking-tight">Display, Units, precision</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Account -->
+<button class="w-full flex items-center justify-between p-5 bg-surface-container hover:bg-surface-container-high transition-all rounded-xl group active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-secondary-container/10 rounded-lg group-hover:bg-secondary-container/20 transition-colors">
+<span class="material-symbols-outlined text-secondary" data-icon="person">person</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-medium text-on-surface">Cuenta</span>
+<span class="block text-[11px] text-on-surface-variant uppercase tracking-tight">Security, Subscription, Cloud</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Shortcuts -->
+<button class="w-full flex items-center justify-between p-5 bg-surface-container hover:bg-surface-container-high transition-all rounded-xl group active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-tertiary-container/10 rounded-lg group-hover:bg-tertiary-container/20 transition-colors">
+<span class="material-symbols-outlined text-tertiary" data-icon="keyboard_command_key">keyboard_command_key</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-medium text-on-surface">Atajos</span>
+<span class="block text-[11px] text-on-surface-variant uppercase tracking-tight">Gestures, Hotkeys, Macros</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Connectivity -->
+<button class="w-full flex items-center justify-between p-5 bg-surface-container hover:bg-surface-container-high transition-all rounded-xl group active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary-container/10 rounded-lg group-hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-medium text-on-surface">Integraciones</span>
+<span class="block text-[11px] text-on-surface-variant uppercase tracking-tight">Export, API, Lab-Sync</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Legal/System -->
+<button class="w-full flex items-center justify-between p-5 bg-surface-container hover:bg-surface-container-high transition-all rounded-xl group active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-outline/10 rounded-lg group-hover:bg-outline/20 transition-colors">
+<span class="material-symbols-outlined text-outline" data-icon="info">info</span>
+</div>
+<div class="text-left">
+<span class="block font-headline font-medium text-on-surface">Sistema</span>
+<span class="block text-[11px] text-on-surface-variant uppercase tracking-tight">v2.4.0-build.88, Licenses</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- Logout Section -->
+<div class="mt-12 flex flex-col items-center">
+<button class="px-8 py-3 rounded-lg bg-surface-container-highest text-error font-headline font-semibold flex items-center gap-2 hover:bg-error/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+                Cerrar Sesión
+            </button>
+<p class="mt-6 font-mono text-[10px] text-outline tracking-widest uppercase">Calc_Lab_Control // System_Status: Nominal</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 shadow-2xl md:hidden">
+<!-- Compute -->
+<div class="text-slate-500 flex flex-col items-center gap-1 active:scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</div>
+<!-- Vars -->
+<div class="text-slate-500 flex flex-col items-center gap-1 active:scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="data_object">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</div>
+<!-- Graph -->
+<div class="text-slate-500 flex flex-col items-center gap-1 active:scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</div>
+<!-- Export (Mapped to Settings logic for Active state) -->
+<div class="text-blue-400 flex flex-col items-center gap-1 active:scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase font-bold">Ajustes</span>
+</div>
+</nav>
+<!-- Floating Micro-Utility for Lab Feel (Optional aesthetic addition) -->
+<div class="hidden lg:flex fixed bottom-8 right-8 flex-col gap-2 pointer-events-none">
+<div class="bg-surface-container border border-white/5 p-3 rounded-lg flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+<span class="font-mono text-[10px] text-on-surface-variant uppercase">CPU Core 01: 24%</span>
+</div>
+<div class="bg-surface-container border border-white/5 p-3 rounded-lg flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-mono text-[10px] text-on-surface-variant uppercase">RAM: 1.2GB Free</span>
+</div>
+</div>
+</body></html>

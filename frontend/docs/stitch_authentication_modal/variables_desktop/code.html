@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#6bff8f",
+                        "on-surface-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-high": "#282a30",
+                        "inverse-primary": "#0053db",
+                        "surface-container-lowest": "#0c0e14",
+                        "surface": "#111319",
+                        "on-tertiary-container": "#ffecea",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "on-primary-fixed": "#00174b",
+                        "surface-dim": "#111319",
+                        "surface-container": "#1e1f26",
+                        "primary": "#b4c5ff",
+                        "secondary-container": "#00b954",
+                        "on-tertiary-fixed": "#410004",
+                        "on-surface": "#e2e2eb",
+                        "surface-container-highest": "#33343b",
+                        "surface-container-low": "#191b22",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-bright": "#373940",
+                        "tertiary": "#ffb3ad",
+                        "inverse-on-surface": "#2e3037",
+                        "background": "#111319",
+                        "on-primary-container": "#eeefff",
+                        "outline": "#8d90a0",
+                        "on-secondary": "#003915",
+                        "outline-variant": "#434655",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary": "#4ae176",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#002109",
+                        "surface-tint": "#b4c5ff",
+                        "on-background": "#e2e2eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#33343b",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#cf2c30",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-primary": "#002a78",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#004119",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-tertiary": "#68000a",
+                        "on-secondary-fixed-variant": "#005321",
+                        "inverse-surface": "#e2e2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .mono-text { font-family: 'JetBrains Mono', monospace; }
+        .glass-panel {
+            background: rgba(55, 57, 64, 0.7);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 z-50 flex justify-between items-center w-full px-6 h-16 bg-[#111319] dark:bg-[#111319] border-b border-white/10 font-['Space_Grotesk'] text-sm tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400">CalcIng</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-400 hover:bg-white/5 transition-colors px-3 py-2 rounded" href="#">Dashboard</a>
+<a class="text-blue-400 font-bold hover:bg-white/5 transition-colors px-3 py-2 rounded" href="#">Variables</a>
+<a class="text-slate-400 hover:bg-white/5 transition-colors px-3 py-2 rounded" href="#">Simulations</a>
+</nav>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded-full active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded-full active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col py-4 bg-[#111319] dark:bg-[#111319] border-r border-white/5 z-40 hidden md:flex">
+<div class="px-6 mb-8">
+<h2 class="text-lg font-black text-blue-500 font-['Space_Grotesk']">CALC_LAB_01</h2>
+<p class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px] text-slate-500">Precision Mode</p>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 font-['Space_Grotesk'] uppercase tracking-widest text-[10px] transition-all" href="#">
+<span class="material-symbols-outlined">terminal</span> Workspace
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 font-['Space_Grotesk'] uppercase tracking-widest text-[10px] transition-all" href="#">
+<span class="material-symbols-outlined">folder_open</span> Projects
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 font-['Space_Grotesk'] uppercase tracking-widest text-[10px] transition-all" href="#">
+<span class="material-symbols-outlined">menu_book</span> Library
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 font-['Space_Grotesk'] uppercase tracking-widest text-[10px] transition-all" href="#">
+<span class="material-symbols-outlined">history</span> History
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 font-['Space_Grotesk'] uppercase tracking-widest text-[10px] translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">functions</span> Constants
+            </a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full py-3 px-4 rounded-lg bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-xs uppercase tracking-tighter flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm">add</span> New Calculation
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-16 min-h-screen bg-surface flex flex-col lg:flex-row overflow-hidden">
+<!-- Central Panel: Variable Listing -->
+<section class="flex-1 p-6 overflow-y-auto border-r border-white/5 bg-surface-container-low">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="font-headline text-3xl font-bold tracking-tight text-on-surface">System Variables</h1>
+<p class="text-on-surface-variant text-sm mt-1">Manage physical constants and custom mathematical parameters.</p>
+</div>
+<button class="px-4 py-2 bg-surface-container-highest hover:bg-white/10 text-primary font-bold text-xs tracking-widest uppercase rounded flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-base">add_circle</span> + NUEVA VARIABLE
+                </button>
+</div>
+<!-- Inline Creator (Hidden by default, shown for UX demonstration) -->
+<div class="mb-8 p-6 rounded-xl bg-surface-container border-b-2 border-primary/50 shadow-2xl">
+<div class="flex items-center gap-4 mb-4">
+<span class="material-symbols-outlined text-primary">edit_square</span>
+<h3 class="font-headline text-sm font-bold uppercase tracking-widest">New Entry Definition</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Identifier</label>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-primary mono-text py-2" placeholder="e.g. sigma_val" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Value (Float)</label>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-secondary mono-text py-2" placeholder="0.00000" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Group</label>
+<select class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface text-sm py-2">
+<option>PERSONALIZADAS</option>
+<option>FÍSICAS</option>
+<option>MATEMÁTICAS</option>
+</select>
+</div>
+</div>
+<div class="mt-4 flex justify-end gap-3">
+<button class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest">Discard</button>
+<button class="px-6 py-2 bg-primary text-on-primary text-xs font-bold rounded uppercase tracking-widest hover:brightness-110">Execute Store</button>
+</div>
+</div>
+<!-- Variable Groups -->
+<div class="space-y-10">
+<!-- Group: FÍSICAS -->
+<div>
+<div class="flex items-center gap-4 mb-4">
+<span class="h-[1px] flex-1 bg-white/5"></span>
+<h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">FÍSICAS</h2>
+<span class="h-[1px] flex-1 bg-white/5"></span>
+</div>
+<div class="grid grid-cols-1 gap-1">
+<!-- Var Row -->
+<div class="group flex items-center justify-between p-4 rounded bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-10 h-10 flex items-center justify-center rounded bg-primary/5 text-primary mono-text text-xl">c</div>
+<div>
+<div class="mono-text text-on-surface font-medium">light_speed</div>
+<div class="text-xs text-on-surface-variant">Vacuum velocity of electromagnetic waves.</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="mono-text text-secondary text-right">
+<div class="text-lg">299792458</div>
+<div class="text-[10px] text-secondary/60 uppercase tracking-tighter">m/s</div>
+</div>
+<div class="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 text-slate-500 hover:text-error"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+</div>
+<!-- Var Row -->
+<div class="group flex items-center justify-between p-4 rounded bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-10 h-10 flex items-center justify-center rounded bg-primary/5 text-primary mono-text text-xl">G</div>
+<div>
+<div class="mono-text text-on-surface font-medium">gravitational_const</div>
+<div class="text-xs text-on-surface-variant">Newtonian constant of gravitation.</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="mono-text text-secondary text-right">
+<div class="text-lg">6.67430e-11</div>
+<div class="text-[10px] text-secondary/60 uppercase tracking-tighter">m³ kg⁻¹ s⁻²</div>
+</div>
+<div class="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 text-slate-500 hover:text-error"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Group: MATEMÁTICAS -->
+<div>
+<div class="flex items-center gap-4 mb-4">
+<span class="h-[1px] flex-1 bg-white/5"></span>
+<h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">MATEMÁTICAS</h2>
+<span class="h-[1px] flex-1 bg-white/5"></span>
+</div>
+<div class="grid grid-cols-1 gap-1">
+<div class="group flex items-center justify-between p-4 rounded bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-10 h-10 flex items-center justify-center rounded bg-primary/5 text-primary mono-text text-xl">π</div>
+<div>
+<div class="mono-text text-on-surface font-medium">pi</div>
+<div class="text-xs text-on-surface-variant">Ratio of a circle's circumference to its diameter.</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="mono-text text-secondary text-right">
+<div class="text-lg">3.1415926535</div>
+</div>
+<div class="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 text-slate-500 hover:text-error"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Group: PERSONALIZADAS -->
+<div>
+<div class="flex items-center gap-4 mb-4">
+<span class="h-[1px] flex-1 bg-white/5"></span>
+<h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">PERSONALIZADAS</h2>
+<span class="h-[1px] flex-1 bg-white/5"></span>
+</div>
+<div class="grid grid-cols-1 gap-1">
+<div class="group flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20 ring-1 ring-primary/10">
+<div class="flex items-center gap-6">
+<div class="w-10 h-10 flex items-center justify-center rounded bg-primary text-on-primary mono-text text-xl font-bold">α</div>
+<div>
+<div class="mono-text text-on-surface font-bold">alpha_correction</div>
+<div class="text-xs text-primary/80">User-defined coefficient for thermal expansion.</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="mono-text text-primary text-right">
+<div class="text-lg">0.00142</div>
+<div class="text-[10px] text-primary/60 uppercase tracking-tighter">COEFF</div>
+</div>
+<div class="flex items-center">
+<button class="p-2 text-primary hover:text-primary-fixed"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 text-slate-500 hover:text-error"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+</div>
+<div class="group flex items-center justify-between p-4 rounded bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-10 h-10 flex items-center justify-center rounded bg-primary/5 text-primary mono-text text-xl">λ</div>
+<div>
+<div class="mono-text text-on-surface font-medium">lambda_factor</div>
+<div class="text-xs text-on-surface-variant">Wavelength variance parameter.</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="mono-text text-secondary text-right">
+<div class="text-lg">542.88</div>
+<div class="text-[10px] text-secondary/60 uppercase tracking-tighter">nm</div>
+</div>
+<div class="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-500 hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 text-slate-500 hover:text-error"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Panel: Usage History -->
+<aside class="w-full lg:w-96 p-6 bg-surface overflow-y-auto">
+<div class="sticky top-0 bg-surface pb-6">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<h2 class="font-headline text-lg font-bold uppercase tracking-tight">Usage Registry</h2>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-high border border-outline-variant/30 mb-8">
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Trace</p>
+<div class="mono-text text-primary text-xl font-bold">alpha_correction</div>
+<div class="flex items-center gap-2 mt-2">
+<span class="px-2 py-0.5 rounded-sm bg-primary/10 text-primary text-[10px] font-bold">LATEST VAL: 0.00142</span>
+<span class="text-[10px] text-on-surface-variant">Modified 4h ago</span>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div class="relative pl-6 border-l border-outline-variant">
+<div class="absolute -left-[5px] top-0 w-[9px] h-[9px] rounded-full bg-outline"></div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Today, 14:22</div>
+<div class="p-3 rounded bg-surface-container-low text-xs border border-white/5">
+                        Used in <span class="text-primary font-bold">Heat_Transfer_Module.clc</span>
+<div class="mt-2 text-on-surface-variant italic">"Applied correction to thermal gradient calculation."</div>
+</div>
+</div>
+<div class="relative pl-6 border-l border-outline-variant">
+<div class="absolute -left-[5px] top-0 w-[9px] h-[9px] rounded-full bg-outline"></div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Oct 24, 09:15</div>
+<div class="p-3 rounded bg-surface-container-low text-xs border border-white/5">
+                        Defined by <span class="text-secondary font-bold">System_Init</span>
+<div class="mt-2 text-on-surface-variant italic">"Initial variable creation from laboratory data."</div>
+</div>
+</div>
+<!-- Technical Analytics Card -->
+<div class="p-6 rounded-2xl bg-gradient-to-br from-surface-container-high to-surface-container border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">monitoring</span>
+</div>
+<h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Precision Metric</h4>
+<div class="flex items-end gap-2 mb-2">
+<div class="text-4xl font-headline font-bold text-on-surface">99.98<span class="text-primary text-xl">%</span></div>
+</div>
+<p class="text-[10px] text-slate-500 leading-relaxed">
+                        Data consistency score across all calculated projects using this variable set.
+                    </p>
+<div class="mt-6 h-1 w-full bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[99%]"></div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 md:hidden">
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</a>
+<a class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">ios_share</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Export</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng | Support Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#6bff8f",
+                        "on-surface-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-high": "#282a30",
+                        "inverse-primary": "#0053db",
+                        "surface-container-lowest": "#0c0e14",
+                        "surface": "#111319",
+                        "on-tertiary-container": "#ffecea",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "on-primary-fixed": "#00174b",
+                        "surface-dim": "#111319",
+                        "surface-container": "#1e1f26",
+                        "primary": "#b4c5ff",
+                        "secondary-container": "#00b954",
+                        "on-tertiary-fixed": "#410004",
+                        "on-surface": "#e2e2eb",
+                        "surface-container-highest": "#33343b",
+                        "surface-container-low": "#191b22",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-bright": "#373940",
+                        "tertiary": "#ffb3ad",
+                        "inverse-on-surface": "#2e3037",
+                        "background": "#111319",
+                        "on-primary-container": "#eeefff",
+                        "outline": "#8d90a0",
+                        "on-secondary": "#003915",
+                        "outline-variant": "#434655",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary": "#4ae176",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#002109",
+                        "surface-tint": "#b4c5ff",
+                        "on-background": "#e2e2eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#33343b",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#cf2c30",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-primary": "#002a78",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#004119",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-tertiary": "#68000a",
+                        "on-secondary-fixed-variant": "#005321",
+                        "inverse-surface": "#e2e2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(55, 57, 64, 0.7);
+            backdrop-filter: blur(20px);
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #111319; }
+        ::-webkit-scrollbar-thumb { background: #33343b; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-white overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] docked full-width top-0 z-50 border-b border-white/10 flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-headline">CalcIng</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-400 font-['Space_Grotesk'] text-sm tracking-tight hover:bg-white/5 transition-colors px-3 py-1 rounded" href="#">Workspace</a>
+<a class="text-slate-400 font-['Space_Grotesk'] text-sm tracking-tight hover:bg-white/5 transition-colors px-3 py-1 rounded" href="#">Projects</a>
+<a class="text-blue-400 font-bold font-['Space_Grotesk'] text-sm tracking-tight px-3 py-1 rounded" href="#">Support</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="bg-[#111319] dark:bg-[#111319] fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r border-white/5 hidden md:flex flex-col py-4 z-40">
+<div class="px-6 mb-8">
+<h2 class="font-headline uppercase tracking-widest text-[10px] text-blue-500">CALC_LAB_01</h2>
+<p class="text-[10px] text-slate-500 font-mono">Precision Mode</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-slate-500 hover:text-slate-300 font-headline uppercase tracking-widest text-[10px] hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span>Workspace</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-slate-500 hover:text-slate-300 font-headline uppercase tracking-widest text-[10px] hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span>Projects</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-slate-500 hover:text-slate-300 font-headline uppercase tracking-widest text-[10px] hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Library</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-slate-500 hover:text-slate-300 font-headline uppercase tracking-widest text-[10px] hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>History</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-slate-500 hover:text-slate-300 font-headline uppercase tracking-widest text-[10px] hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">functions</span>
+<span>Constants</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-primary-container text-white py-3 rounded-lg font-headline text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 active:opacity-80 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Calculation
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-24 pb-20 px-6 min-h-screen">
+<div class="max-w-6xl mx-auto space-y-12">
+<!-- Hero Header -->
+<section class="text-center space-y-4">
+<h1 class="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter text-on-surface">CENTRO DE SOPORTE</h1>
+<p class="text-on-surface-variant font-mono text-sm max-w-2xl mx-auto opacity-70">Sistemas de diagnóstico y canales de comunicación técnica para ingenieros de CalcIng.</p>
+</section>
+<!-- Resource Cards (Asymmetric Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface-container-low p-6 rounded-xl border-l-2 border-primary-container group hover:bg-surface-container transition-colors">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-primary text-3xl">chat</span>
+<span class="text-[10px] font-mono text-outline uppercase tracking-tighter">Live Support</span>
+</div>
+<h3 class="font-headline text-lg font-bold mb-2">Discord Server</h3>
+<p class="text-sm text-on-surface-variant mb-4 font-body leading-relaxed">Únete a nuestra comunidad para asistencia en tiempo real y discusiones técnicas.</p>
+<a class="inline-flex items-center gap-2 text-xs font-bold text-primary hover:gap-3 transition-all" href="#">
+                        CONNECT TO SERVER <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-2 border-secondary group hover:bg-surface-container transition-colors">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-secondary text-3xl">terminal</span>
+<span class="text-[10px] font-mono text-outline uppercase tracking-tighter">Open Source</span>
+</div>
+<h3 class="font-headline text-lg font-bold mb-2">GitHub Repos</h3>
+<p class="text-sm text-on-surface-variant mb-4 font-body leading-relaxed">Reporta bugs, sugiere funciones o contribuye a nuestras bibliotecas de cálculo.</p>
+<a class="inline-flex items-center gap-2 text-xs font-bold text-secondary hover:gap-3 transition-all" href="#">
+                        VIEW REPOSITORIES <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-2 border-tertiary group hover:bg-surface-container transition-colors">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-tertiary text-3xl">alternate_email</span>
+<span class="text-[10px] font-mono text-outline uppercase tracking-tighter">Direct Contact</span>
+</div>
+<h3 class="font-headline text-lg font-bold mb-2">Email Support</h3>
+<p class="text-sm text-on-surface-variant mb-4 font-body leading-relaxed">Para consultas comerciales o problemas de cuenta críticos y privados.</p>
+<a class="inline-flex items-center gap-2 text-xs font-bold text-tertiary hover:gap-3 transition-all" href="#">
+                        SEND AN EMAIL <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- Status Table & Contact Form (Bento Layout) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- System Status Table -->
+<div class="lg:col-span-4 bg-surface-container-lowest border border-white/5 rounded-xl overflow-hidden self-start">
+<div class="bg-surface-container p-4 border-b border-white/5 flex items-center justify-between">
+<h3 class="font-headline text-xs font-bold uppercase tracking-widest text-on-surface">SYSTEM_STATUS</h3>
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span class="text-[10px] font-mono text-secondary">LIVE_FEED</span>
+</div>
+</div>
+<div class="p-0">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-white/5 bg-surface-container-low">
+<th class="px-4 py-3 text-[10px] font-mono text-outline uppercase tracking-widest">Service</th>
+<th class="px-4 py-3 text-[10px] font-mono text-outline uppercase tracking-widest">Uptime</th>
+<th class="px-4 py-3 text-[10px] font-mono text-outline uppercase tracking-widest">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-xs">API_GATEWAY</td>
+<td class="px-4 py-3 font-mono text-[10px] text-on-surface-variant">99.98%</td>
+<td class="px-4 py-3">
+<span class="text-[10px] font-bold text-secondary-fixed bg-secondary-container/10 px-2 py-0.5 rounded border border-secondary-container/20">ONLINE</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-xs">CAS_ENGINE</td>
+<td class="px-4 py-3 font-mono text-[10px] text-on-surface-variant">97.42%</td>
+<td class="px-4 py-3">
+<span class="text-[10px] font-bold text-tertiary-fixed-dim bg-tertiary-container/10 px-2 py-0.5 rounded border border-tertiary-container/20">DEGRADED</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-xs">DB_CLUST_01</td>
+<td class="px-4 py-3 font-mono text-[10px] text-on-surface-variant">99.99%</td>
+<td class="px-4 py-3">
+<span class="text-[10px] font-bold text-secondary-fixed bg-secondary-container/10 px-2 py-0.5 rounded border border-secondary-container/20">ONLINE</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-4 py-3 font-mono text-xs">REDIS_CACHE</td>
+<td class="px-4 py-3 font-mono text-[10px] text-on-surface-variant">00.00%</td>
+<td class="px-4 py-3">
+<span class="text-[10px] font-bold text-error bg-error-container/10 px-2 py-0.5 rounded border border-error-container/20">DOWN</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low">
+<p class="text-[9px] font-mono text-outline leading-tight">
+                            * Incident: REDIS_CACHE maintenance scheduled for node migration. Expected restoration in 45m.
+                        </p>
+</div>
+</div>
+<!-- Centered Contact Form -->
+<div class="lg:col-span-8 bg-surface-container-low rounded-xl p-8 border border-white/5 relative overflow-hidden">
+<div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
+<h2 class="font-headline text-2xl font-bold mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">send</span>
+                        Submit Technical Ticket
+                    </h2>
+<form class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-[10px] font-mono text-outline uppercase tracking-widest">Full Name</label>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-sm py-3 transition-all placeholder:text-outline/30" placeholder="e.g. Dr. Aris Thotle" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-mono text-outline uppercase tracking-widest">Engineering ID</label>
+<input class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-sm py-3 transition-all placeholder:text-outline/30" placeholder="CALC-XXXX-XXXX" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-mono text-outline uppercase tracking-widest">Inquiry Category</label>
+<select class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-sm py-3 transition-all">
+<option>Technical Computation Error</option>
+<option>API Authentication Issue</option>
+<option>Billing &amp; Subscription</option>
+<option>Feature Proposal</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-mono text-outline uppercase tracking-widest">Detailed Description</label>
+<textarea class="w-full bg-surface-container-lowest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-sm py-3 transition-all placeholder:text-outline/30 resize-none" placeholder="Provide mathematical context or steps to reproduce..." rows="4"></textarea>
+</div>
+<div class="flex items-center justify-between pt-4">
+<div class="flex items-center gap-2">
+<input class="rounded border-outline-variant bg-surface text-primary focus:ring-primary" id="priority" type="checkbox"/>
+<label class="text-xs text-on-surface-variant font-mono" for="priority">CRITICAL PRIORITY</label>
+</div>
+<button class="bg-primary-container hover:bg-primary-container/90 text-white px-8 py-3 rounded-lg font-headline text-sm font-bold uppercase tracking-widest shadow-lg shadow-primary-container/20 active:scale-95 transition-all" type="submit">
+                                Dispatch Ticket
+                            </button>
+</div>
+</form>
+</div>
+</section>
+<!-- FAQ Accordion Section -->
+<section class="max-w-4xl mx-auto space-y-6">
+<div class="text-center mb-10">
+<h2 class="font-headline text-2xl font-bold uppercase tracking-tighter">Frequently Asked Queries</h2>
+<div class="h-1 w-12 bg-primary mx-auto mt-2"></div>
+</div>
+<div class="space-y-3">
+<!-- Accordion Item 1 -->
+<details class="group bg-surface-container-low rounded-xl border border-white/5" open="">
+<summary class="flex items-center justify-between p-5 cursor-pointer list-none">
+<h4 class="font-headline text-sm font-medium">How do I export high-precision constants to LaTeX?</h4>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform text-outline">expand_more</span>
+</summary>
+<div class="p-5 pt-0 text-sm text-on-surface-variant font-body leading-relaxed border-t border-white/5 mt-2">
+                            Utilice la herramienta de exportación en la barra de navegación inferior o presione <kbd class="px-1.5 py-0.5 bg-surface-container-highest rounded font-mono text-[10px]">CTRL+E</kbd>. Seleccione el formato 'LaTeX' y la precisión de decimales deseada para generar la cadena de código compatible con editores científicos.
+                        </div>
+</details>
+<!-- Accordion Item 2 -->
+<details class="group bg-surface-container-low rounded-xl border border-white/5">
+<summary class="flex items-center justify-between p-5 cursor-pointer list-none">
+<h4 class="font-headline text-sm font-medium">¿Cuál es el límite de cómputo en la versión gratuita?</h4>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform text-outline">expand_more</span>
+</summary>
+<div class="p-5 pt-0 text-sm text-on-surface-variant font-body leading-relaxed border-t border-white/5 mt-2">
+                            La versión estándar permite hasta 10,000 operaciones por segundo con una precisión de 128 bits. Para simulaciones de Monte Carlo a gran escala o cálculos tensoriales complejos, considere el plan Workspace Pro.
+                        </div>
+</details>
+<!-- Accordion Item 3 -->
+<details class="group bg-surface-container-low rounded-xl border border-white/5">
+<summary class="flex items-center justify-between p-5 cursor-pointer list-none">
+<h4 class="font-headline text-sm font-medium">¿Es posible integrar la API de CalcIng en entornos Python?</h4>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform text-outline">expand_more</span>
+</summary>
+<div class="p-5 pt-0 text-sm text-on-surface-variant font-body leading-relaxed border-t border-white/5 mt-2">
+                            Afirmativo. Contamos con un SDK oficial de Python disponible en PyPI. Ejecute <code class="bg-surface-container-highest px-2 py-1 rounded font-mono text-[10px]">pip install calcing-sdk</code> para comenzar la integración con sus scripts de análisis de datos.
+                        </div>
+</details>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 shadow-2xl md:hidden">
+<a class="text-slate-500 flex flex-col items-center gap-1 font-['Space_Grotesk'] text-[10px] uppercase active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span>Compute</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 font-['Space_Grotesk'] text-[10px] uppercase active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">data_object</span>
+<span>Vars</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 font-['Space_Grotesk'] text-[10px] uppercase active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span>Graph</span>
+</a>
+<a class="text-blue-400 flex flex-col items-center gap-1 font-['Space_Grotesk'] text-[10px] uppercase active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+</nav>
+<!-- Global Image Asset (Decorative) -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 opacity-5">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent"></div>
+<img class="w-full h-full object-cover mix-blend-overlay" data-alt="close-up of futuristic computer servers with blue glowing lights in a dark data center, high technical precision atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBb_uUM5yW3fGMHQQnvIPr_9DOXEeBxGGYRS8Az1nIN3_enn67V9MFrt6xOyVVpEUvB8ihpVek2qYD5qXBRO954-uJqLMAbaHRfpaDYAt21ndous0hBME1jQhDbyWiQLnGyTJCijUsElQ72p4Gbxe8iKebNoKSqBoEkFasPGPlceGYHoICKT9R1OKDz04gG__4yORbOmwmCIl4rC-pKAHtGKyaNgZ2u9L4bW7ZZ_33JXr98EFFd-sXgJ2GZwH-T_i0Lyo9Y0Pp3iwE"/>
+</div>
+</body></html>

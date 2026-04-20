@@ -1,12 +1,9 @@
-Reemplazar el contenido completo de CONTEXT.md con esto:
-
----
 # CalcIng — CONTEXT.md
 Actualizado: Marzo 2026
 
 ## Tests actuales
 - Frontend: 709 passing, 0 failing (`npx vitest run`)
-- Backend: 124 passing, 0 failing (`pytest`)
+- Backend: 140 passing, 0 failing (`pytest`)
 
 ## Fase actual
 Frontend-5 Sprint F5-4 — Login visible + QA (por iniciar)
@@ -35,6 +32,7 @@ Fase 0-4 ✅ | Backend-1-6 ✅ | Frontend-5 F5-1 F5-2 F5-3 ✅
 - get_plan_from_token() retorna "free" si no hay token o claim ausente
 - /graph/3d y /export retornan 402 (free) o 501 (premium stub)
 - JWT guardado en localStorage con key 'calcing_token'
+- TDD: tests primero, implementación después — dos prompts separados por tarea
 
 ## Archivos clave
 ### Frontend
@@ -70,10 +68,19 @@ npx tsc --noEmit        # typecheck
 docker compose up --build
 ```
 
-## Reglas
-- TDD: tests y solución en el mismo prompt
-- Si hay fallos: diagnóstico + corrección en el mismo mensaje
-- Sin any, sin @ts-ignore
-- No aprobar sin output real del terminal
-- Una sub-fase por sesión
----
+## Tarea de esta sesión
+Tarea 1/3 de F5-4: crear src/services/authService.ts
+- Funciones: login(), register(), logout(), getToken(), isLoggedIn()
+- register(email, password) — sin campo name (backend no lo acepta)
+- Contrato login: { access_token, refresh_token, token_type }
+- Contrato register: { id, email } — 201
+- JWT key en localStorage: 'calcing_token'
+- Refresh token key en localStorage: 'calcing_refresh_token'
+- Flujo: tests primero → output del terminal → implementación
+- Archivo de tests: src/services/authService.test.ts (crear nuevo)
+- No tocar ningún otro archivo en esta sesión
+
+## Criterio de completud
+- [ ] 10+ tests de authService pasando
+- [ ] 709 tests anteriores siguen pasando
+- [ ] tsc --noEmit limpio

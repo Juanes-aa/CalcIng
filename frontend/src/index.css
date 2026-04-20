@@ -1,1 +1,31 @@
 @import "tailwindcss";
+
+@theme {
+  --color-surface:          #111319;
+  --color-surface-low:      #191b22;
+  --color-surface-mid:      #1e1f26;
+  --color-surface-high:     #282a30;
+  --color-surface-highest:  #33343b;
+  --color-primary:          #b4c5ff;
+  --color-primary-cta:      #2563eb;
+  --color-on-surface:       #e2e2eb;
+  --color-on-surface-dim:   #c3c6d7;
+  --color-success:          #4ae176;
+  --color-error:            #ffb4ab;
+  --color-outline:          #434655;
+
+  --font-display: "Space Grotesk", "Arial", sans-serif;
+  --font-body:    "Inter", "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #111319;
+}
+::-webkit-scrollbar-thumb {
+  background: #33343b;
+  border-radius: 10px;
+}

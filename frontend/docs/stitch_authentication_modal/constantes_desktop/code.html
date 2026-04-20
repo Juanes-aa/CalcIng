@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - Constantes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#6bff8f",
+                        "on-surface-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-high": "#282a30",
+                        "inverse-primary": "#0053db",
+                        "surface-container-lowest": "#0c0e14",
+                        "surface": "#111319",
+                        "on-tertiary-container": "#ffecea",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "on-primary-fixed": "#00174b",
+                        "surface-dim": "#111319",
+                        "surface-container": "#1e1f26",
+                        "primary": "#b4c5ff",
+                        "secondary-container": "#00b954",
+                        "on-tertiary-fixed": "#410004",
+                        "on-surface": "#e2e2eb",
+                        "surface-container-highest": "#33343b",
+                        "surface-container-low": "#191b22",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-bright": "#373940",
+                        "tertiary": "#ffb3ad",
+                        "inverse-on-surface": "#2e3037",
+                        "background": "#111319",
+                        "on-primary-container": "#eeefff",
+                        "outline": "#8d90a0",
+                        "on-secondary": "#003915",
+                        "outline-variant": "#434655",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary": "#4ae176",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#002109",
+                        "surface-tint": "#b4c5ff",
+                        "on-background": "#e2e2eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#33343b",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#cf2c30",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-primary": "#002a78",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#004119",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-tertiary": "#68000a",
+                        "on-secondary-fixed-variant": "#005321",
+                        "inverse-surface": "#e2e2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(25, 27, 34, 0.7);
+            backdrop-filter: blur(20px);
+        }
+        .constant-card:hover {
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-white overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 z-50 w-full px-6 h-16 flex justify-between items-center bg-[#111319] border-b border-white/10 font-['Space_Grotesk'] text-sm tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-500">CalcIng</span>
+<div class="relative hidden md:flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-500 scale-75">search</span>
+<input class="bg-surface-container-lowest border-none border-b border-white/10 text-xs w-64 pl-10 h-9 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Search parameters..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-white/5 transition-colors rounded-lg group">
+<span class="material-symbols-outlined text-slate-400 group-active:opacity-80 group-active:scale-95">settings</span>
+</button>
+<button class="p-2 hover:bg-white/5 transition-colors rounded-lg group">
+<span class="material-symbols-outlined text-slate-400 group-active:opacity-80 group-active:scale-95">help_outline</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-16px)] w-64 bg-[#111319] flex flex-col border-r border-white/5 py-4 z-40">
+<div class="px-6 mb-8">
+<div class="flex flex-col gap-0.5">
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px] text-blue-500 font-black">CALC_LAB_01</span>
+<span class="text-[10px] text-slate-500 font-mono">Precision Mode</span>
+</div>
+</div>
+<nav class="flex-1 flex flex-col px-3 gap-1">
+<a class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined scale-90">terminal</span>
+<span>Workspace</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined scale-90">folder_open</span>
+<span>Projects</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined scale-90">menu_book</span>
+<span>Library</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all font-['Space_Grotesk'] uppercase tracking-widest text-[10px]" href="#">
+<span class="material-symbols-outlined scale-90">history</span>
+<span>History</span>
+</a>
+<!-- Active Tab: Constants -->
+<a class="flex items-center gap-4 px-4 py-3 text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 transition-all font-['Space_Grotesk'] uppercase tracking-widest text-[10px] translate-x-1" href="#">
+<span class="material-symbols-outlined scale-90">functions</span>
+<span>Constants</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pb-4">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-3 rounded-xl font-medium text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Calculation
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 mt-16 p-8 h-[calc(100vh-64px)] overflow-y-auto">
+<div class="max-w-6xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+<div>
+<h1 class="font-headline text-3xl font-bold tracking-tight text-on-surface">Scientific Constants</h1>
+<p class="text-on-surface-variant text-sm mt-1">Reference library for standardized physical and mathematical values.</p>
+</div>
+<!-- Tab Navigation -->
+<div class="flex bg-surface-container-low p-1 rounded-xl">
+<button class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg bg-surface-container-highest text-blue-400 shadow-sm transition-all">UNIVERSALES</button>
+<button class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg text-slate-500 hover:text-on-surface-variant transition-all">ELECTROMAGNÉTICAS</button>
+<button class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg text-slate-500 hover:text-on-surface-variant transition-all">ATÓMICAS</button>
+<button class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg text-slate-500 hover:text-on-surface-variant transition-all">TERMODINÁMICAS</button>
+<button class="px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-lg text-slate-500 hover:text-on-surface-variant transition-all">MATEMÁTICAS</button>
+</div>
+</div>
+<!-- Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: Light Speed -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">c</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">SPD_LT</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Speed of Light</h3>
+<p class="font-mono text-secondary text-lg">299,792,458</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">m · s⁻¹</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 2: Gravitational -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">G</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">GRV_CS</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Gravitational Constant</h3>
+<p class="font-mono text-secondary text-lg">6.67430 × 10⁻¹¹</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">m³ · kg⁻¹ · s⁻²</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 3: Planck -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">h</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">PLN_CS</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Planck Constant</h3>
+<p class="font-mono text-secondary text-lg">6.62607 × 10⁻³⁴</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">kg · m² · s⁻¹</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 4: Avogadro -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">Nₐ</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">AVO_NB</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Avogadro Number</h3>
+<p class="font-mono text-secondary text-lg">6.02214 × 10²³</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">mol⁻¹</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 5: Boltzmann -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">k</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">BLT_CS</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Boltzmann Constant</h3>
+<p class="font-mono text-secondary text-lg">1.38064 × 10⁻²³</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">J · K⁻¹</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 6: Elementary Charge -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">e</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">ELM_CH</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Elementary Charge</h3>
+<p class="font-mono text-secondary text-lg">1.60217 × 10⁻¹⁹</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">C</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 7: Pi -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">π</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">MATH_PI</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Archimedes' Constant</h3>
+<p class="font-mono text-secondary text-lg">3.14159 26535</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Dimensionless</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 8: Euler's Number -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">e</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">MATH_E</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Euler's Number</h3>
+<p class="font-mono text-secondary text-lg">2.71828 18284</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Dimensionless</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+<!-- Card 9: Fine Structure -->
+<div class="constant-card group relative bg-surface-container-low border border-white/5 rounded-xl p-6 transition-all duration-300 hover:border-primary-container/50">
+<div class="flex justify-between items-start mb-4">
+<span class="font-mono text-4xl text-primary font-medium tracking-tighter">α</span>
+<span class="text-[10px] font-mono text-slate-500 tracking-tighter">FIN_ST</span>
+</div>
+<div class="space-y-1 mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Fine Structure</h3>
+<p class="font-mono text-secondary text-lg">7.29735 × 10⁻³</p>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Dimensionless</p>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-primary-container hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                        Insert
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 md:hidden">
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</a>
+<a class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">ios_share</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Export</span>
+</a>
+</nav>
+</body></html>

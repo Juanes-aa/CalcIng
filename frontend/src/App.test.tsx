@@ -43,7 +43,7 @@ describe('App — integración', () => {
     expect(getKey('1')).toBeInTheDocument();
     expect(getKey('+')).toBeInTheDocument();
     expect(getKey('=')).toBeInTheDocument();
-    expect(getKey('C')).toBeInTheDocument();
+    expect(getKey('AC')).toBeInTheDocument();
   });
 
   // --- Flujo de entrada básico ---
@@ -73,10 +73,10 @@ describe('App — integración', () => {
     expect(getDisplay().result).toHaveTextContent('5');
   });
 
-  it('9 × 9 = muestra resultado 81', async () => {
+  it('9 * 9 = muestra resultado 81', async () => {
     render(<App />);
     await userEvent.click(getKey('9'));
-    await userEvent.click(getKey('×'));
+    await userEvent.click(getKey('*'));
     await userEvent.click(getKey('9'));
     await userEvent.click(getKey('='));
     expect(getDisplay().result).toHaveTextContent('81');
@@ -85,7 +85,7 @@ describe('App — integración', () => {
   it('la expresión permanece visible tras evaluar', async () => {
     render(<App />);
     await userEvent.click(getKey('6'));
-    await userEvent.click(getKey('÷'));
+    await userEvent.click(getKey('/'));
     await userEvent.click(getKey('2'));
     await userEvent.click(getKey('='));
     expect(getDisplay().expression).toHaveTextContent('6/2');
@@ -94,21 +94,21 @@ describe('App — integración', () => {
 
   // --- CLEAR y BACKSPACE ---
 
-  it('C limpia expresión y resultado', async () => {
+  it('AC limpia expresión y resultado', async () => {
     render(<App />);
     await userEvent.click(getKey('7'));
     await userEvent.click(getKey('+'));
-    await userEvent.click(getKey('C'));
+    await userEvent.click(getKey('AC'));
     expect(getDisplay().expression).toHaveTextContent('');
     expect(getDisplay().result).toHaveTextContent('');
   });
 
-  it('⌫ elimina el último carácter de la expresión', async () => {
+  it('DEL elimina el último carácter de la expresión', async () => {
     render(<App />);
     await userEvent.click(getKey('1'));
     await userEvent.click(getKey('2'));
     await userEvent.click(getKey('3'));
-    await userEvent.click(getKey('⌫'));
+    await userEvent.click(getKey('DEL'));
     expect(getDisplay().expression).toHaveTextContent('12');
   });
 
@@ -140,63 +140,34 @@ describe('App — integración', () => {
       .toHaveAttribute('aria-pressed', 'true');
   });
 
-  // --- CAS Panel toggle ---
+  // --- CAS Panel — siempre visible ---
 
-  it('el botón CAS existe en el header con aria-pressed="false" por defecto', () => {
+  it('CASPanel visible por defecto — está en el DOM al renderizar', () => {
     render(<App />);
-    const btn = screen.getByRole('button', { name: 'CAS' });
-    expect(btn).toBeInTheDocument();
-    expect(btn).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  it('clicking CAS toggle muestra el CASPanel', async () => {
-    render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'CAS' }));
     expect(screen.getByTestId('cas-panel')).toBeInTheDocument();
-  });
-
-  it('clicking CAS toggle dos veces oculta el CASPanel', async () => {
-    render(<App />);
-    const btn = screen.getByRole('button', { name: 'CAS' });
-    await userEvent.click(btn);
-    await userEvent.click(btn);
-    expect(screen.queryByTestId('cas-panel')).not.toBeInTheDocument();
-  });
-
-  it('cuando CAS está abierto, aria-pressed del botón es "true"', async () => {
-    render(<App />);
-    const btn = screen.getByRole('button', { name: 'CAS' });
-    await userEvent.click(btn);
-    expect(btn).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  it('CASPanel oculto por defecto — no está en el DOM al renderizar', () => {
-    render(<App />);
-    expect(screen.queryByTestId('cas-panel')).not.toBeInTheDocument();
   });
 
 });
 
-// --- GraphViewer toggle ---
+// --- GraphViewer nav ---
 
-it('el botón Graficar existe en el header con aria-pressed="false" por defecto', () => {
+it('el botón Gráficos existe en el header con aria-pressed="false" por defecto', () => {
   render(<App />);
-  const btn = screen.getByRole('button', { name: 'Graficar' });
+  const btn = screen.getByTestId('nav-graficos');
   expect(btn).toBeInTheDocument();
   expect(btn).toHaveAttribute('aria-pressed', 'false');
 });
 
-it('clicking Graficar toggle muestra el GraphViewer', async () => {
+it('clicking Gráficos nav muestra el GraphViewer', async () => {
   render(<App />);
-  await userEvent.click(screen.getByRole('button', { name: 'Graficar' }));
+  await userEvent.click(screen.getByTestId('nav-graficos'));
   expect(screen.getByTestId('graph-viewer')).toBeInTheDocument();
 });
 
-it('clicking Graficar toggle dos veces oculta el GraphViewer', async () => {
+it('volver a Calculadora desde Gráficos oculta el GraphViewer', async () => {
   render(<App />);
-  const btn = screen.getByRole('button', { name: 'Graficar' });
-  await userEvent.click(btn);
-  await userEvent.click(btn);
+  await userEvent.click(screen.getByTestId('nav-graficos'));
+  await userEvent.click(screen.getByTestId('nav-calculadora'));
   expect(screen.queryByTestId('graph-viewer')).not.toBeInTheDocument();
 });
 
@@ -205,22 +176,26 @@ it('GraphViewer oculto por defecto — no está en el DOM al renderizar', () => 
   expect(screen.queryByTestId('graph-viewer')).not.toBeInTheDocument();
 });
 
-// ─── AdvancedPanel toggle ─────────────────────────────────────────────────────
+// ─── AdvancedPanel — toggle desde sidebar ────────────────────────────────────
 
-describe('App — AdvancedPanel toggle', () => {
+describe('App — AdvancedPanel', () => {
 
-  test('botón Avanzado existe en el header con aria-pressed="false" por defecto', () => {
-    render(<App />)
-    const btn = screen.getByTestId('advanced-toggle')
-    expect(btn).toBeInTheDocument()
-    expect(btn).toHaveAttribute('aria-pressed', 'false')
-  })
-
-  test('clicking Avanzado toggle muestra el AdvancedPanel', () => {
+  test('AdvancedPanel oculto por defecto', () => {
     render(<App />)
     expect(screen.queryByTestId('advanced-panel')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByTestId('advanced-toggle'))
+  })
+
+  test('clicking Avanzado en sidebar muestra el AdvancedPanel', () => {
+    render(<App />)
+    fireEvent.click(screen.getByTestId('sidebar-avanzado'))
     expect(screen.getByTestId('advanced-panel')).toBeInTheDocument()
+  })
+
+  test('volver a Cálculo desde Avanzado oculta el AdvancedPanel', () => {
+    render(<App />)
+    fireEvent.click(screen.getByTestId('sidebar-avanzado'))
+    fireEvent.click(screen.getByTestId('nav-calculadora'))
+    expect(screen.queryByTestId('advanced-panel')).not.toBeInTheDocument()
   })
 
 })

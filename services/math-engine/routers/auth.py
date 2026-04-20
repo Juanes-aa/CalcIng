@@ -19,6 +19,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
+    first_name: str | None = None
+    last_name: str | None = None
 
     @field_validator("password")
     @classmethod
@@ -39,6 +41,9 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    first_name: str | None = None
+    last_name: str | None = None
+    plan: str = "free"
 
 class RefreshRequest(BaseModel):
     refresh_token: str
@@ -56,7 +61,13 @@ async def register(body: RegisterRequest,
     result = await db.execute(select(User).where(User.email == body.email))
     if result.scalars().first():
         raise HTTPException(status_code=409, detail="Email already registered")
-    user = User(email=body.email, password_hash=hash_password(body.password))
+    user = User(
+        email=body.email,
+        password_hash=hash_password(body.password),
+        first_name=body.first_name,
+        last_name=body.last_name,
+        plan="free",
+    )
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -70,8 +81,11 @@ async def login(body: LoginRequest,
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return TokenResponse(
-        access_token=create_access_token(str(user.id)),
+        access_token=create_access_token(str(user.id), plan=user.plan),
         refresh_token=create_refresh_token(str(user.id)),
+        first_name=user.first_name,
+        last_name=user.last_name,
+        plan=user.plan,
     )
 
 @router.post("/refresh", response_model=AccessTokenResponse)

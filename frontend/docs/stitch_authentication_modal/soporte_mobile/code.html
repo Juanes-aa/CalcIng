@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng | SOPORTE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#6bff8f",
+                        "on-surface-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-high": "#282a30",
+                        "inverse-primary": "#0053db",
+                        "surface-container-lowest": "#0c0e14",
+                        "surface": "#111319",
+                        "on-tertiary-container": "#ffecea",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "on-primary-fixed": "#00174b",
+                        "surface-dim": "#111319",
+                        "surface-container": "#1e1f26",
+                        "primary": "#b4c5ff",
+                        "secondary-container": "#00b954",
+                        "on-tertiary-fixed": "#410004",
+                        "on-surface": "#e2e2eb",
+                        "surface-container-highest": "#33343b",
+                        "surface-container-low": "#191b22",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-bright": "#373940",
+                        "tertiary": "#ffb3ad",
+                        "inverse-on-surface": "#2e3037",
+                        "background": "#111319",
+                        "on-primary-container": "#eeefff",
+                        "outline": "#8d90a0",
+                        "on-secondary": "#003915",
+                        "outline-variant": "#434655",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary": "#4ae176",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#002109",
+                        "surface-tint": "#b4c5ff",
+                        "on-background": "#e2e2eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#33343b",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#cf2c30",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-primary": "#002a78",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#004119",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-tertiary": "#68000a",
+                        "on-secondary-fixed-variant": "#005321",
+                        "inverse-surface": "#e2e2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #111319; color: #e2e2eb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(55, 57, 64, 0.7); backdrop-filter: blur(20px); }
+        .technical-label { font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] border-b border-white/10 docked full-width top-0 z-50 fixed flex justify-between items-center w-full px-6 h-16">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-['Space_Grotesk']">CalcIng</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded-lg">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="p-2 text-slate-400 hover:bg-white/5 transition-colors rounded-lg">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow pt-20 pb-24 px-4 space-y-6 max-w-lg mx-auto w-full">
+<!-- System Status Section -->
+<section class="space-y-3">
+<div class="flex justify-between items-end px-1">
+<h2 class="technical-label text-on-surface-variant">System Diagnosis</h2>
+<span class="text-[10px] font-mono text-secondary">V2.4.0-STABLE</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-low p-4 rounded-xl border-b border-white/5">
+<div class="flex items-center gap-2 mb-1">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(74,225,118,0.5)]"></span>
+<span class="technical-label text-secondary">Computing Core</span>
+</div>
+<div class="text-xs font-mono text-on-surface-variant">OPERATIONAL</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border-b border-white/5">
+<div class="flex items-center gap-2 mb-1">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(74,225,118,0.5)]"></span>
+<span class="technical-label text-secondary">Data Sync</span>
+</div>
+<div class="text-xs font-mono text-on-surface-variant">LATENCY: 14MS</div>
+</div>
+</div>
+</section>
+<!-- Support Hero / Contact Form -->
+<section class="bg-surface-container rounded-xl overflow-hidden">
+<div class="h-32 relative overflow-hidden">
+<img class="w-full h-full object-cover opacity-40" data-alt="close-up of complex server room blue led lights reflecting on dark metallic surfaces technical engineering environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmWyoOBOroKm7IvJhlUNSFGHiLVlk-Hge5q_pKKkctXbhuhxSo6nvcFBlKKj6Y9FHXXFoxiao8UFOF3k5ivaWKjuZ95KZpEuA5fpgxhtL7SvNLOdQddo8SaXaGknVTs4g0vjkA6f0bAPdwO5erN4XTg8OZ02q3F10cuwbhbI1i3Yn2gFhZHbndwI1GheJaHLpVTo9vubrLfF6Yw-gEz8rZn8c-v17iVOQKBmSQ2jFh5BnZhEPrbRYwMUfZcmfw2Okqsw4OHLTodV8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h1 class="font-headline font-bold text-2xl text-on-surface">Support Portal</h1>
+<p class="text-xs text-on-surface-variant opacity-80">Submit technical inquiry to engineering lab</p>
+</div>
+</div>
+<form class="p-6 space-y-5">
+<div class="space-y-1">
+<label class="technical-label text-slate-500 px-1">Query Type</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border-none border-b border-white/10 text-on-surface text-sm p-3 focus:ring-0 focus:border-primary transition-all rounded-lg appearance-none">
+<option>Mathematical Error</option>
+<option>API Connection</option>
+<option>UI/UX Feedback</option>
+<option>Account Sync</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 pointer-events-none text-slate-500 text-sm">expand_more</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="technical-label text-slate-500 px-1">Laboratory Unit ID</label>
+<input class="w-full bg-surface-container-lowest border-none border-b border-white/10 text-on-surface text-sm p-3 focus:ring-0 focus:border-primary transition-all rounded-lg font-mono" placeholder="LAB-XXXX-XXXX" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="technical-label text-slate-500 px-1">Description</label>
+<textarea class="w-full bg-surface-container-lowest border-none border-b border-white/10 text-on-surface text-sm p-3 focus:ring-0 focus:border-primary transition-all rounded-lg resize-none" placeholder="Detail the variables and steps to reproduce..." rows="4"></textarea>
+</div>
+<button class="w-full py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold uppercase tracking-widest text-sm shadow-[0_4px_20px_rgba(37,99,235,0.3)] active:scale-[0.98] transition-all">
+                    Initialize Support Ticket
+                </button>
+</form>
+</section>
+<!-- Resource Links (Asymmetric Grid) -->
+<section class="space-y-3">
+<h2 class="technical-label text-on-surface-variant px-1">Internal Documentation</h2>
+<div class="grid grid-cols-12 gap-3">
+<a class="col-span-7 bg-surface-container-high p-4 rounded-xl border border-white/5 flex flex-col justify-between aspect-video" href="#">
+<span class="material-symbols-outlined text-primary">menu_book</span>
+<div>
+<div class="font-headline font-medium text-sm">Lab Manual</div>
+<div class="text-[10px] text-on-surface-variant">Core Logic Guide</div>
+</div>
+</a>
+<a class="col-span-5 bg-surface-container-high p-4 rounded-xl border border-white/5 flex flex-col justify-between" href="#">
+<span class="material-symbols-outlined text-secondary">terminal</span>
+<div>
+<div class="font-headline font-medium text-sm">CLI Tools</div>
+<div class="text-[10px] text-on-surface-variant">Adv. Shell</div>
+</div>
+</a>
+<a class="col-span-12 bg-surface-container-low p-4 rounded-xl border border-white/5 flex items-center justify-between" href="#">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">history</span>
+</div>
+<div>
+<div class="font-headline font-medium text-sm">Changelog</div>
+<div class="text-[10px] text-on-surface-variant">Version 2.4.0 Updates</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-600">arrow_forward_ios</span>
+</a>
+</div>
+</section>
+<!-- FAQ Accordion -->
+<section class="space-y-3">
+<h2 class="technical-label text-on-surface-variant px-1">Common Protocols (FAQ)</h2>
+<div class="space-y-2">
+<!-- Accordion Item 1 -->
+<div class="bg-surface-container-low rounded-xl overflow-hidden border border-white/5">
+<div class="p-4 flex justify-between items-center cursor-pointer">
+<span class="text-sm font-medium">How to reset global constants?</span>
+<span class="material-symbols-outlined text-slate-500">add</span>
+</div>
+</div>
+<!-- Accordion Item 2 -->
+<div class="bg-surface-container-low rounded-xl overflow-hidden border border-white/5">
+<div class="p-4 flex justify-between items-center cursor-pointer">
+<span class="text-sm font-medium">Cloud sync failure resolution</span>
+<span class="material-symbols-outlined text-slate-500">remove</span>
+</div>
+<div class="px-4 pb-4 text-xs text-on-surface-variant leading-relaxed border-t border-white/5 pt-3">
+                        Navigate to Workspace Settings &gt; Data Management. Toggle 'Emergency Force Sync' and verify that your Laboratory Unit ID matches the current terminal session credentials.
+                    </div>
+</div>
+<!-- Accordion Item 3 -->
+<div class="bg-surface-container-low rounded-xl overflow-hidden border border-white/5">
+<div class="p-4 flex justify-between items-center cursor-pointer">
+<span class="text-sm font-medium">Precision mode limitations</span>
+<span class="material-symbols-outlined text-slate-500">add</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 md:hidden shadow-2xl">
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</div>
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100">
+<span class="material-symbols-outlined">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</div>
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</div>
+<!-- Help/Support might logically map to an 'Export' or generic utilities tab in this schema, or be treated as an active "Extra" state -->
+<div class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 tap:scale-90 duration-100">
+<span class="material-symbols-outlined">help</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Soporte</span>
+</div>
+</nav>
+</body></html>

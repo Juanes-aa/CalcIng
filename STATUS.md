@@ -50,3 +50,13 @@ Backend-6 — Sprint B6-1: Rate limiting por IP y usuario (slowapi)
   sin impacto funcional. Revisar alternativa (p.ej. PyJWT) en Backend-4.
 - Cursor de paginación basado en timestamp: timestamps duplicados exactos podrían
   causar items repetidos o saltados. Revisar en Backend-4 si se agrega desempate por UUID.
+
+[PENDIENTE — requiere App.tsx] Grid layout 3 columnas no activo todavía.
+App.module.css tiene grid-template-columns correcto (280px 1fr / 280px 1fr 320px)
+pero App.tsx no tiene los wrappers de columna necesarios (sidebar div + mainContent div).
+Cuando se actualice App.tsx, agregar:
+  - <div className={styles.sidebar}> con nav items
+  - <div className={styles.mainContent}> wrapeando display + keypad + panels
+El CSS ya está listo — solo falta el JSX.
+Bloqueante para: ver sidebar visual y layout de 3 columnas en producción.
+No bloqueante para: D3 en adelante (los componentes individuales no dependen del grid).

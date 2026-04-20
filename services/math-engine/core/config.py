@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     # Base de datos
     DATABASE_URL: str = "sqlite+aiosqlite:///./calcIng_dev.db"
 
+    # CORS
+    ALLOWED_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://calcing.netlify.app",
+        "https://calcing.vercel.app",
+    ]
+
     # JWT — sin default: deben venir de env o .env en producción
     JWT_PRIVATE_KEY: str = ""
     JWT_PUBLIC_KEY: str = ""

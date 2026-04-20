@@ -1,6 +1,6 @@
-import './styles/tokens.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import './index.css';  // ← agregar esta línea
 import App from './App';
 
 const root = document.getElementById('root');

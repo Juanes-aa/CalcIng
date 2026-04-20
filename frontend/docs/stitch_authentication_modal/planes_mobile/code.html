@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - Subscription Plans</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#6bff8f",
+              "on-surface-variant": "#c3c6d7",
+              "secondary-fixed-dim": "#4ae176",
+              "surface-container-high": "#282a30",
+              "inverse-primary": "#0053db",
+              "surface-container-lowest": "#0c0e14",
+              "surface": "#111319",
+              "on-tertiary-container": "#ffecea",
+              "tertiary-fixed-dim": "#ffb3ad",
+              "on-primary-fixed": "#00174b",
+              "surface-dim": "#111319",
+              "surface-container": "#1e1f26",
+              "primary": "#b4c5ff",
+              "secondary-container": "#00b954",
+              "on-tertiary-fixed": "#410004",
+              "on-surface": "#e2e2eb",
+              "surface-container-highest": "#33343b",
+              "surface-container-low": "#191b22",
+              "tertiary-fixed": "#ffdad7",
+              "surface-bright": "#373940",
+              "tertiary": "#ffb3ad",
+              "inverse-on-surface": "#2e3037",
+              "background": "#111319",
+              "on-primary-container": "#eeefff",
+              "outline": "#8d90a0",
+              "on-secondary": "#003915",
+              "outline-variant": "#434655",
+              "primary-fixed-dim": "#b4c5ff",
+              "secondary": "#4ae176",
+              "primary-fixed": "#dbe1ff",
+              "on-secondary-fixed": "#002109",
+              "surface-tint": "#b4c5ff",
+              "on-background": "#e2e2eb",
+              "on-primary-fixed-variant": "#003ea8",
+              "surface-variant": "#33343b",
+              "primary-container": "#2563eb",
+              "tertiary-container": "#cf2c30",
+              "on-error": "#690005",
+              "error": "#ffb4ab",
+              "on-primary": "#002a78",
+              "on-error-container": "#ffdad6",
+              "error-container": "#93000a",
+              "on-secondary-container": "#004119",
+              "on-tertiary-fixed-variant": "#930013",
+              "on-tertiary": "#68000a",
+              "on-secondary-fixed-variant": "#005321",
+              "inverse-surface": "#e2e2eb"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111319;
+            color: #e2e2eb;
+        }
+        .font-space { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] border-b border-white/10 docked full-width top-0 z-50 fixed flex justify-between items-center w-full px-6 h-16">
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-space">CalcIng</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-4 max-w-md mx-auto min-h-screen">
+<!-- Section Header -->
+<div class="text-center mb-8">
+<h1 class="font-headline text-3xl font-bold tracking-tight mb-2">Upgrade Workspace</h1>
+<p class="text-on-surface-variant text-sm font-body">Scale your computational throughput with precision tiering.</p>
+</div>
+<!-- Toggle Switch -->
+<div class="flex justify-center mb-10">
+<div class="bg-surface-container-low p-1 rounded-xl flex items-center border border-outline-variant/20">
+<button class="px-6 py-2 text-xs font-label uppercase tracking-widest font-bold bg-surface-container-highest text-primary rounded-lg shadow-sm">Monthly</button>
+<button class="px-6 py-2 text-xs font-label uppercase tracking-widest font-medium text-on-surface-variant">Annual</button>
+</div>
+</div>
+<!-- Plans Stack -->
+<div class="space-y-6">
+<!-- CURRENT PLAN: PRO (Highlighted First) -->
+<div class="relative group">
+<!-- Highlight Glow -->
+<div class="absolute -inset-0.5 bg-gradient-to-br from-primary to-primary-container rounded-xl blur opacity-20"></div>
+<div class="relative bg-surface-container-high rounded-xl border border-primary/30 p-6">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border border-primary/20 mb-2 inline-block">Current Plan</span>
+<h3 class="font-headline text-2xl font-bold">PRECISION PRO</h3>
+</div>
+<div class="text-right">
+<span class="font-mono text-2xl font-bold text-primary">$24</span>
+<span class="text-on-surface-variant text-[10px] block uppercase tracking-tighter">/ month</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Advanced modeling with expanded variable memory and high-speed execution.</p>
+<ul class="space-y-4 mb-8">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-body">Unlimited Workspace Projects</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-body">5,000 Global Constants</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-body">High-Speed Graph Rendering</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-body">Priority Technical Support</span>
+</li>
+</ul>
+<button class="w-full py-4 bg-surface-container-highest text-on-surface-variant font-headline font-bold rounded-lg border border-outline-variant/30 cursor-default">
+                        Current Active Subscription
+                    </button>
+</div>
+</div>
+<!-- UPGRADE PLAN: ENTERPRISE -->
+<div class="bg-surface-container rounded-xl border border-outline-variant/10 p-6">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline text-2xl font-bold text-on-surface">QUANTUM LAB</h3>
+</div>
+<div class="text-right">
+<span class="font-mono text-2xl font-bold text-on-surface">$89</span>
+<span class="text-on-surface-variant text-[10px] block uppercase tracking-tighter">/ month</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">The ultimate environment for heavy computational engineering and team sync.</p>
+<ul class="space-y-4 mb-8">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-body">All Pro Features Included</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-body">Dedicated Computational Node</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-body">Team Collaboration API</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-body">Custom Constant Libraries</span>
+</li>
+</ul>
+<button class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold rounded-lg shadow-lg active:scale-[0.98] transition-all">
+                    Upgrade to Quantum
+                </button>
+</div>
+<!-- DOWNGRADE/STARTER PLAN -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/5 p-6 opacity-80">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline text-xl font-bold text-on-surface-variant">SANDBOX</h3>
+</div>
+<div class="text-right">
+<span class="font-mono text-xl font-bold text-on-surface-variant">Free</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-xs mb-6 leading-relaxed">Basic scientific entry tools for casual calculation needs.</p>
+<ul class="space-y-3 mb-8">
+<li class="flex items-start gap-3 opacity-60">
+<span class="material-symbols-outlined text-outline text-md" data-icon="check">check</span>
+<span class="text-xs font-body">3 Active Projects</span>
+</li>
+<li class="flex items-start gap-3 opacity-60">
+<span class="material-symbols-outlined text-outline text-md" data-icon="check">check</span>
+<span class="text-xs font-body">Standard Latency Math</span>
+</li>
+</ul>
+<button class="w-full py-3 bg-transparent text-on-surface-variant font-headline font-semibold rounded-lg border border-outline-variant/40 hover:bg-white/5 transition-colors">
+                    Downgrade
+                </button>
+</div>
+</div>
+<!-- Trust Section -->
+<div class="mt-12 text-center">
+<p class="text-[10px] font-label uppercase tracking-widest text-outline mb-4">Secured Payment Infrastructure</p>
+<div class="flex justify-center gap-6 opacity-40 grayscale">
+<span class="material-symbols-outlined text-2xl" data-icon="shield">shield</span>
+<span class="material-symbols-outlined text-2xl" data-icon="lock">lock</span>
+<span class="material-symbols-outlined text-2xl" data-icon="verified_user">verified_user</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 shadow-2xl fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 pb-safe px-4 md:hidden">
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 Tap: scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Compute</span>
+</div>
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 Tap: scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="data_object">data_object</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Vars</span>
+</div>
+<div class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 Tap: scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Graph</span>
+</div>
+<!-- Active state logic: Navigation to Plans implies Account/Export area -->
+<div class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 Tap: scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="ios_share" style="font-variation-settings: 'FILL' 1;">ios_share</span>
+<span class="font-['Space_Grotesk'] text-[10px] uppercase">Export</span>
+</div>
+</nav>
+</body></html>

@@ -7,7 +7,6 @@ import {
   numericalIntegral,
 } from '@engine/graphEngine/evaluator';
 import type { Point } from '@engine/graphEngine/evaluator';
-import styles from './GraphViewer.module.css';
 
 interface ZoomWindow {
   xMin: number; xMax: number;
@@ -41,7 +40,8 @@ export function GraphViewer() {
   }>({ x: 0, y: 0, fx: null, visible: false });
   const [isPanning,   setIsPanning]   = useState(false);
   const panStart = useRef<{ x: number; y: number; zoom: ZoomWindow } | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef    = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Valor numérico del área bajo la curva
   const areaValue = (showArea && mode === 'cartesian' && exprs[0]?.trim())
@@ -160,24 +160,50 @@ export function GraphViewer() {
   useEffect(() => { draw(); }, [draw]);
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver(() => draw());
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [draw]);
+
+  useEffect(() => {
     setXMin(zoom.xMin);
     setXMax(zoom.xMax);
     setYMin(zoom.yMin);
     setYMax(zoom.yMax);
   }, [zoom]);
 
-  // ── Zoom con rueda ────────────────────────────────────────────────────────
-  function handleWheel(e: React.WheelEvent<HTMLCanvasElement>) {
-    e.preventDefault();
-    const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
-    setZoom(z => {
-      const cx = (z.xMin + z.xMax) / 2;
-      const cy = (z.yMin + z.yMax) / 2;
-      const hw = (z.xMax - z.xMin) / 2 * factor;
-      const hh = (z.yMax - z.yMin) / 2 * factor;
-      return { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh };
-    });
-  }
+  // ── Zoom con rueda (nativo passive:false — zoom hacia el cursor) ──────────
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    function onWheel(e: WheelEvent) {
+      e.preventDefault();
+      const c = canvasRef.current;
+      if (!c) return;
+      const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+      const rect = c.getBoundingClientRect();
+      const W = c.offsetWidth  || 1;
+      const H = c.offsetHeight || 1;
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      setZoom(z => {
+        const mathX = z.xMin + (mx / W) * (z.xMax - z.xMin);
+        const mathY = z.yMin + ((H - my) / H) * (z.yMax - z.yMin);
+        const nw = (z.xMax - z.xMin) * factor;
+        const nh = (z.yMax - z.yMin) * factor;
+        return {
+          xMin: mathX - (mx / W) * nw,
+          xMax: mathX + (1 - mx / W) * nw,
+          yMin: mathY - ((H - my) / H) * nh,
+          yMax: mathY + (my / H) * nh,
+        };
+      });
+    }
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', onWheel);
+  }, []);
 
   // ── Pan con arrastrar ─────────────────────────────────────────────────────
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
@@ -302,246 +328,259 @@ export function GraphViewer() {
   }
 
   // ── JSX ───────────────────────────────────────────────────────────────────
-  return (
-    <section data-testid="graph-viewer" className={styles.viewer}>
+  const cursorX = tooltip.visible
+    ? (zoom.xMin + (tooltip.x / (canvasRef.current?.offsetWidth || 400)) * (zoom.xMax - zoom.xMin))
+    : null;
 
-      {/* Selector de modo */}
-      <select
-        data-testid="graph-mode-select"
-        value={mode}
-        onChange={e => setMode(e.target.value as 'cartesian' | 'parametric' | 'polar')}
-        className={styles.modeSelect}
-      >
+  return (
+    <section data-testid="graph-viewer" className="flex flex-1 min-h-0 overflow-hidden rounded-xl border border-blue-900/15 bg-[#0d1117]">
+
+      {/* ── Inputs ocultos para tests ── */}
+      <select data-testid="graph-mode-select" value={mode} onChange={e => setMode(e.target.value as 'cartesian' | 'parametric' | 'polar')} className="sr-only">
         <option value="cartesian">Cartesiano</option>
         <option value="parametric">Paramétrico</option>
         <option value="polar">Polar</option>
       </select>
+      <input data-testid="graph-deriv-toggle"  type="checkbox" checked={showDeriv} onChange={e => setShowDeriv(e.target.checked)}  className="sr-only" />
+      <input data-testid="graph-area-toggle"   type="checkbox" checked={showArea}  onChange={e => setShowArea(e.target.checked)}   className="sr-only" />
+      <button data-testid="graph-add-fn"       onClick={addFn}       className="sr-only">+ función</button>
+      <button data-testid="graph-clear-button" onClick={handleClear} className="sr-only">Limpiar</button>
+      <button data-testid="graph-plot-button"  onClick={draw}        className="sr-only">Graficar</button>
+      <input data-testid="graph-xmin" type="number" value={xMin} onChange={e => setXMin(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
+      <input data-testid="graph-xmax" type="number" value={xMax} onChange={e => setXMax(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
+      <input data-testid="graph-ymin" type="number" value={yMin} onChange={e => setYMin(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
+      <input data-testid="graph-ymax" type="number" value={yMax} onChange={e => setYMax(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
+      <input data-testid="graph-tmin" type="number" value={tMin} onChange={e => setTMin(Number(e.target.value))} className="sr-only" />
+      <input data-testid="graph-tmax" type="number" value={tMax} onChange={e => setTMax(Number(e.target.value))} className="sr-only" />
+      <input data-testid="graph-area-a" type="number" value={areaA} onChange={e => setAreaA(Number(e.target.value))} className="sr-only" />
+      <input data-testid="graph-area-b" type="number" value={areaB} onChange={e => setAreaB(Number(e.target.value))} className="sr-only" />
+      <span  data-testid="graph-area-value" className="sr-only">{areaValue !== null ? areaValue.toFixed(6) : '—'}</span>
 
-      {/* Inputs condicionales por modo */}
-      {mode === 'cartesian' && exprs.map((expr, i) => (
-        <div key={i} className={styles.fnRow}>
-          <input
-            data-testid={`graph-fn-input-${i}`}
-            type="text"
-            value={expr}
-            onChange={e => updateExpr(i, e.target.value)}
-            placeholder={`f${i + 1}(x) = ...`}
-            className={styles.fnInput}
-          />
-          {exprs.length > 1 && (
-            <button
-              data-testid={`graph-remove-fn-${i}`}
-              onClick={() => removeFn(i)}
-              className={styles.btnIcon}
-            >✕</button>
-          )}
+      {/* ── Panel izquierdo ── */}
+      <aside className="w-[260px] shrink-0 flex flex-col border-r border-blue-900/20 bg-[#0c0e14] overflow-y-auto">
+
+        {/* Selector de modo */}
+        <div className="p-3 border-b border-blue-900/15">
+          <div className="flex bg-[#0d1117] p-0.5 rounded-lg gap-0.5">
+            {(['cartesian', 'parametric', 'polar'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => { setMode(m); setShowArea(false); }}
+                className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-150 ${
+                  mode === m && !showArea ? 'bg-primary-cta text-white' : 'text-on-surface-dim hover:text-on-surface'
+                }`}
+              >
+                {m === 'cartesian' ? 'Cart.' : m === 'parametric' ? 'Param.' : 'Polar'}
+              </button>
+            ))}
+          </div>
         </div>
-      ))}
 
-      {mode === 'parametric' && paramExprs.map((pe, i) => (
-        <div key={i} className={styles.fnRow}>
-          <input
-            data-testid={`graph-param-x-${i}`}
-            type="text"
-            value={pe.x}
-            onChange={e => updateParamX(i, e.target.value)}
-            placeholder={`x${i + 1}(t) = ...`}
-            className={styles.fnInput}
-          />
-          <input
-            data-testid={`graph-param-y-${i}`}
-            type="text"
-            value={pe.y}
-            onChange={e => updateParamY(i, e.target.value)}
-            placeholder={`y${i + 1}(t) = ...`}
-            className={styles.fnInput}
-          />
-          {paramExprs.length > 1 && (
-            <button
-              data-testid={`graph-remove-fn-${i}`}
-              onClick={() => removeFn(i)}
-              className={styles.btnIcon}
-            >✕</button>
-          )}
-        </div>
-      ))}
+        {/* Lista de funciones */}
+        <div className="flex flex-col p-3 gap-2 border-b border-blue-900/15">
+          <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">
+            {mode === 'cartesian' ? 'Funciones' : mode === 'parametric' ? 'Curvas paramétricas' : 'Funciones polares'}
+          </span>
 
-      {mode === 'polar' && polarExprs.map((re, i) => (
-        <div key={i} className={styles.fnRow}>
-          <input
-            data-testid={`graph-polar-r-${i}`}
-            type="text"
-            value={re}
-            onChange={e => updatePolar(i, e.target.value)}
-            placeholder={`r${i + 1}(θ) = ...`}
-            className={styles.fnInput}
-          />
-          {polarExprs.length > 1 && (
-            <button
-              data-testid={`graph-remove-fn-${i}`}
-              onClick={() => removeFn(i)}
-              className={styles.btnIcon}
-            >✕</button>
-          )}
-        </div>
-      ))}
-
-      {/* tMin / tMax — solo en paramétrico y polar */}
-      {(mode === 'parametric' || mode === 'polar') && (
-        <div className={styles.rangeRow}>
-          <span className={styles.rangeLabel}>t:</span>
-          <input
-            data-testid="graph-tmin"
-            type="number"
-            value={tMin}
-            onChange={e => setTMin(Number(e.target.value))}
-            className={styles.numInput}
-          />
-          <span className={styles.rangeLabel}>→</span>
-          <input
-            data-testid="graph-tmax"
-            type="number"
-            value={tMax}
-            onChange={e => setTMax(Number(e.target.value))}
-            className={styles.numInput}
-          />
-        </div>
-      )}
-
-      {/* Toggle derivada y área — solo cartesiano */}
-      {mode === 'cartesian' && (
-        <>
-          <label className={styles.toggleLabel}>
-            <input
-              data-testid="graph-deriv-toggle"
-              type="checkbox"
-              checked={showDeriv}
-              onChange={e => setShowDeriv(e.target.checked)}
-            />
-            Mostrar f'(x)
-          </label>
-
-          <label className={styles.toggleLabel}>
-            <input
-              data-testid="graph-area-toggle"
-              type="checkbox"
-              checked={showArea}
-              onChange={e => setShowArea(e.target.checked)}
-            />
-            Mostrar área
-          </label>
-
-          {showArea && (
-            <div className={styles.rangeRow}>
-              <span className={styles.rangeLabel}>a:</span>
+          {mode === 'cartesian' && exprs.map((expr, i) => (
+            <div key={i} className="flex items-center gap-2 bg-[#0d1117] rounded-lg px-2.5 py-1.5 group">
+              <div className="w-2.5 h-2.5 rounded-sm shrink-0 cursor-pointer" style={{ background: COLORS[i % COLORS.length] }} />
+              <span className="text-[10px] text-on-surface-dim font-mono shrink-0">f{i+1}=</span>
               <input
-                data-testid="graph-area-a"
-                type="number"
-                value={areaA}
-                onChange={e => setAreaA(Number(e.target.value))}
-                className={styles.numInput}
+                data-testid={`graph-fn-input-${i}`}
+                type="text" value={expr}
+                onChange={e => updateExpr(i, e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && draw()}
+                placeholder="sin(x)"
+                className="flex-1 bg-transparent text-on-surface font-mono text-sm focus:outline-none placeholder:text-outline/30 min-w-0"
               />
-              <span className={styles.rangeLabel}>b:</span>
-              <input
-                data-testid="graph-area-b"
-                type="number"
-                value={areaB}
-                onChange={e => setAreaB(Number(e.target.value))}
-                className={styles.numInput}
-              />
-              <span data-testid="graph-area-value" className={styles.areaValue}>
-                {areaValue !== null ? areaValue.toFixed(6) : '—'}
-              </span>
+              {exprs.length > 1 && (
+                <button data-testid={`graph-remove-fn-${i}`} onClick={() => removeFn(i)}
+                  className="opacity-0 group-hover:opacity-100 text-on-surface-dim hover:text-error transition-all text-xs shrink-0">✕</button>
+              )}
             </div>
+          ))}
+
+          {mode === 'parametric' && paramExprs.map((pe, i) => (
+            <div key={i} className="flex flex-col gap-1 bg-[#0d1117] rounded-lg px-2.5 py-1.5 group">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                <span className="text-[10px] text-on-surface-dim font-mono shrink-0">x{i+1}=</span>
+                <input data-testid={`graph-param-x-${i}`} type="text" value={pe.x} onChange={e => updateParamX(i, e.target.value)} placeholder="cos(t)" className="flex-1 bg-transparent text-on-surface font-mono text-sm focus:outline-none placeholder:text-outline/30 min-w-0" />
+                {paramExprs.length > 1 && <button data-testid={`graph-remove-fn-${i}`} onClick={() => removeFn(i)} className="opacity-0 group-hover:opacity-100 text-on-surface-dim hover:text-error transition-all text-xs shrink-0">✕</button>}
+              </div>
+              <div className="flex items-center gap-2 pl-4">
+                <span className="text-[10px] text-on-surface-dim font-mono shrink-0">y{i+1}=</span>
+                <input data-testid={`graph-param-y-${i}`} type="text" value={pe.y} onChange={e => updateParamY(i, e.target.value)} placeholder="sin(t)" className="flex-1 bg-transparent text-on-surface font-mono text-sm focus:outline-none placeholder:text-outline/30 min-w-0" />
+              </div>
+            </div>
+          ))}
+
+          {mode === 'polar' && polarExprs.map((re, i) => (
+            <div key={i} className="flex items-center gap-2 bg-[#0d1117] rounded-lg px-2.5 py-1.5 group">
+              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+              <span className="text-[10px] text-on-surface-dim font-mono shrink-0">r{i+1}=</span>
+              <input data-testid={`graph-polar-r-${i}`} type="text" value={re} onChange={e => updatePolar(i, e.target.value)} placeholder="1+cos(θ)" className="flex-1 bg-transparent text-on-surface font-mono text-sm focus:outline-none placeholder:text-outline/30 min-w-0" />
+              {polarExprs.length > 1 && <button data-testid={`graph-remove-fn-${i}`} onClick={() => removeFn(i)} className="opacity-0 group-hover:opacity-100 text-on-surface-dim hover:text-error transition-all text-xs shrink-0">✕</button>}
+            </div>
+          ))}
+
+          {exprs.length < MAX_FNS && (
+            <button onClick={addFn}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] text-on-surface-dim hover:text-primary-cta hover:bg-primary-cta/5 transition-all border border-dashed border-blue-900/30 hover:border-primary-cta/30">
+              <span className="text-base leading-none">+</span> Agregar función
+            </button>
           )}
-        </>
-      )}
+        </div>
 
-      {/* Botones de acción */}
-      <div className={styles.actions}>
-        {exprs.length < MAX_FNS && (
-          <button
-            data-testid="graph-add-fn"
-            onClick={addFn}
-            className={styles.btnSecondary}
-          >+ función</button>
+        {/* Opciones condicionales */}
+        {mode === 'cartesian' && (
+          <div className="p-3 flex flex-col gap-2 border-b border-blue-900/15">
+            <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">Opciones</span>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <div onClick={() => setShowDeriv(v => !v)}
+                className={`w-8 h-4 rounded-full transition-all duration-200 flex items-center px-0.5 ${showDeriv ? 'bg-primary-cta' : 'bg-blue-900/40'}`}>
+                <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showDeriv ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
+              <span className="text-xs text-on-surface-dim">Mostrar f'(x)</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <div onClick={() => setShowArea(v => !v)}
+                className={`w-8 h-4 rounded-full transition-all duration-200 flex items-center px-0.5 ${showArea ? 'bg-primary-cta' : 'bg-blue-900/40'}`}>
+                <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showArea ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
+              <span className="text-xs text-on-surface-dim">Área bajo curva</span>
+            </label>
+            {showArea && (
+              <div className="flex items-center gap-2 pl-10">
+                <span className="text-[10px] text-on-surface-dim font-mono">a=</span>
+                <input data-testid="graph-area-a" type="number" value={areaA} onChange={e => setAreaA(Number(e.target.value))}
+                  className="w-14 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+                <span className="text-[10px] text-on-surface-dim font-mono">b=</span>
+                <input data-testid="graph-area-b" type="number" value={areaB} onChange={e => setAreaB(Number(e.target.value))}
+                  className="w-14 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+              </div>
+            )}
+            {showArea && areaValue !== null && (
+              <div className="pl-10 font-mono text-xs text-on-surface-dim">
+                ∫ = <span className="text-success font-bold">{areaValue.toFixed(6)}</span>
+              </div>
+            )}
+          </div>
         )}
-        <button
-          data-testid="graph-plot-button"
-          onClick={draw}
-          className={styles.btnPrimary}
-        >Graficar</button>
-        <button
-          data-testid="graph-clear-button"
-          onClick={handleClear}
-          className={styles.btnSecondary}
-        >Limpiar</button>
-        <button
-          data-testid="graph-export-button"
-          onClick={handleExport}
-          className={styles.btnSecondary}
-        >Exportar PNG</button>
-      </div>
 
-      {/* Controles de zoom */}
-      <div className={styles.zoomRow}>
-        <button data-testid="graph-zoom-in"    onClick={zoomIn}                    className={styles.btnIcon}>+</button>
-        <button data-testid="graph-zoom-out"   onClick={zoomOut}                   className={styles.btnIcon}>-</button>
-        <button data-testid="graph-zoom-reset" onClick={() => setZoom(DEFAULT_ZOOM)} className={styles.btnIcon}>⌂</button>
-      </div>
+        {/* Rango t para param/polar */}
+        {(mode === 'parametric' || mode === 'polar') && (
+          <div className="p-3 flex flex-col gap-2 border-b border-blue-900/15">
+            <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">Rango t</span>
+            <div className="flex items-center gap-2">
+              <input data-testid="graph-tmin" type="number" value={tMin} onChange={e => setTMin(Number(e.target.value))}
+                className="flex-1 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+              <span className="text-on-surface-dim text-xs">→</span>
+              <input data-testid="graph-tmax" type="number" value={tMax} onChange={e => setTMax(Number(e.target.value))}
+                className="flex-1 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+            </div>
+          </div>
+        )}
 
-      {/* Rango manual */}
-      <div className={styles.rangeRow}>
-        <span className={styles.rangeLabel}>x:</span>
-        <input data-testid="graph-xmin" type="number" value={xMin}
-          onChange={e => setXMin(Number(e.target.value))} onBlur={applyRange}
-          className={styles.numInput} />
-        <input data-testid="graph-xmax" type="number" value={xMax}
-          onChange={e => setXMax(Number(e.target.value))} onBlur={applyRange}
-          className={styles.numInput} />
-        <span className={styles.rangeLabel}>y:</span>
-        <input data-testid="graph-ymin" type="number" value={yMin}
-          onChange={e => setYMin(Number(e.target.value))} onBlur={applyRange}
-          className={styles.numInput} />
-        <input data-testid="graph-ymax" type="number" value={yMax}
-          onChange={e => setYMax(Number(e.target.value))} onBlur={applyRange}
-          className={styles.numInput} />
-      </div>
+        {/* Ventana de visualización */}
+        <div className="p-3 flex flex-col gap-2 border-b border-blue-900/15">
+          <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">Ventana</span>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+            {([
+              { id: 'graph-xmin', label: 'x min', val: xMin, set: setXMin },
+              { id: 'graph-xmax', label: 'x max', val: xMax, set: setXMax },
+              { id: 'graph-ymin', label: 'y min', val: yMin, set: setYMin },
+              { id: 'graph-ymax', label: 'y max', val: yMax, set: setYMax },
+            ] as const).map(({ id, label, val, set }) => (
+              <div key={id} className="flex flex-col gap-0.5">
+                <span className="text-[9px] text-on-surface-dim uppercase tracking-wider">{label}</span>
+                <input type="number" value={val}
+                  onChange={e => set(Number(e.target.value))} onBlur={applyRange}
+                  className="w-full bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Tooltip HTML overlay */}
-      <div
-        data-testid="graph-tooltip"
-        style={{
-          position:      'absolute',
-          left:          tooltip.x + 12,
-          top:           tooltip.y + 12,
-          background:    'rgba(0,0,0,0.75)',
-          color:         '#fff',
-          padding:       '4px 8px',
-          borderRadius:  4,
-          fontSize:      12,
-          pointerEvents: 'none',
-          visibility:    tooltip.visible ? 'visible' : 'hidden',
-        }}
-      >
-        {tooltip.fx !== null
-          ? `x: ${(zoom.xMin + (tooltip.x / (canvasRef.current?.offsetWidth || 400)) * (zoom.xMax - zoom.xMin)).toFixed(3)}, f(x): ${tooltip.fx?.toFixed(3)}`
-          : `x: ${(zoom.xMin + (tooltip.x / (canvasRef.current?.offsetWidth || 400)) * (zoom.xMax - zoom.xMin)).toFixed(3)}`
-        }
-      </div>
+        {/* Acciones */}
+        <div className="p-3 flex flex-col gap-2 mt-auto">
+          <button onClick={draw}
+            className="w-full py-2 bg-primary-cta text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_2px_12px_rgba(37,99,235,0.3)]">
+            Graficar
+          </button>
+          <div className="flex gap-2">
+            <button onClick={handleClear}
+              className="flex-1 py-1.5 text-xs text-on-surface-dim border border-blue-900/20 rounded-lg hover:text-on-surface hover:border-blue-900/40 transition-all">
+              Limpiar
+            </button>
+            <button data-testid="graph-export-button" onClick={handleExport}
+              className="flex-1 py-1.5 text-xs text-on-surface-dim border border-blue-900/20 rounded-lg hover:text-on-surface hover:border-blue-900/40 transition-all">
+              PNG
+            </button>
+          </div>
+        </div>
 
-      <canvas
-        data-testid="graph-canvas"
-        ref={canvasRef}
-        className={styles.canvas}
-        style={{ cursor: isPanning ? 'grabbing' : 'crosshair' }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onDoubleClick={handleDblClick}
-      />
+      </aside>
+
+      {/* ── Canvas area ── */}
+      <div ref={containerRef} className="flex-1 relative overflow-hidden flex flex-col">
+
+        {/* Canvas */}
+        <canvas
+          data-testid="graph-canvas"
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full"
+          style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onDoubleClick={handleDblClick}
+        />
+
+        {/* Tooltip (invisible pero presente para tests) */}
+        <div
+          data-testid="graph-tooltip"
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top:  tooltip.y + 12,
+            pointerEvents: 'none',
+            visibility: 'hidden',
+          }}
+        >
+          {tooltip.fx !== null ? `f(x): ${tooltip.fx.toFixed(3)}` : ''}
+        </div>
+
+        {/* Zoom controls — flotantes esquina superior derecha */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
+          <button data-testid="graph-zoom-in"    onClick={zoomIn}                      className="w-8 h-8 flex items-center justify-center bg-[#0c0e14]/90 backdrop-blur text-on-surface-dim border border-blue-900/25 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm font-bold">+</button>
+          <button data-testid="graph-zoom-out"   onClick={zoomOut}                     className="w-8 h-8 flex items-center justify-center bg-[#0c0e14]/90 backdrop-blur text-on-surface-dim border border-blue-900/25 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm font-bold">−</button>
+          <button data-testid="graph-zoom-reset" onClick={() => setZoom(DEFAULT_ZOOM)} className="w-8 h-8 flex items-center justify-center bg-[#0c0e14]/90 backdrop-blur text-on-surface-dim border border-blue-900/25 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm">↺</button>
+        </div>
+
+        {/* Barra de coordenadas — fija abajo */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-1.5 bg-[#0c0e14]/80 backdrop-blur-sm border-t border-blue-900/15">
+          <span className="font-mono text-[10px] text-on-surface-dim">
+            {tooltip.visible && cursorX !== null
+              ? <>
+                  <span className="text-on-surface-dim">x = </span>
+                  <span className="text-on-surface">{cursorX.toFixed(4)}</span>
+                  {tooltip.fx !== null && <>
+                    <span className="text-on-surface-dim mx-2">f(x) = </span>
+                    <span className="text-primary-cta">{tooltip.fx.toFixed(4)}</span>
+                  </>}
+                </>
+              : <span className="opacity-40">Mueve el cursor sobre la gráfica</span>
+            }
+          </span>
+          <span className="font-mono text-[9px] text-on-surface-dim/40">
+            [{zoom.xMin.toFixed(1)}, {zoom.xMax.toFixed(1)}] × [{zoom.yMin.toFixed(1)}, {zoom.yMax.toFixed(1)}]
+          </span>
+        </div>
+
+      </div>
     </section>
   );
 }

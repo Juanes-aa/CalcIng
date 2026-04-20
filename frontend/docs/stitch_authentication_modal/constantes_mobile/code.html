@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalcIng - Precision Constants</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#6bff8f",
+                        "on-surface-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-container-high": "#282a30",
+                        "inverse-primary": "#0053db",
+                        "surface-container-lowest": "#0c0e14",
+                        "surface": "#111319",
+                        "on-tertiary-container": "#ffecea",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "on-primary-fixed": "#00174b",
+                        "surface-dim": "#111319",
+                        "surface-container": "#1e1f26",
+                        "primary": "#b4c5ff",
+                        "secondary-container": "#00b954",
+                        "on-tertiary-fixed": "#410004",
+                        "on-surface": "#e2e2eb",
+                        "surface-container-highest": "#33343b",
+                        "surface-container-low": "#191b22",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-bright": "#373940",
+                        "tertiary": "#ffb3ad",
+                        "inverse-on-surface": "#2e3037",
+                        "background": "#111319",
+                        "on-primary-container": "#eeefff",
+                        "outline": "#8d90a0",
+                        "on-secondary": "#003915",
+                        "outline-variant": "#434655",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary": "#4ae176",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#002109",
+                        "surface-tint": "#b4c5ff",
+                        "on-background": "#e2e2eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#33343b",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#cf2c30",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-primary": "#002a78",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#004119",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-tertiary": "#68000a",
+                        "on-secondary-fixed-variant": "#005321",
+                        "inverse-surface": "#e2e2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body select-none">
+<!-- TopAppBar -->
+<header class="bg-[#111319] dark:bg-[#111319] docked full-width top-0 z-50 border-b border-white/10 flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold tracking-tighter text-blue-500 dark:text-blue-400 font-headline">CalcIng</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded-lg">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="text-slate-400 hover:bg-white/5 transition-colors p-2 rounded-lg">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</header>
+<main class="pt-16 pb-24 min-h-screen">
+<!-- Search & Context Header -->
+<div class="px-6 py-6 bg-surface-container-low">
+<h1 class="font-headline text-2xl font-bold tracking-tight text-on-surface mb-1">Constants Library</h1>
+<p class="font-label text-[10px] uppercase tracking-widest text-outline mb-6">Precision Mode Active</p>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface py-4 pl-12 pr-4 font-body transition-all" placeholder="Search Physical Constants..." type="text"/>
+</div>
+</div>
+<!-- Horizontal Scrollable Tabs -->
+<div class="sticky top-16 z-40 bg-[#111319]/80 backdrop-blur-xl border-b border-white/5">
+<div class="flex overflow-x-auto hide-scrollbar px-6 py-4 gap-6 items-center">
+<button class="whitespace-nowrap font-headline text-[11px] uppercase tracking-widest text-blue-400 font-bold border-b-2 border-blue-400 pb-1">Universal</button>
+<button class="whitespace-nowrap font-headline text-[11px] uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-colors pb-1">Electromagnetic</button>
+<button class="whitespace-nowrap font-headline text-[11px] uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-colors pb-1">Atomic</button>
+<button class="whitespace-nowrap font-headline text-[11px] uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-colors pb-1">Physico-Chemical</button>
+<button class="whitespace-nowrap font-headline text-[11px] uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-colors pb-1">Astro</button>
+</div>
+</div>
+<!-- Constant Cards Grid (1-column for Mobile) -->
+<div class="px-6 py-8 space-y-4">
+<!-- Card 01 -->
+<div class="bg-surface-container p-5 rounded-xl border-l-4 border-primary shadow-lg transition-transform active:scale-[0.98]">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label text-[10px] uppercase tracking-tighter text-outline block mb-1">Universal Constant</span>
+<h3 class="font-headline text-lg font-semibold text-on-surface">Speed of Light</h3>
+</div>
+<span class="font-mono text-primary bg-primary/10 px-2 py-1 rounded text-sm font-bold">c</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg border border-white/5 mb-4">
+<p class="font-mono text-xl text-on-surface overflow-x-auto whitespace-nowrap hide-scrollbar">299,792,458 <span class="text-outline text-sm">m/s</span></p>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-outline italic">Exact Value</span>
+<button class="flex items-center gap-2 text-primary hover:bg-primary/5 px-3 py-1.5 rounded transition-all">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+<span class="font-label text-[11px] uppercase font-bold tracking-widest">Copy</span>
+</button>
+</div>
+</div>
+<!-- Card 02 -->
+<div class="bg-surface-container p-5 rounded-xl border-l-4 border-secondary-container shadow-lg transition-transform active:scale-[0.98]">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label text-[10px] uppercase tracking-tighter text-outline block mb-1">Quantum Physics</span>
+<h3 class="font-headline text-lg font-semibold text-on-surface">Planck Constant</h3>
+</div>
+<span class="font-mono text-secondary-container bg-secondary-container/10 px-2 py-1 rounded text-sm font-bold">h</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg border border-white/5 mb-4">
+<p class="font-mono text-xl text-on-surface overflow-x-auto whitespace-nowrap hide-scrollbar">6.62607015e-34 <span class="text-outline text-sm">J·s</span></p>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-outline italic">CODATA 2018</span>
+<button class="flex items-center gap-2 text-secondary-container hover:bg-secondary-container/5 px-3 py-1.5 rounded transition-all">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+<span class="font-label text-[11px] uppercase font-bold tracking-widest">Copy</span>
+</button>
+</div>
+</div>
+<!-- Card 03 -->
+<div class="bg-surface-container p-5 rounded-xl border-l-4 border-tertiary-container shadow-lg transition-transform active:scale-[0.98]">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label text-[10px] uppercase tracking-tighter text-outline block mb-1">Thermodynamics</span>
+<h3 class="font-headline text-lg font-semibold text-on-surface">Boltzmann Constant</h3>
+</div>
+<span class="font-mono text-tertiary-container bg-tertiary-container/10 px-2 py-1 rounded text-sm font-bold">k</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg border border-white/5 mb-4">
+<p class="font-mono text-xl text-on-surface overflow-x-auto whitespace-nowrap hide-scrollbar">1.380649e-23 <span class="text-outline text-sm">J/K</span></p>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-outline italic">Exact Definition</span>
+<button class="flex items-center gap-2 text-tertiary-container hover:bg-tertiary-container/5 px-3 py-1.5 rounded transition-all">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+<span class="font-label text-[11px] uppercase font-bold tracking-widest">Copy</span>
+</button>
+</div>
+</div>
+<!-- Card 04 -->
+<div class="bg-surface-container p-5 rounded-xl border-l-4 border-outline shadow-lg transition-transform active:scale-[0.98]">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label text-[10px] uppercase tracking-tighter text-outline block mb-1">Gravitation</span>
+<h3 class="font-headline text-lg font-semibold text-on-surface">Gravitational Const.</h3>
+</div>
+<span class="font-mono text-outline bg-outline/10 px-2 py-1 rounded text-sm font-bold">G</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg border border-white/5 mb-4">
+<p class="font-mono text-xl text-on-surface overflow-x-auto whitespace-nowrap hide-scrollbar">6.67430e-11 <span class="text-outline text-sm">m³/(kg·s²)</span></p>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-outline italic">Rel. Uncertainty: 2.2e-5</span>
+<button class="flex items-center gap-2 text-outline hover:bg-white/5 px-3 py-1.5 rounded transition-all">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+<span class="font-label text-[11px] uppercase font-bold tracking-widest">Copy</span>
+</button>
+</div>
+</div>
+<!-- Technical Background Element -->
+<div class="py-12 flex flex-col items-center opacity-20 pointer-events-none">
+<div class="w-32 h-px bg-gradient-to-r from-transparent via-outline-variant to-transparent mb-4"></div>
+<p class="font-headline text-[10px] uppercase tracking-[0.4em] text-outline">Calibration Level: Standard-ISO</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-[#111319]/90 backdrop-blur-xl border-t border-white/10 flex justify-around items-center h-16 pb-safe px-4 shadow-2xl md:hidden">
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="font-headline text-[10px] uppercase">Compute</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">data_object</span>
+<span class="font-headline text-[10px] uppercase">Vars</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-headline text-[10px] uppercase">Graph</span>
+</a>
+<a class="text-blue-400 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90 duration-100 font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">functions</span>
+<span class="font-headline text-[10px] uppercase">Constants</span>
+</a>
+<a class="text-slate-500 flex flex-col items-center gap-1 active:bg-white/5 transition-all active:scale-90 duration-100" href="#">
+<span class="material-symbols-outlined">ios_share</span>
+<span class="font-headline text-[10px] uppercase">Export</span>
+</a>
+</nav>
+</body></html>
