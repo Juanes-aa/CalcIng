@@ -5,6 +5,8 @@ import * as authService from './services/authService'
 
 vi.mock('./services/authService', () => ({
   getStoredToken: vi.fn(),
+  getStoredName: vi.fn(() => ''),
+  getStoredPlan: vi.fn(() => 'free'),
   logout: vi.fn(),
 }))
 

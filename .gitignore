@@ -9,6 +9,22 @@ venv/
 *.db
 *.sqlite3
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.dump
+*.bak
+*.backup
+*.journal
+*.wal
+*.shm
+database/
+db/
+databases/
+data/
+
 # Node / Frontend
 node_modules/
 dist/

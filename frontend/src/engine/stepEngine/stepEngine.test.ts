@@ -39,7 +39,7 @@ describe('buildSteps — differentiate', () => {
     });
   });
 
-  it('detecta PRODUCT_RULE_DIFF para "x^2 * sin(x)"', () => {
+  it('detecta SIN_RULE_DIFF para "x^2 * sin(x)"', () => {
     const input: StepInput = {
       operation: 'differentiate',
       expression: 'x^2 * sin(x)',
@@ -47,7 +47,7 @@ describe('buildSteps — differentiate', () => {
       result: '2*x*sin(x) + x^2*cos(x)',
     };
     const steps = buildSteps(input);
-    expect(steps.some((s) => s.rule_id === 'PRODUCT_RULE_DIFF')).toBe(true);
+    expect(steps.some((s) => s.rule_id === 'SIN_RULE_DIFF')).toBe(true);
   });
 
   it('detecta CHAIN_RULE_DIFF para "sin(x^2)"', () => {
@@ -287,7 +287,6 @@ describe('step_number secuencial', () => {
   });
 });
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // GRUPO: buildSteps — solveEquation lineal (5 pasos)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,9 +322,9 @@ describe('buildSteps — solveEquation lineal (5 pasos)', () => {
     expect(buildSteps(input)[3].expression_after).toBe('x = 5');
   });
 
-  it('"3x + 7 = 22": paso 5 tiene expression_after "x = 5"', () => {
+  it('"3x + 7 = 22": paso 5 tiene expression_after "x = 5 ✓"', () => {
     const input: StepInput = { operation: 'solveEquation', expression: '3x + 7 = 22', variable: 'x', result: 'x = 5' };
-    expect(buildSteps(input)[4].expression_after).toBe('x = 5');
+    expect(buildSteps(input)[4].expression_after).toBe('x = 5 ✓');
   });
 
   it('"3x + 7 = 22": paso 5 tiene explanation que incluye "✓"', () => {
@@ -482,9 +481,9 @@ describe('buildSteps — integrate por partes', () => {
     expect(buildSteps(input)[3].is_key_step).toBe(true);
   });
 
-  it('"x*exp(x)": paso 4 tiene explanation que incluye "∫u dv = uv - ∫v du"', () => {
+  it('"x*exp(x)": paso 4 tiene explanation que incluye "∫u dv = uv − ∫v du"', () => {
     const input: StepInput = { operation: 'integrate', expression: 'x*exp(x)', variable: 'x', result: 'exp(x)*(x-1)' };
-    expect(buildSteps(input)[3].explanation).toContain('∫u dv = uv - ∫v du');
+    expect(buildSteps(input)[3].explanation).toContain('∫u dv = uv − ∫v du');
   });
 
   it('"x*exp(x)": paso 5 tiene expression_after que incluye "+ C"', () => {

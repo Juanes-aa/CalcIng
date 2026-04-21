@@ -414,16 +414,16 @@ describe('GraphViewer — área bajo la curva', () => {
 
   it('inputs graph-area-a y graph-area-b no visibles cuando toggle está inactivo', () => {
     render(<GraphViewer />);
-    expect(screen.queryByTestId('graph-area-a')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('graph-area-b')).not.toBeInTheDocument();
+    expect(screen.queryByText('a=')).not.toBeInTheDocument();
+    expect(screen.queryByText('b=')).not.toBeInTheDocument();
   });
 
   it('inputs graph-area-a y graph-area-b visibles cuando toggle está activo', async () => {
     render(<GraphViewer />);
     fireEvent.click(screen.getByTestId('graph-area-toggle'));
     await waitFor(() => {
-      expect(screen.getByTestId('graph-area-a')).toBeInTheDocument();
-      expect(screen.getByTestId('graph-area-b')).toBeInTheDocument();
+      expect(screen.getByText('a=')).toBeInTheDocument();
+      expect(screen.getByText('b=')).toBeInTheDocument();
     });
   });
 
@@ -431,7 +431,9 @@ describe('GraphViewer — área bajo la curva', () => {
     render(<GraphViewer />);
     fireEvent.click(screen.getByTestId('graph-area-toggle'));
     await waitFor(() => {
-      expect(screen.getByTestId('graph-area-a')).toHaveValue(-1);
+      const areaAInputs = screen.getAllByTestId('graph-area-a');
+      const visibleInput = areaAInputs.find(input => !input.classList.contains('sr-only'));
+      expect((visibleInput! as HTMLInputElement).value).toBe('-1');
     });
   });
 
@@ -439,20 +441,23 @@ describe('GraphViewer — área bajo la curva', () => {
     render(<GraphViewer />);
     fireEvent.click(screen.getByTestId('graph-area-toggle'));
     await waitFor(() => {
-      expect(screen.getByTestId('graph-area-b')).toHaveValue(1);
+      const areaBInputs = screen.getAllByTestId('graph-area-b');
+      const visibleInput = areaBInputs.find(input => !input.classList.contains('sr-only'));
+      expect((visibleInput! as HTMLInputElement).value).toBe('1');
     });
   });
 
-  it('graph-area-value no visible cuando toggle está inactivo', () => {
+  it('graph-area-value no existe cuando toggle está inactivo', () => {
     render(<GraphViewer />);
     expect(screen.queryByTestId('graph-area-value')).not.toBeInTheDocument();
   });
 
-  it('graph-area-value visible cuando toggle está activo', async () => {
+  it('graph-area-value tiene sr-only cuando toggle está activo', async () => {
     render(<GraphViewer />);
     fireEvent.click(screen.getByTestId('graph-area-toggle'));
     await waitFor(() => {
-      expect(screen.getByTestId('graph-area-value')).toBeInTheDocument();
+      const areaValueElement = screen.getByTestId('graph-area-value');
+      expect(areaValueElement).toHaveClass('sr-only');
     });
   });
 
@@ -475,16 +480,28 @@ describe('GraphViewer — área bajo la curva', () => {
   it('acepta cambio de valor en graph-area-a', async () => {
     render(<GraphViewer />);
     fireEvent.click(screen.getByTestId('graph-area-toggle'));
-    await waitFor(() => screen.getByTestId('graph-area-a'));
-    fireEvent.change(screen.getByTestId('graph-area-a'), { target: { value: '-2' } });
-    expect((screen.getByTestId('graph-area-a') as HTMLInputElement).value).toBe('-2');
+    await waitFor(() => {
+      const areaAInputs = screen.getAllByTestId('graph-area-a');
+      const visibleInput = areaAInputs.find(input => !input.classList.contains('sr-only'));
+      expect(visibleInput).toBeInTheDocument();
+    });
+    const areaAInputs = screen.getAllByTestId('graph-area-a');
+    const visibleInput = areaAInputs.find(input => !input.classList.contains('sr-only'));
+    fireEvent.change(visibleInput!, { target: { value: '-2' } });
+    expect((visibleInput! as HTMLInputElement).value).toBe('-2');
   });
 
   it('acepta cambio de valor en graph-area-b', async () => {
     render(<GraphViewer />);
     fireEvent.click(screen.getByTestId('graph-area-toggle'));
-    await waitFor(() => screen.getByTestId('graph-area-b'));
-    fireEvent.change(screen.getByTestId('graph-area-b'), { target: { value: '3' } });
-    expect((screen.getByTestId('graph-area-b') as HTMLInputElement).value).toBe('3');
+    await waitFor(() => {
+      const areaBInputs = screen.getAllByTestId('graph-area-b');
+      const visibleInput = areaBInputs.find(input => !input.classList.contains('sr-only'));
+      expect(visibleInput).toBeInTheDocument();
+    });
+    const areaBInputs = screen.getAllByTestId('graph-area-b');
+    const visibleInput = areaBInputs.find(input => !input.classList.contains('sr-only'));
+    fireEvent.change(visibleInput!, { target: { value: '3' } });
+    expect((visibleInput! as HTMLInputElement).value).toBe('3');
   });
 });

@@ -34,9 +34,10 @@ describe('CASPanel', () => {
   });
 
   // T02
-  it('T02 — el select tiene valor inicial simplify', () => {
+  it('T02 — el primer botón de operación tiene estado active para simplify', () => {
     render(<CASPanel />);
-    expect(screen.getByTestId('cas-operation-select')).toHaveValue('simplify');
+    const simplifyButton = screen.getByRole('button', { name: 'Simplificar' });
+    expect(simplifyButton).toHaveClass('bg-(--color-primary-cta)/15');
   });
 
   // T03
@@ -106,10 +107,11 @@ describe('CASPanel', () => {
   });
 
   // T12
-  it('T12 — cambiar el select llama setOperation con el valor correcto', () => {
+  it('T12 — click en botón de operación llama setOperation con el valor correcto', () => {
     render(<CASPanel />);
-    fireEvent.change(screen.getByTestId('cas-operation-select'), { target: { value: 'differentiate' } });
-    expect(mockSetOperation).toHaveBeenCalledWith('differentiate');
+    const differentiateButton = screen.getByRole('button', { name: 'Derivar' });
+    fireEvent.click(differentiateButton);
+    expect(mockExecute).toHaveBeenCalledWith('differentiate');
   });
 
   // T13
@@ -208,18 +210,24 @@ describe('CASPanel', () => {
 });
 
 describe('CASPanel — selector de nivel de detalle', () => {
-  it('renderiza selector de nivel con data-testid="cas-detail-level-select"', () => {
+  it('renderiza selector de nivel con data-testid="cas-detail-level-select" en pestaña pasos', () => {
     render(<CASPanel />);
+    const pasosTab = screen.getByRole('button', { name: 'Pasos' });
+    fireEvent.click(pasosTab);
     expect(screen.getByTestId('cas-detail-level-select')).toBeInTheDocument();
   });
 
   it('valor por defecto del selector es "intermediate"', () => {
     render(<CASPanel />);
+    const pasosTab = screen.getByRole('button', { name: 'Pasos' });
+    fireEvent.click(pasosTab);
     expect(screen.getByTestId('cas-detail-level-select')).toHaveValue('intermediate');
   });
 
   it('cambiar selector a "beginner" actualiza el nivel visible', () => {
     render(<CASPanel />);
+    const pasosTab = screen.getByRole('button', { name: 'Pasos' });
+    fireEvent.click(pasosTab);
     fireEvent.change(screen.getByTestId('cas-detail-level-select'), {
       target: { value: 'beginner' },
     });
@@ -228,6 +236,8 @@ describe('CASPanel — selector de nivel de detalle', () => {
 
   it('cambiar selector a "advanced" actualiza el nivel visible', () => {
     render(<CASPanel />);
+    const pasosTab = screen.getByRole('button', { name: 'Pasos' });
+    fireEvent.click(pasosTab);
     fireEvent.change(screen.getByTestId('cas-detail-level-select'), {
       target: { value: 'advanced' },
     });
@@ -246,8 +256,8 @@ describe('CASPanel — estilos y accesibilidad', () => {
 
   test('input de variable tiene label o placeholder visible', () => {
     render(<CASPanel />)
-    const select = screen.getByTestId('cas-operation-select')
-    fireEvent.change(select, { target: { value: 'differentiate' } })
+    const differentiateButton = screen.getByRole('button', { name: 'Derivar' })
+    fireEvent.click(differentiateButton)
     const varInput = screen.getByTestId('cas-variable-input')
     expect(varInput).toHaveAttribute('placeholder')
   })

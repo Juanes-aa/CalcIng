@@ -341,8 +341,12 @@ export function GraphViewer() {
         <option value="parametric">Paramétrico</option>
         <option value="polar">Polar</option>
       </select>
-      <input data-testid="graph-deriv-toggle"  type="checkbox" checked={showDeriv} onChange={e => setShowDeriv(e.target.checked)}  className="sr-only" />
-      <input data-testid="graph-area-toggle"   type="checkbox" checked={showArea}  onChange={e => setShowArea(e.target.checked)}   className="sr-only" />
+      {mode === 'cartesian' && (
+        <input data-testid="graph-deriv-toggle"  type="checkbox" checked={showDeriv} onChange={e => setShowDeriv(e.target.checked)}  className="sr-only" />
+      )}
+      {mode === 'cartesian' && (
+        <input data-testid="graph-area-toggle"   type="checkbox" checked={showArea}  onChange={e => setShowArea(e.target.checked)}   className="sr-only" />
+      )}
       <button data-testid="graph-add-fn"       onClick={addFn}       className="sr-only">+ función</button>
       <button data-testid="graph-clear-button" onClick={handleClear} className="sr-only">Limpiar</button>
       <button data-testid="graph-plot-button"  onClick={draw}        className="sr-only">Graficar</button>
@@ -350,11 +354,13 @@ export function GraphViewer() {
       <input data-testid="graph-xmax" type="number" value={xMax} onChange={e => setXMax(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
       <input data-testid="graph-ymin" type="number" value={yMin} onChange={e => setYMin(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
       <input data-testid="graph-ymax" type="number" value={yMax} onChange={e => setYMax(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
-      <input data-testid="graph-tmin" type="number" value={tMin} onChange={e => setTMin(Number(e.target.value))} className="sr-only" />
-      <input data-testid="graph-tmax" type="number" value={tMax} onChange={e => setTMax(Number(e.target.value))} className="sr-only" />
-      <input data-testid="graph-area-a" type="number" value={areaA} onChange={e => setAreaA(Number(e.target.value))} className="sr-only" />
-      <input data-testid="graph-area-b" type="number" value={areaB} onChange={e => setAreaB(Number(e.target.value))} className="sr-only" />
-      <span  data-testid="graph-area-value" className="sr-only">{areaValue !== null ? areaValue.toFixed(6) : '—'}</span>
+      <input type="number" value={tMin} onChange={e => setTMin(Number(e.target.value))} className="sr-only" />
+      <input type="number" value={tMax} onChange={e => setTMax(Number(e.target.value))} className="sr-only" />
+      <input type="number" value={areaA} onChange={e => setAreaA(Number(e.target.value))} className="sr-only" />
+      <input type="number" value={areaB} onChange={e => setAreaB(Number(e.target.value))} className="sr-only" />
+      {mode === 'cartesian' && showArea && (
+        <span  data-testid="graph-area-value" className="sr-only">{areaValue !== null ? areaValue.toFixed(6) : '—'}</span>
+      )}
 
       {/* ── Panel izquierdo ── */}
       <aside className="w-[260px] shrink-0 flex flex-col border-r border-blue-900/20 bg-[#0c0e14] overflow-y-auto">
