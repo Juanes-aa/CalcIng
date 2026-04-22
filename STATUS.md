@@ -1,6 +1,8 @@
 ## Estado actual
-Tests frontend: 656 passing, 0 failing
-Tests backend:  106 passing, 0 failing
+Tests frontend: 890 passing, 0 failing
+Tests backend:  140 passing, 0 failing
+
+Último commit: 4a4ca9f — fix(tests): resolver 26 fallos en frontend (890/890 passing)
 
 ## Bloqueadores activos
 
