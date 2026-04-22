@@ -126,7 +126,7 @@ describe('AuthModal', () => {
       fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'pass123' } })
       fireEvent.submit(screen.getByTestId('auth-form'))
       await waitFor(() => {
-        expect(authService.register).toHaveBeenCalledWith('a@b.com', 'pass123')
+        expect(authService.register).toHaveBeenCalledWith('a@b.com', 'pass123', undefined, undefined)
         expect(authService.login).toHaveBeenCalledWith('a@b.com', 'pass123')
       })
     })

@@ -84,6 +84,8 @@ function _aArrayPlano(arg: unknown): number[] {
 
 function _registrarFuncionesExtendidas(): void {
   _math.import({
+    ln:          (x: unknown) => _math.log(x as never),
+    factorial:   (n: number) => factorial(n),
     decToBin:  (n: number) => convertDecimalToBinary(n),
     decToHex:  (n: number) => convertDecimalToHex(n),
     decToOct:  (n: number) => convertDecimalToOctal(n),
@@ -223,7 +225,7 @@ function preprocesarExpresion(expr: string, modoAngulo: AngleMode | boolean): st
     const TRIG_INVERSAS = ['asin', 'acos', 'atan'];
     for (const fn of TRIG_INVERSAS) {
       const re = new RegExp(`\\b${fn}\\(`, 'g');
-      e = e.replace(re, `_RAD2ANG_(${fn}(`);
+      e = e.replace(re, `_INVTRIG_${fn.toUpperCase()}_(`);
     }
 
     e = _expandirMarcadoresAngulo(e, modoAngulo as 'DEG' | 'GRAD');
@@ -242,7 +244,12 @@ function _expandirMarcadoresAngulo(expr: string, modoAngulo: 'DEG' | 'GRAD'): st
     expr = _envolverMarcador(expr, marcador, (inner) => `${fn}((${inner}) * ${factorEntrada})`);
   }
 
-  expr = _envolverMarcador(expr, '_RAD2ANG_(', (inner) => `((${inner}) * ${factorSalida})`);
+  const INVERSAS = ['asin', 'acos', 'atan'];
+  for (const fn of INVERSAS) {
+    const marcador = `_INVTRIG_${fn.toUpperCase()}_(`;
+    expr = _envolverMarcador(expr, marcador, (inner) => `((${fn}(${inner})) * ${factorSalida})`);
+  }
+
   return expr;
 }
 

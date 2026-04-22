@@ -38,6 +38,64 @@ function splitTerms(expr: string): string[] {
   return terms;
 }
 
+function splitFactors(expr: string): string[] {
+  const factors: string[] = [];
+  let depth = 0;
+  let current = '';
+
+  for (let i = 0; i < expr.length; i++) {
+    const ch = expr[i];
+    if (ch === '(') depth++;
+    if (ch === ')') depth--;
+
+    if (depth === 0 && ch === '*') {
+      if (current.trim()) factors.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+
+  if (current.trim()) factors.push(current.trim());
+  return factors;
+}
+
+function parsePowerFactor(factor: string): { degree: number } | null {
+  const clean = factor.replace(/\s/g, '');
+  if (clean === 'x') return { degree: 1 };
+
+  const match = clean.match(/^(\d*\.?\d+)?\*?x(?:\^(\d+))?$/);
+  if (!match) return null;
+
+  return { degree: match[2] ? parseInt(match[2], 10) : 1 };
+}
+
+function parseTranscendentFactor(factor: string): { fn: string; inner: string } | null {
+  const match = factor.replace(/\s/g, '').match(/^(sin|cos|tan|exp|ln|log|sqrt)\((.+)\)$/);
+  if (!match) return null;
+  return { fn: match[1], inner: match[2] };
+}
+
+function shouldUseUSubstitution(expression: string): boolean {
+  const factors = splitFactors(expression.replace(/\s/g, ''));
+  if (factors.length < 2) return false;
+
+  const algebraic = factors
+    .map((factor) => parsePowerFactor(factor))
+    .find((parsed) => parsed !== null);
+  const transcendent = factors
+    .map((factor) => parseTranscendentFactor(factor))
+    .find((parsed) => parsed !== null);
+
+  if (!algebraic || !transcendent) return false;
+
+  const innerPower = transcendent.inner.match(/^x(?:\^(\d+))?$/);
+  if (!innerPower) return false;
+
+  const innerDegree = innerPower[1] ? parseInt(innerPower[1], 10) : 1;
+  return innerDegree === algebraic.degree + 1;
+}
+
 /**
  * Clasifica un término e identifica qué regla de derivación aplica.
  */
@@ -46,26 +104,23 @@ function classifyTerm(term: string, variable: string): string {
 
   if (!t.includes(variable)) return 'CONST_RULE_DIFF';
 
-  // Función transcendente con argumento compuesto → cadena
-  const transcMatch = t.match(/\b(sin|cos|tan|exp|ln|log|sqrt)\s*\(([^)]+)\)/);
+  // Producto de dos factores dependientes de la variable
+  const factors = splitFactors(t);
+  if (factors.length > 1) {
+    const variableDependent = factors.filter((factor) => factor.includes(variable));
+    if (variableDependent.length >= 2) return 'PRODUCT_RULE_DIFF';
+  }
+
+  // Función transcendente pura con argumento compuesto → cadena
+  const transcMatch = parseTranscendentFactor(t);
   if (transcMatch) {
-    const inner = transcMatch[2].trim();
-    if (inner !== variable) return 'CHAIN_RULE_DIFF';
-    // Argumento simple → regla directa
+    if (transcMatch.inner !== variable) return 'CHAIN_RULE_DIFF';
     const directMap: Record<string, string> = {
       sin: 'SIN_RULE_DIFF', cos: 'COS_RULE_DIFF', tan: 'TAN_RULE_DIFF',
       exp: 'EXP_RULE_DIFF', ln: 'LN_RULE_DIFF', log: 'LOG_RULE_DIFF',
       sqrt: 'SQRT_RULE_DIFF',
     };
-    return directMap[transcMatch[1]] ?? 'CHAIN_RULE_DIFF';
-  }
-
-  // Producto de dos factores no triviales
-  if (t.includes('*')) {
-    const parts = t.split('*');
-    const hasTranscendent = parts.some(p => /\b(sin|cos|tan|exp|ln|log)\b/.test(p));
-    const bothHaveVar = parts.filter(p => p.includes(variable)).length >= 2;
-    if (hasTranscendent || bothHaveVar) return 'PRODUCT_RULE_DIFF';
+    return directMap[transcMatch.fn] ?? 'CHAIN_RULE_DIFF';
   }
 
   return 'POWER_RULE_DIFF';
@@ -251,11 +306,11 @@ function detectIntegrateRule(expression: string): string {
   const transcendentFuncs = /\b(sin|cos|tan|exp|ln|log)\b/;
   const algebraicFactor = /\bx(\^\d+)?\b/;
 
+  if (shouldUseUSubstitution(expr)) {
+    return 'U_SUBSTITUTION';
+  }
   if (expr.includes('*') && transcendentFuncs.test(expr) && algebraicFactor.test(expr)) {
     return 'INTEGRATION_BY_PARTS';
-  }
-  if (expr.includes('*') && /x\^2/.test(expr) && transcendentFuncs.test(expr)) {
-    return 'U_SUBSTITUTION';
   }
   return 'DIRECT_INTEGRAL_TABLE';
 }
@@ -264,7 +319,7 @@ function parseProductIntegral(
   expression: string
 ): { algebraic: string; transcendent: string; transcendentType: string } | null {
   if (!expression.includes('*')) return null;
-  const parts = expression.split('*');
+  const parts = splitFactors(expression);
   if (parts.length < 2) return null;
 
   const part0 = parts[0].trim();

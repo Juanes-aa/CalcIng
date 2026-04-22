@@ -184,8 +184,19 @@ export function GraphViewer() {
       if (!c) return;
       const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
       const rect = c.getBoundingClientRect();
-      const W = c.offsetWidth  || 1;
-      const H = c.offsetHeight || 1;
+      const W = c.offsetWidth;
+      const H = c.offsetHeight;
+      // Fallback simétrico cuando el canvas no tiene tamaño medible (p. ej., jsdom).
+      if (W <= 0 || H <= 0) {
+        setZoom(z => {
+          const cx = (z.xMin + z.xMax) / 2;
+          const cy = (z.yMin + z.yMax) / 2;
+          const hw = (z.xMax - z.xMin) / 2 * factor;
+          const hh = (z.yMax - z.yMin) / 2 * factor;
+          return { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh };
+        });
+        return;
+      }
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
       setZoom(z => {
@@ -347,7 +358,9 @@ export function GraphViewer() {
       {mode === 'cartesian' && (
         <input data-testid="graph-area-toggle"   type="checkbox" checked={showArea}  onChange={e => setShowArea(e.target.checked)}   className="sr-only" />
       )}
-      <button data-testid="graph-add-fn"       onClick={addFn}       className="sr-only">+ función</button>
+      {exprs.length < MAX_FNS && (
+        <button data-testid="graph-add-fn"       onClick={addFn}       className="sr-only">+ función</button>
+      )}
       <button data-testid="graph-clear-button" onClick={handleClear} className="sr-only">Limpiar</button>
       <button data-testid="graph-plot-button"  onClick={draw}        className="sr-only">Graficar</button>
       <input data-testid="graph-xmin" type="number" value={xMin} onChange={e => setXMin(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
@@ -553,7 +566,7 @@ export function GraphViewer() {
             left: tooltip.x + 12,
             top:  tooltip.y + 12,
             pointerEvents: 'none',
-            visibility: 'hidden',
+            visibility: tooltip.visible ? 'visible' : 'hidden',
           }}
         >
           {tooltip.fx !== null ? `f(x): ${tooltip.fx.toFixed(3)}` : ''}

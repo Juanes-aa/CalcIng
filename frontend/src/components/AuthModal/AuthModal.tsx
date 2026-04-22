@@ -76,15 +76,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     e.preventDefault()
     setError('')
 
-    if (mode === 'register' && !firstName.trim()) {
-      setError('El nombre es obligatorio')
-      return
-    }
-    if (mode === 'register' && !lastName.trim()) {
-      setError('El apellido es obligatorio')
-      return
-    }
-    if (mode === 'register' && confirmPass !== password) {
+    if (mode === 'register' && confirmPass !== '' && confirmPass !== password) {
       setError('Las contraseñas no coinciden')
       return
     }

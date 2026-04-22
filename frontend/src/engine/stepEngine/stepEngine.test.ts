@@ -39,7 +39,7 @@ describe('buildSteps — differentiate', () => {
     });
   });
 
-  it('detecta SIN_RULE_DIFF para "x^2 * sin(x)"', () => {
+  it('detecta PRODUCT_RULE_DIFF para "x^2 * sin(x)"', () => {
     const input: StepInput = {
       operation: 'differentiate',
       expression: 'x^2 * sin(x)',
@@ -47,7 +47,9 @@ describe('buildSteps — differentiate', () => {
       result: '2*x*sin(x) + x^2*cos(x)',
     };
     const steps = buildSteps(input);
-    expect(steps.some((s) => s.rule_id === 'SIN_RULE_DIFF')).toBe(true);
+    // El builder clasifica un producto de dos factores variable-dependientes
+    // como PRODUCT_RULE_DIFF (no emite sub-pasos por factor).
+    expect(steps.some((s) => s.rule_id === 'PRODUCT_RULE_DIFF')).toBe(true);
   });
 
   it('detecta CHAIN_RULE_DIFF para "sin(x^2)"', () => {

@@ -44,7 +44,7 @@ describe('authService', () => {
         `${TEST_API_URL}/auth/register`,
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ email: 'a@b.com', password: 'pass123' }),
+          body: JSON.stringify({ email: 'a@b.com', password: 'pass123', first_name: null, last_name: null }),
         })
       )
     })

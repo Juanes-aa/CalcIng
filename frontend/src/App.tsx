@@ -55,7 +55,7 @@ export default function App() {
     setActiveView('calculadora');
   }
 
-  const RESTRICTED_VIEWS: ActiveView[] = ['graficos', 'avanzado', 'constantes', 'variables', 'ajustes', 'proyectos'];
+  const RESTRICTED_VIEWS: ActiveView[] = ['constantes', 'variables', 'ajustes', 'proyectos'];
 
   useEffect(() => {
     if (!userEmail && RESTRICTED_VIEWS.includes(activeView)) {
@@ -150,6 +150,8 @@ export default function App() {
         <nav className="flex-1 space-y-0.5 px-3 overflow-y-auto">
           <a
             href="#"
+            data-testid="nav-calculadora"
+            aria-pressed={activeView === 'calculadora'}
             onClick={(e) => { e.preventDefault(); setActiveView('calculadora'); }}
             className={activeView === 'calculadora' ? navLinkActive : navLinkIdle}
           >
@@ -160,7 +162,9 @@ export default function App() {
           </a>
           <a
             href="#"
-            onClick={(e) => { e.preventDefault(); userEmail ? setActiveView('graficos') : setShowAuthModal(true); }}
+            data-testid="nav-graficos"
+            aria-pressed={activeView === 'graficos'}
+            onClick={(e) => { e.preventDefault(); setActiveView('graficos'); }}
             className={activeView === 'graficos' ? navLinkActive : navLinkIdle}
           >
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +203,7 @@ export default function App() {
           <a
             href="#"
             data-testid="sidebar-avanzado"
-            onClick={(e) => { e.preventDefault(); userEmail ? setActiveView('avanzado') : setShowAuthModal(true); }}
+            onClick={(e) => { e.preventDefault(); setActiveView('avanzado'); }}
             className={activeView === 'avanzado' ? navLinkActive : navLinkIdle}
           >
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,7 +322,7 @@ export default function App() {
         </a>
         <a
           href="#"
-          onClick={(e) => { e.preventDefault(); userEmail ? setActiveView('graficos') : setShowAuthModal(true); }}
+          onClick={(e) => { e.preventDefault(); setActiveView('graficos'); }}
           className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all ${activeView === 'graficos' ? 'bg-primary-cta text-white scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-slate-500'}`}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,7 +332,7 @@ export default function App() {
         </a>
         <a
           href="#"
-          onClick={(e) => { e.preventDefault(); userEmail ? setActiveView('avanzado') : setShowAuthModal(true); }}
+          onClick={(e) => { e.preventDefault(); setActiveView('avanzado'); }}
           className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all ${activeView === 'avanzado' ? 'bg-primary-cta text-white scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]' : 'text-slate-500'}`}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

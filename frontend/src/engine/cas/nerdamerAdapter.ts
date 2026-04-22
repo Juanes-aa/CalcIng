@@ -12,6 +12,10 @@ function makeError(originalExpression: string, message: string): CASResult {
   };
 }
 
+function normalizeExpression(expr: string): string {
+  return expr.replace(/\bln\(/g, 'log(');
+}
+
 // ─── Implementación ──────────────────────────────────────────────────────────
 
 export const nerdamerAdapter: CASEngine = {
@@ -21,7 +25,7 @@ export const nerdamerAdapter: CASEngine = {
    */
   async simplify(expr: string): Promise<CASResult> {
     try {
-      const result = nerdamer.simplify(expr).toString();
+      const result = nerdamer.simplify(normalizeExpression(expr)).toString();
       return { status: 'success', result };
     } catch (err) {
       return makeError(expr, err instanceof Error ? err.message : String(err));
@@ -33,7 +37,7 @@ export const nerdamerAdapter: CASEngine = {
    */
   async differentiate(expr: string, variable: string, order = 1): Promise<CASResult> {
     try {
-      let result = expr;
+      let result = normalizeExpression(expr);
       for (let i = 0; i < order; i++) {
         result = nerdamer.diff(result, variable).toString();
       }
@@ -48,7 +52,7 @@ export const nerdamerAdapter: CASEngine = {
    */
   async integrate(expr: string, variable: string): Promise<CASResult> {
     try {
-      const result = nerdamer.integrate(expr, variable).toString();
+      const result = nerdamer.integrate(normalizeExpression(expr), variable).toString();
       return { status: 'success', result };
     } catch (err) {
       return makeError(expr, err instanceof Error ? err.message : String(err));
@@ -61,7 +65,7 @@ export const nerdamerAdapter: CASEngine = {
    */
   async solveEquation(equation: string, variable: string): Promise<CASResult> {
     try {
-      const solutions = nerdamer.solve(equation, variable).toString();
+      const solutions = nerdamer.solve(normalizeExpression(equation), variable).toString();
       return { status: 'success', result: solutions };
     } catch (err) {
       return makeError(equation, err instanceof Error ? err.message : String(err));
@@ -73,7 +77,7 @@ export const nerdamerAdapter: CASEngine = {
    */
   async expand(expr: string): Promise<CASResult> {
     try {
-      const result = nerdamer.expand(expr).toString();
+      const result = nerdamer.expand(normalizeExpression(expr)).toString();
       return { status: 'success', result };
     } catch (err) {
       return makeError(expr, err instanceof Error ? err.message : String(err));
@@ -85,7 +89,7 @@ export const nerdamerAdapter: CASEngine = {
    */
   async factor(expr: string): Promise<CASResult> {
     try {
-      const result = nerdamer.factor(expr).toString();
+      const result = nerdamer.factor(normalizeExpression(expr)).toString();
       return { status: 'success', result };
     } catch (err) {
       return makeError(expr, err instanceof Error ? err.message : String(err));

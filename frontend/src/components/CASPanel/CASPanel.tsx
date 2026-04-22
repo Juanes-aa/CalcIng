@@ -10,7 +10,7 @@ const ORDER_OPS    = new Set<CASOperation>(['differentiate']);
 export function CASPanel(): JSX.Element {
   const {
     expression, variable, order, operation, status, result, errorMsg, steps,
-    setExpression, setVariable, setOrder, setOperation, execute, reset,
+    setExpression, setVariable, setOrder, execute, reset,
   } = useCAS();
 
   const [activeTab, setActiveTab] = useState<'simbolico' | 'pasos'>('simbolico');
@@ -85,7 +85,7 @@ export function CASPanel(): JSX.Element {
                 key={op}
                 type="button"
                 onClick={() => execute(op)}
-                disabled={isLoading || !expression.trim()}
+                disabled={isLoading}
                 className={`py-2 px-3 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                   operation === op
                     ? 'bg-(--color-primary-cta)/15 border-(--color-primary-cta)/40 text-(--color-primary)'
@@ -114,6 +114,7 @@ export function CASPanel(): JSX.Element {
           )}
           {hideVariable && (
             <input data-testid="cas-variable-input" type="text" value={variable}
+              placeholder="x"
               onChange={(e) => setVariable(e.target.value)} hidden />
           )}
 

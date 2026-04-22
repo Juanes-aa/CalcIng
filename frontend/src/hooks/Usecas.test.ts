@@ -142,7 +142,7 @@ describe('useCAS', () => {
   });
 
   // T12 — solveEquation
-  it('T12 — solveEquation: result es [-2,2]', async () => {
+  it('T12 — solveEquation: result formateado como "x = -2,  x = 2"', async () => {
     const { result } = renderHook(() => useCAS(mockEngine));
     act(() => {
       result.current.setExpression('x^2 - 4 = 0');
@@ -150,7 +150,7 @@ describe('useCAS', () => {
     });
     await act(async () => { await result.current.execute(); });
     expect(result.current.status).toBe('success');
-    expect(result.current.result).toBe('[-2,2]');
+    expect(result.current.result).toBe('x = -2,  x = 2');
   });
 
   // T13 — expand

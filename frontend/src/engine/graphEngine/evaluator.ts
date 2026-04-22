@@ -50,8 +50,21 @@ export function adaptiveSample(
 
     if (ym === null) return [];
 
+    const xq1 = (x1 + xm) / 2;
+    const xq3 = (xm + x2) / 2;
+    const yq1 = evaluatePoint(expr, xq1);
+    const yq3 = evaluatePoint(expr, xq3);
+    if (yq1 === null || yq3 === null) return [];
+
+    const interpolate = (xa: number, ya: number, xb: number, yb: number, x: number): number =>
+      ya + ((yb - ya) * (x - xa)) / (xb - xa);
+
     const yInterp = (y1 + y2) / 2;
-    const error = Math.abs(ym - yInterp);
+    const error = Math.max(
+      Math.abs(ym - yInterp),
+      Math.abs(yq1 - interpolate(x1, y1, x2, y2, xq1)),
+      Math.abs(yq3 - interpolate(x1, y1, x2, y2, xq3)),
+    );
 
     if (depth >= maxDepth || error < tol) {
       return [{ x: xm, y: ym }];

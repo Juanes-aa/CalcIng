@@ -96,7 +96,7 @@ export function useCAS(engine: CASEngine = nerdamerAdapter): CASHookState {
           expression,
           variable,
           order,
-          result: casResult.result,
+          result: formatted,
         });
         setSteps(builtSteps);
       } else {

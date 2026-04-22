@@ -10,6 +10,7 @@ import {
   convertDecimalToBinary, convertDecimalToHex, convertDecimalToOctal,
   convertBinaryToDecimal, convertHexToDecimal, convertOctalToDecimal,
 } from '@engine/bases';
+import { CONSTANTS } from '@engine/constants';
 
 // ── Clases compartidas ────────────────────────────────────────────────────────
 
@@ -30,7 +31,9 @@ interface AdvancedPanelProps {
   // onInsert se mantiene por compatibilidad con App.tsx aunque ya no se usa en este panel
 }
 
-type ActiveTab = 'stats' | 'complex' | 'matrix' | 'convert' | 'bases';
+type ActiveTab = 'constants' | 'stats' | 'complex' | 'matrix' | 'convert' | 'bases';
+
+type StatsOp = 'mean' | 'median' | 'variance' | 'stdDev' | 'sampleVariance' | 'sampleStdDev' | 'range';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,38 +57,75 @@ function initialConvertResult(): string {
   }
 }
 
+// ─── TabConstants ─────────────────────────────────────────────────────────────
+
+function TabConstants({ onInsert }: { onInsert?: (value: string) => void }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className={labelCls}>Constantes físicas y matemáticas</label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+        {Object.entries(CONSTANTS).map(([id, c]) => (
+          <div
+            key={id}
+            data-testid={`constant-item-${id}`}
+            className={`${cardCls} flex items-center justify-between gap-3`}
+          >
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-baseline gap-2">
+                <span className="font-mono text-base text-(--color-primary) font-bold shrink-0">{c.symbol}</span>
+                <span className={`${labelCls} truncate`}>{c.label}</span>
+              </div>
+              <span className="font-mono text-xs text-(--color-on-surface) break-all">
+                {c.value}{c.unit ? ` ${c.unit}` : ''}
+              </span>
+            </div>
+            <button
+              type="button"
+              data-testid={`constant-insert-${id}`}
+              onClick={() => onInsert?.(String(c.value))}
+              className="shrink-0 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-(--color-primary-cta)/15 text-(--color-primary-cta) hover:bg-(--color-primary-cta)/25 transition-colors"
+            >
+              Insertar
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── TabStats ─────────────────────────────────────────────────────────────────
 
-type StatsResults = Record<string, string>;
-
 function TabStats() {
-  const [input,    setInput]    = useState('');
-  const [percentP, setPercentP] = useState('50');
-  const [results,  setResults]  = useState<StatsResults>({});
-  const [error,    setError]    = useState('');
+  const [input,  setInput]  = useState('');
+  const [op,     setOp]     = useState<StatsOp>('mean');
+  const [result, setResult] = useState<string>('');
+  const [error,  setError]  = useState('');
 
-  function calcAll() {
+  function parseData(raw: string): number[] {
+    return raw.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+  }
+
+  function runOp(): void {
     setError('');
     try {
-      const datos = input.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
-      if (datos.length === 0) { setError('Ingresa al menos un número'); return; }
-      const fmt = (n: number) => Number(n.toFixed(10)).toString();
-      const p    = parseFloat(percentP) || 50;
-      setResults({
-        'Media':        fmt(estadistica.mean(datos)),
-        'Mediana':      fmt(estadistica.median(datos)),
-        'Moda(s)':      estadistica.allModes(datos).join(', '),
-        'Rango':        fmt(estadistica.range(datos)),
-        'Var. pob.':    fmt(estadistica.variance(datos)),
-        'Desv. pob.':   fmt(estadistica.stdDev(datos)),
-        'Var. muest.':  datos.length >= 2 ? fmt(estadistica.sampleVariance(datos)) : 'n/a (n<2)',
-        'Desv. muest.': datos.length >= 2 ? fmt(estadistica.sampleStdDev(datos))   : 'n/a (n<2)',
-        [`Percentil ${p}`]: fmt(estadistica.percentile(datos, p)),
-        'n':            String(datos.length),
-      });
+      const datos = parseData(input);
+      if (datos.length === 0) { setError('Ingresa al menos un número'); setResult(''); return; }
+      let value: number;
+      switch (op) {
+        case 'mean':           value = estadistica.mean(datos); break;
+        case 'median':         value = estadistica.median(datos); break;
+        case 'variance':       value = estadistica.variance(datos); break;
+        case 'stdDev':         value = estadistica.stdDev(datos); break;
+        case 'sampleVariance': value = estadistica.sampleVariance(datos); break;
+        case 'sampleStdDev':   value = estadistica.sampleStdDev(datos); break;
+        case 'range':          value = estadistica.range(datos); break;
+      }
+      const rounded = Number(value.toFixed(10));
+      setResult(String(rounded));
     } catch (e) {
       setError((e as Error).message);
-      setResults({});
+      setResult('');
     }
   }
 
@@ -94,31 +134,42 @@ function TabStats() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>Datos (separados por coma)</label>
-          <input data-testid="stats-input" type="text" placeholder="ej: 2, 4, 6, 8, 10"
-            value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && calcAll()}
-            className={inputCls} />
+          <input
+            data-testid="stats-input"
+            type="text"
+            placeholder="ej: 2, 4, 6, 8, 10"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && runOp()}
+            className={inputCls}
+          />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Percentil p (0–100)</label>
-          <input type="number" min="0" max="100" value={percentP}
-            onChange={e => setPercentP(e.target.value)} className={inputCls} />
+          <label className={labelCls}>Operación</label>
+          <select
+            data-testid="stats-op-select"
+            value={op}
+            onChange={e => setOp(e.target.value as StatsOp)}
+            className={selectCls}
+          >
+            <option value="mean">Media</option>
+            <option value="median">Mediana</option>
+            <option value="variance">Varianza (pob.)</option>
+            <option value="stdDev">Desv. estándar (pob.)</option>
+            <option value="sampleVariance">Varianza (muestral)</option>
+            <option value="sampleStdDev">Desv. estándar (muestral)</option>
+            <option value="range">Rango</option>
+          </select>
         </div>
-        <button data-testid="stats-calc-button" onClick={calcAll} className={btnCls}>
-          Calcular todo
+        <button data-testid="stats-calc-button" onClick={runOp} className={btnCls}>
+          Calcular
         </button>
         {error && <div className="font-mono text-xs text-red-400 px-1">{error}</div>}
       </div>
-      {Object.keys(results).length > 0 && (
-        <div data-testid="stats-result" className="grid grid-cols-2 gap-1.5 content-start">
-          {Object.entries(results).map(([k, v]) => (
-            <div key={k} className={`${cardCls} flex flex-col gap-0.5`}>
-              <span className={labelCls}>{k}</span>
-              <span className="font-mono text-sm text-(--color-primary) break-all">{v}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="flex flex-col gap-1.5">
+        <label className={labelCls}>Resultado</label>
+        <div data-testid="stats-result" className={resultCls + ' text-base'}>{result}</div>
+      </div>
     </div>
   );
 }
@@ -508,6 +559,7 @@ export function AdvancedPanel({ onInsert: _onInsert }: AdvancedPanelProps) {
       className="flex-1 min-h-0 bg-(--color-surface-low) rounded-xl border border-(--color-outline)/20 flex flex-col overflow-hidden"
     >
       <div className="flex overflow-x-auto border-b border-(--color-outline)/15 shrink-0" role="tablist">
+        <button data-testid="tab-constants" role="tab" aria-selected={activeTab === 'constants'} onClick={() => setActiveTab('constants')} className={tabCls('constants')}>Constantes</button>
         <button data-testid="tab-stats"     role="tab" aria-selected={activeTab === 'stats'}     onClick={() => setActiveTab('stats')}     className={tabCls('stats')}>Estadística</button>
         <button data-testid="tab-complex"   role="tab" aria-selected={activeTab === 'complex'}   onClick={() => setActiveTab('complex')}   className={tabCls('complex')}>Complejos</button>
         <button data-testid="tab-matrix"    role="tab" aria-selected={activeTab === 'matrix'}    onClick={() => setActiveTab('matrix')}    className={tabCls('matrix')}>Matrices</button>
@@ -515,6 +567,7 @@ export function AdvancedPanel({ onInsert: _onInsert }: AdvancedPanelProps) {
         <button data-testid="tab-bases"     role="tab" aria-selected={activeTab === 'bases'}     onClick={() => setActiveTab('bases')}     className={tabCls('bases')}>Bases</button>
       </div>
       <div className="flex-1 overflow-y-auto p-5">
+        {activeTab === 'constants' && <TabConstants onInsert={_onInsert} />}
         {activeTab === 'stats'     && <TabStats />}
         {activeTab === 'complex'   && <TabComplex />}
         {activeTab === 'matrix'    && <TabMatrix />}
