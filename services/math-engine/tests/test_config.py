@@ -58,7 +58,12 @@ class TestSettingsFromEnv:
             "APP_ENV": "production",
             "JWT_PRIVATE_KEY": "fake-private-key-for-test",
             "JWT_PUBLIC_KEY": "fake-public-key-for-test",
-            "STRIPE_WEBHOOK_SECRET": "whsec_test",
+            "MP_ACCESS_TOKEN": "TEST-fake-access-token",
+            "MP_WEBHOOK_SECRET": "whsec_test",
+            "MP_PLAN_PRO_MONTHLY": "fake-plan-pm",
+            "MP_PLAN_PRO_ANNUAL": "fake-plan-pa",
+            "MP_PLAN_ENTERPRISE_MONTHLY": "fake-plan-em",
+            "MP_PLAN_ENTERPRISE_ANNUAL": "fake-plan-ea",
             "DATABASE_URL": "postgresql+asyncpg://user:pass@host/db",
         }):
             from core.config import Settings

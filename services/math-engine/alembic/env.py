@@ -3,8 +3,12 @@ from sqlalchemy import pool, create_engine
 from alembic import context
 import sys
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_BACKEND_ROOT))
+load_dotenv(_BACKEND_ROOT / ".env")
 
 from db.models import Base
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useI18n } from '../../hooks/useI18n';
 import type { TranslationKey } from '@engine/i18n';
-import { createCheckout, openCustomerPortal } from '../../services/billingService';
+import { createCheckout, cancelSubscription, getBillingStatus } from '../../services/billingService';
 
 interface PreciosViewProps {
   currentPlan?: string;
@@ -9,14 +9,14 @@ interface PreciosViewProps {
   onRequestLogin?: () => void;
 }
 
-const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {
+const PLAN_IDS: Record<string, { monthly: string; annual: string }> = {
   pro: {
-    monthly: import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY ?? '',
-    annual: import.meta.env.VITE_STRIPE_PRICE_PRO_ANNUAL ?? '',
+    monthly: import.meta.env.VITE_MP_PLAN_PRO_MONTHLY ?? '',
+    annual: import.meta.env.VITE_MP_PLAN_PRO_ANNUAL ?? '',
   },
   enterprise: {
-    monthly: import.meta.env.VITE_STRIPE_PRICE_ENTERPRISE_MONTHLY ?? '',
-    annual: import.meta.env.VITE_STRIPE_PRICE_ENTERPRISE_ANNUAL ?? '',
+    monthly: import.meta.env.VITE_MP_PLAN_ENTERPRISE_MONTHLY ?? '',
+    annual: import.meta.env.VITE_MP_PLAN_ENTERPRISE_ANNUAL ?? '',
   },
 };
 
@@ -100,34 +100,39 @@ export function PreciosView({ currentPlan = 'free', isLoggedIn = false, onReques
     }
     if (planId === 'free' || planId === currentPlan) return;
 
-    const priceIds = PRICE_IDS[planId];
-    if (!priceIds) return;
-    const priceId = annual ? priceIds.annual : priceIds.monthly;
-    if (!priceId) {
-      setError('Stripe no configurado');
+    const planIds = PLAN_IDS[planId];
+    if (!planIds) return;
+    const mpPlanId = annual ? planIds.annual : planIds.monthly;
+    if (!mpPlanId) {
+      setError(t('pricing.notConfigured' as TranslationKey));
       return;
     }
 
     setLoading(planId);
     setError(null);
     try {
-      const { url } = await createCheckout(priceId);
+      const { url } = await createCheckout(mpPlanId);
       window.location.href = url;
     } catch {
-      setError('Error al crear sesión de pago');
+      setError(t('pricing.checkoutError' as TranslationKey));
     } finally {
       setLoading(null);
     }
   }
 
-  async function handlePortal() {
-    setLoading('portal');
+  async function handleCancel() {
+    const confirmMsg = t('pricing.cancelConfirm' as TranslationKey);
+    if (!window.confirm(confirmMsg)) return;
+
+    setLoading('cancel');
     setError(null);
     try {
-      const { url } = await openCustomerPortal();
-      window.location.href = url;
+      await cancelSubscription();
+      const status = await getBillingStatus();
+      localStorage.setItem('calcing_plan', status.plan);
+      window.location.reload();
     } catch {
-      setError('Error al abrir el portal de facturación');
+      setError(t('pricing.cancelError' as TranslationKey));
     } finally {
       setLoading(null);
     }
@@ -226,11 +231,11 @@ export function PreciosView({ currentPlan = 'free', isLoggedIn = false, onReques
       {isLoggedIn && currentPlan !== 'free' && (
         <div className="text-center">
           <button
-            onClick={handlePortal}
+            onClick={handleCancel}
             disabled={loading !== null}
-            className="text-xs font-mono text-primary-cta underline underline-offset-4 hover:brightness-125 transition-all disabled:opacity-50"
+            className="text-xs font-mono text-red-400 underline underline-offset-4 hover:brightness-125 transition-all disabled:opacity-50"
           >
-            {loading === 'portal' ? '...' : t('pricing.manageSubscription' as TranslationKey)}
+            {loading === 'cancel' ? '...' : t('pricing.cancelSubscription' as TranslationKey)}
           </button>
         </div>
       )}

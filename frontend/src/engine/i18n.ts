@@ -586,6 +586,11 @@ const ES = {
   'pricing.why.latencyDesc':        'La red edge global asegura que tu modelado matemático se ejecute en tiempo real sin cuellos de botella computacionales.',
   'pricing.why.encrypted':          'Lógica Encriptada',
   'pricing.why.encryptedDesc':      'Encriptación de extremo a extremo para tus fórmulas propietarias y conjuntos de datos. Ni siquiera nosotros podemos ver tus entradas.',
+  'pricing.cancelSubscription':     'Cancelar suscripción',
+  'pricing.cancelConfirm':          '¿Estás seguro de que querés cancelar tu suscripción? Mantendrás acceso hasta el final del período facturado.',
+  'pricing.cancelError':            'Error al cancelar la suscripción. Intentá nuevamente.',
+  'pricing.checkoutError':          'Error al iniciar el pago. Intentá nuevamente.',
+  'pricing.notConfigured':          'Mercado Pago no está configurado para este plan.',
 } as const;
 
 const EN: Record<keyof typeof ES, string> = {
@@ -1162,6 +1167,11 @@ const EN: Record<keyof typeof ES, string> = {
   'pricing.why.latencyDesc':        'Global edge network ensures your mathematical modeling runs in real-time without computational bottleneck.',
   'pricing.why.encrypted':          'Encrypted Logic',
   'pricing.why.encryptedDesc':      'End-to-end encryption for your proprietary formulas and data sets. Not even we can see your inputs.',
+  'pricing.cancelSubscription':     'Cancel subscription',
+  'pricing.cancelConfirm':          'Are you sure you want to cancel your subscription? You will keep access until the end of the billing period.',
+  'pricing.cancelError':            'Failed to cancel subscription. Please try again.',
+  'pricing.checkoutError':          'Failed to start checkout. Please try again.',
+  'pricing.notConfigured':          'Mercado Pago is not configured for this plan.',
 };
 
 export type TranslationKey = keyof typeof ES;

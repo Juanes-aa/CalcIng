@@ -19,7 +19,8 @@ class User(Base):
     first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     plan: Mapped[str] = mapped_column(String(50), nullable=False, default="free")
-    stripe_customer_id: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
+    mp_customer_email: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    mp_subscription_id: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
     plan_expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

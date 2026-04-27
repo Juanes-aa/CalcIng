@@ -276,6 +276,76 @@ Consecuencias:
 
 ---
 
+DECISION-022 — Migración Stripe → Mercado Pago Colombia
+Fecha: 2026-04-27
+Fase: Migración de proveedor de pagos
+Estado: APROBADA ✅
+
+Problema:
+Stripe no acepta cuentas con datos fiscales colombianos. El proyecto
+necesita un proveedor que opere en Colombia para procesar suscripciones
+recurrentes (planes pro/enterprise mensual y anual).
+
+Decisión:
+Reemplazar toda la integración Stripe por Mercado Pago usando la API
+de `preapproval` (suscripciones recurrentes con plan), manteniendo:
+- Los mismos endpoints URL del backend (excepto rename
+  `/billing/portal` → `/billing/cancel`).
+- El mismo set de planes y periodos.
+- Test coverage equivalente (14 tests reescritos).
+- Webhook idempotente con verificación HMAC-SHA256 sobre el manifest
+  `id:<data_id>;request-id:<req_id>;ts:<ts>;` usando `MP_WEBHOOK_SECRET`.
+- Modelo de datos: `users.stripe_customer_id` (Text, unique) reemplazado
+  por `users.mp_customer_email` (varchar(255), indexed) +
+  `users.mp_subscription_id` (varchar(100), unique).
+  Migración Alembic `d8e4c1a9b7f3` aplicada en Supabase.
+
+Mapeo conceptual:
+  Stripe Product+Price → MP preapproval_plan
+  Stripe Checkout Session → MP preapproval con init_point
+  Stripe Customer Portal → endpoint propio /billing/cancel
+  Stripe Webhook events → MP Notifications (subscription_preapproval,
+                          subscription_authorized_payment)
+  STRIPE_PRICE_* (4 IDs) → MP_PLAN_* (4 IDs)
+
+Alternativas descartadas:
+- Bridge a Stripe via cuenta Connect de tercero: viola TOS, frágil legal.
+- PayU/Wompi: APIs menos maduras para suscripciones recurrentes en CO.
+- Mercado Pago via Checkout Pro (pago único): no soporta suscripciones
+  recurrentes nativas; requiere logica custom de renovación.
+- Hibrido (Stripe global + MP solo CO): doble código, doble mantenimiento.
+
+Consecuencias:
++ Procesamiento legal en Colombia con cuenta MP local.
++ HMAC-SHA256 sobre manifest verificable con `hmac.compare_digest`
+  (constant-time, resistente a timing attacks).
++ Webhook idempotente: si el plan ya refleja el estado del evento,
+  no re-escribe ni dispara side-effects.
++ Resolución de usuario en webhook con triple fallback:
+  external_reference (UUID) → mp_subscription_id → mp_customer_email.
+- MP no expone "Customer Portal" — la UI de gestión es solo "Cancelar"
+  desde nuestra app. Para reactivar, el usuario debe iniciar un nuevo
+  preapproval (acceptable para el flujo simple actual).
+- MP no tiene concepto de "Customer" — solo email del payer. Si el user
+  cambia su email en CalcIng, hay que decidir si re-asociar o no.
+- Cambio de query param de redirect: Stripe `?session_id=...` →
+  MP `?preapproval_id=...&status=...` (App.tsx adaptado).
+
+Impacto:
+- Backend: `core/config.py`, `core/mercadopago_client.py` (nuevo),
+  `routers/billing.py` (reescrito completo), `db/models.py`,
+  `alembic/versions/d8e4c1a9b7f3_*.py` (nuevo), `requirements.txt`,
+  `main.py` (CORS allow_headers), `core/stripe_client.py` (borrado).
+- Frontend: `services/billingService.ts` (reescrito),
+  `components/PreciosView/PreciosView.tsx`, `engine/i18n.ts` (5 keys),
+  `App.tsx`, `.env.example`.
+- Tests: `test_billing.py` (reescrito, 14/14 ✅), `test_config.py`,
+  `test_security_audit.py`, `conftest.py` (set APP_ENV=testing al top
+  porque `pytest-env` no está instalado y `pytest.ini env =` se ignora).
+- Docs: `README.md`, `STATUS.md`, `CONTEXT.md`.
+
+---
+
 DECISION-021 — vite/client en tsconfig.json types[] para ImportMeta.env en CI
 Fecha: 2026-03-13
 Fase: Backend-5b

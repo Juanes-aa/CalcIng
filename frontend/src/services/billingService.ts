@@ -16,10 +16,11 @@ export interface BillingStatus {
 
 export interface CheckoutResult {
   url: string;
+  subscription_id: string;
 }
 
-export interface PortalResult {
-  url: string;
+export interface CancelResult {
+  status: string;
 }
 
 // ─── API calls ─────────────────────────────────────────────────────────────────
@@ -32,26 +33,18 @@ export async function getBillingStatus(): Promise<BillingStatus> {
   return res.json();
 }
 
-export async function createCheckout(
-  priceId: string,
-  successUrl?: string,
-  cancelUrl?: string,
-): Promise<CheckoutResult> {
+export async function createCheckout(planId: string): Promise<CheckoutResult> {
   const res = await fetch(`${API_URL}/billing/create-checkout`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({
-      price_id: priceId,
-      success_url: successUrl ?? '',
-      cancel_url: cancelUrl ?? '',
-    }),
+    body: JSON.stringify({ plan_id: planId }),
   });
   if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
   return res.json();
 }
 
-export async function openCustomerPortal(): Promise<PortalResult> {
-  const res = await fetch(`${API_URL}/billing/portal`, {
+export async function cancelSubscription(): Promise<CancelResult> {
+  const res = await fetch(`${API_URL}/billing/cancel`, {
     method: 'POST',
     headers: authHeaders(),
   });

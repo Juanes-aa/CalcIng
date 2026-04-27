@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
-import { getBillingStatus, createCheckout, openCustomerPortal } from './billingService';
+import { getBillingStatus, createCheckout, cancelSubscription } from './billingService';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -44,38 +44,54 @@ describe('billingService', () => {
 
   // ─── createCheckout ─────────────────────────────────────────────────
 
-  it('createCheckout: retorna URL de Stripe', async () => {
-    mockFetch.mockReturnValue(jsonResponse({ url: 'https://checkout.stripe.com/test' }));
-    const result = await createCheckout('price_pro_monthly');
-    expect(result.url).toBe('https://checkout.stripe.com/test');
+  it('createCheckout: retorna init_point de Mercado Pago y subscription_id', async () => {
+    mockFetch.mockReturnValue(jsonResponse({
+      url: 'https://www.mercadopago.com.co/subscriptions/checkout?xxx',
+      subscription_id: 'sub_abc123',
+    }));
+    const result = await createCheckout('plan_pro_monthly');
+    expect(result.url).toBe('https://www.mercadopago.com.co/subscriptions/checkout?xxx');
+    expect(result.subscription_id).toBe('sub_abc123');
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/billing/create-checkout'),
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('price_pro_monthly'),
+        body: expect.stringContaining('plan_pro_monthly'),
       }),
     );
   });
 
-  it('createCheckout: pasa success_url y cancel_url', async () => {
-    mockFetch.mockReturnValue(jsonResponse({ url: 'https://checkout.stripe.com/test' }));
-    await createCheckout('price_x', 'https://app/ok', 'https://app/cancel');
+  it('createCheckout: envía plan_id en el body', async () => {
+    mockFetch.mockReturnValue(jsonResponse({ url: 'https://x', subscription_id: 'sub_x' }));
+    await createCheckout('plan_x');
     const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(callBody.success_url).toBe('https://app/ok');
-    expect(callBody.cancel_url).toBe('https://app/cancel');
+    expect(callBody.plan_id).toBe('plan_x');
+    // No debe enviar success_url ni cancel_url (campos del flujo Stripe)
+    expect(callBody.success_url).toBeUndefined();
+    expect(callBody.cancel_url).toBeUndefined();
+    expect(callBody.price_id).toBeUndefined();
   });
 
-  // ─── openCustomerPortal ─────────────────────────────────────────────
-
-  it('openCustomerPortal: retorna URL del portal', async () => {
-    mockFetch.mockReturnValue(jsonResponse({ url: 'https://billing.stripe.com/portal' }));
-    const result = await openCustomerPortal();
-    expect(result.url).toBe('https://billing.stripe.com/portal');
-  });
-
-  it('openCustomerPortal: lanza en HTTP error', async () => {
+  it('createCheckout: lanza en HTTP error', async () => {
     mockFetch.mockReturnValue(jsonResponse({}, 400));
-    await expect(openCustomerPortal()).rejects.toThrow('HTTP_ERROR_400');
+    await expect(createCheckout('plan_x')).rejects.toThrow('HTTP_ERROR_400');
+  });
+
+  // ─── cancelSubscription ─────────────────────────────────────────────
+
+  it('cancelSubscription: retorna status="cancelled"', async () => {
+    mockFetch.mockReturnValue(jsonResponse({ status: 'cancelled' }));
+    const result = await cancelSubscription();
+    expect(result.status).toBe('cancelled');
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/billing/cancel'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('cancelSubscription: lanza en HTTP error', async () => {
+    mockFetch.mockReturnValue(jsonResponse({}, 400));
+    await expect(cancelSubscription()).rejects.toThrow('HTTP_ERROR_400');
   });
 
   // ─── Auth header ────────────────────────────────────────────────────

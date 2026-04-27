@@ -8,10 +8,11 @@ Estado operativo del proyecto. Para detalle de archivos clave y decisiones técn
 
 | Métrica | Valor |
 |---|---|
-| Tests frontend | **991 / 991** ✅ (`cd frontend; npx vitest run`) |
-| Tests backend | **194 / 194** ✅ (`cd services/math-engine; pytest`) |
+| Tests frontend | **992 / 992** ✅ (`cd frontend; npx vitest run`) |
+| Tests backend | **223 / 224** ✅ (1 fallo en `test_cache.py::test_redis_url_default`, no bloqueante — ver Limitaciones conocidas) |
 | Typecheck (TS strict) | **limpio** ✅ (`npx tsc --noEmit`) |
-| Migraciones Alembic | **5 revisiones, head `c7d9e3f4a5b8`** ✅ |
+| Migraciones Alembic | **6 revisiones, head `d8e4c1a9b7f3`** ✅ |
+| Pagos | **Mercado Pago** (migrado desde Stripe el 2026-04-27) |
 | Bloqueadores | **ninguno** |
 
 **Listo para producción.**
@@ -41,7 +42,7 @@ Calculadora, CASPanel, GraphViewer, AdvancedPanel (5 tabs: stats, complex, matri
 ### Auth y planes
 - JWT RS256 con claim `plan` dinámico desde DB
 - Login / Register / Refresh
-- Stripe checkout + customer portal + webhook idempotente
+- Mercado Pago preapproval + cancel + webhook con HMAC-SHA256, idempotente
 - Plans: `free` / `pro` / `enterprise`
 
 ### Sincronización
@@ -75,8 +76,8 @@ GET  /users/me/history
 # Premium
 POST /graph/3d           POST /export
 
-# Billing (Stripe)
-POST /billing/create-checkout    POST /billing/portal
+# Billing (Mercado Pago)
+POST /billing/create-checkout    POST /billing/cancel
 GET  /billing/status             POST /billing/webhook
 
 # Proyectos
@@ -96,15 +97,16 @@ POST /support
 **Frontend (`frontend/.env`):**
 - `VITE_API_URL` — URL del backend (sin trailing slash)
 - `VITE_USE_BACKEND` — `"true"` para SymPy, `"false"` para nerdamer offline
-- `VITE_STRIPE_PRICE_*` — Price IDs públicos de Stripe (4 valores: pro/enterprise × monthly/annual)
+- `VITE_MP_PLAN_*` — Plan IDs públicos de Mercado Pago (4 valores: pro/enterprise × monthly/annual)
 
 **Backend (`services/math-engine/.env`):**
 - `DATABASE_URL` — Postgres (Supabase) o sqlite local para dev
 - `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` — claves RSA para RS256
 - `REDIS_URL` — Upstash Redis (`rediss://...`)
-- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_PRO_ANNUAL`
-- `STRIPE_PRICE_ENTERPRISE_MONTHLY` / `STRIPE_PRICE_ENTERPRISE_ANNUAL`
+- `MP_ACCESS_TOKEN` (formato `APP_USR-...` en producción, `TEST-...` en pruebas)
+- `MP_WEBHOOK_SECRET` (se genera al crear el webhook en el panel MP)
+- `MP_PLAN_PRO_MONTHLY` / `MP_PLAN_PRO_ANNUAL`
+- `MP_PLAN_ENTERPRISE_MONTHLY` / `MP_PLAN_ENTERPRISE_ANNUAL`
 - `MAX_WORKERS` — opcional, default `4` (controla `ProcessPoolExecutor`)
 - `APP_ENV` — `development` / `testing` / `production`
 
@@ -131,6 +133,7 @@ cd services/math-engine; uvicorn main:app --reload --port 8001
 
 - **`python-jose` warning:** la librería emite `DeprecationWarning` por uso interno de `datetime.utcnow()`. Nuestro código usa `datetime.now(timezone.utc)` correctamente. Se resolvería migrando a `PyJWT`.
 - **CASPanel — selector de nivel:** muestra un dropdown de detail level (beginner/intermediate/advanced) pero los pasos generados aún no diferencian visualmente entre niveles. Cosmético.
+- **`test_cache.py::test_redis_url_default`:** falla porque `Settings.REDIS_URL` carga el `.env` real (Upstash) en lugar del default `redis://localhost:6379`. El conftest no patchea `REDIS_URL` antes de crear `Settings()`. Pre-existente a la migración MP.
 
 ---
 

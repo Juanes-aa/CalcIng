@@ -40,9 +40,10 @@ export default function App() {
       setUserPlan(getStoredPlan());
     }
 
-    // Stripe checkout return: sincronizar plan
+    // Mercado Pago checkout return: sincronizar plan
+    // MP redirige al back_url con ?preapproval_id=...&status=...
     const params = new URLSearchParams(window.location.search);
-    if (params.has('session_id') && token) {
+    if (params.has('preapproval_id') && token) {
       window.history.replaceState({}, '', window.location.pathname);
       refreshToken()
         .then(() => getBillingStatus())

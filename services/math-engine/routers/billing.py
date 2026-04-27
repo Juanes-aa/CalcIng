@@ -1,21 +1,34 @@
 """
-routers/billing.py — Endpoints de facturación con Stripe.
+routers/billing.py — Endpoints de facturación con Mercado Pago (preapproval).
+
+Endpoints:
+- POST /billing/create-checkout → crea preapproval, retorna init_point.
+- GET  /billing/status          → retorna plan + expires_at del usuario.
+- POST /billing/cancel          → cancela mp_subscription_id del usuario.
+- POST /billing/webhook         → recibe notificaciones de MP (HMAC firmado).
 """
+from __future__ import annotations
+
 import logging
 import uuid
-from urllib.parse import urlparse
+from datetime import datetime, timezone
+from typing import Any
 
-import stripe
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.auth_deps import require_auth
 from core.config import settings
 from core.limiter import limiter
-from core.stripe_client import get_stripe
+from core.mercadopago_client import (
+    build_plan_to_tier_map,
+    extract_response_body,
+    get_mp_sdk,
+    verify_mp_signature,
+)
 from db.database import get_db
 from db.models import User
 
@@ -24,56 +37,32 @@ log = logging.getLogger("calcing.billing")
 router = APIRouter(prefix="/billing", tags=["billing"])
 
 
-# ─── Validación de URLs externas (anti open-redirect) ─────────────────────────
+# ─── Mapeo plan_id → tier ──────────────────────────────────────────────────────
+# Se construye lazy en cada request (build es barato). Tests pueden inyectar
+# entradas sintéticas modificando PLAN_TO_TIER directamente.
 
-def _is_allowed_redirect(url: str) -> bool:
-    """Valida que la URL apunte a uno de nuestros orígenes permitidos.
-    Evita que un atacante use Stripe checkout para redirigir a sitios maliciosos."""
-    if not url:
-        return False
-    try:
-        parsed = urlparse(url)
-    except Exception:
-        return False
-    if parsed.scheme not in ("http", "https"):
-        return False
-    origin = f"{parsed.scheme}://{parsed.netloc}"
-    return origin in settings.ALLOWED_ORIGINS
-
-# ─── Mapeo price_id → plan ─────────────────────────────────────────────────────
-
-PRICE_TO_PLAN: dict[str, str] = {}
+PLAN_TO_TIER: dict[str, str] = {}
 
 
-def _build_price_map() -> None:
-    """Construye el mapeo price_id → plan una vez que settings esté cargado."""
-    if PRICE_TO_PLAN:
-        return
-    mapping = {
-        settings.STRIPE_PRICE_PRO_MONTHLY: "pro",
-        settings.STRIPE_PRICE_PRO_ANNUAL: "pro",
-        settings.STRIPE_PRICE_ENTERPRISE_MONTHLY: "enterprise",
-        settings.STRIPE_PRICE_ENTERPRISE_ANNUAL: "enterprise",
-    }
-    for price_id, plan in mapping.items():
-        if price_id:
-            PRICE_TO_PLAN[price_id] = plan
+def _refresh_plan_map() -> None:
+    """Re-merge desde settings sin destruir entradas inyectadas por tests."""
+    for plan_id, tier in build_plan_to_tier_map().items():
+        PLAN_TO_TIER.setdefault(plan_id, tier)
 
 
 # ─── Schemas ────────────────────────────────────────────────────────────────────
 
 class CheckoutRequest(BaseModel):
-    price_id: str = Field(..., min_length=1, max_length=200)
-    success_url: str = Field(default="", max_length=2048)
-    cancel_url: str = Field(default="", max_length=2048)
+    plan_id: str = Field(..., min_length=1, max_length=200)
 
 
 class CheckoutResponse(BaseModel):
     url: str
+    subscription_id: str
 
 
-class PortalResponse(BaseModel):
-    url: str
+class CancelResponse(BaseModel):
+    status: str
 
 
 class BillingStatusResponse(BaseModel):
@@ -83,21 +72,26 @@ class BillingStatusResponse(BaseModel):
 
 # ─── Helpers ────────────────────────────────────────────────────────────────────
 
-async def _get_or_create_customer(
-    user: User,
-    db: AsyncSession,
-    s: stripe,
-) -> str:
-    """Retorna stripe_customer_id, creando el customer si no existe."""
-    if user.stripe_customer_id:
-        return user.stripe_customer_id
-    customer = s.Customer.create(
-        email=user.email,
-        metadata={"calcing_user_id": str(user.id)},
-    )
-    user.stripe_customer_id = customer.id
-    await db.commit()
-    return customer.id
+async def _get_user(user_id: str, db: AsyncSession) -> User:
+    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
+    user = result.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+def _parse_iso_datetime(value: str | None) -> datetime | None:
+    """Parsea un timestamp ISO 8601 de MP (puede traer 'Z' o offset)."""
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        normalized = value.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(normalized)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except (ValueError, TypeError):
+        return None
 
 
 # ─── Endpoints ──────────────────────────────────────────────────────────────────
@@ -110,72 +104,46 @@ async def create_checkout(
     user_id: str = Depends(require_auth),
     db: AsyncSession = Depends(get_db),
 ) -> CheckoutResponse:
-    _build_price_map()
-    s = get_stripe()
+    """Crea un preapproval en MP en estado 'pending' y retorna el init_point."""
+    _refresh_plan_map()
 
-    # Sólo aceptamos price_ids que estén en nuestro mapa de planes oficiales.
-    # Esto previene que un atacante use price_ids de productos ajenos en Stripe.
-    if body.price_id not in PRICE_TO_PLAN:
-        raise HTTPException(status_code=400, detail="Invalid price_id")
+    if body.plan_id not in PLAN_TO_TIER:
+        raise HTTPException(status_code=400, detail="Invalid plan_id")
 
-    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
-    user = result.scalars().first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    user = await _get_user(user_id, db)
 
-    customer_id = await _get_or_create_customer(user, db, s)
+    sdk = get_mp_sdk()
+    back_url = f"{settings.ALLOWED_ORIGINS[0]}/checkout/success"
 
-    # Defensa anti open-redirect: si el cliente envía una URL no-whitelisted, la ignoramos.
-    default_success = f"{settings.ALLOWED_ORIGINS[0]}/checkout/success"
-    default_cancel = f"{settings.ALLOWED_ORIGINS[0]}/precios"
-    success = body.success_url if _is_allowed_redirect(body.success_url) else default_success
-    cancel = body.cancel_url if _is_allowed_redirect(body.cancel_url) else default_cancel
+    payload: dict[str, Any] = {
+        "preapproval_plan_id": body.plan_id,
+        "payer_email": user.email,
+        "back_url": back_url,
+        "external_reference": str(user.id),
+        "status": "pending",
+    }
 
     try:
-        session = s.checkout.Session.create(
-            customer=customer_id,
-            mode="subscription",
-            line_items=[{"price": body.price_id, "quantity": 1}],
-            success_url=f"{success}?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=cancel,
-            metadata={"calcing_user_id": str(user.id)},
-        )
-    except stripe.error.StripeError as e:
-        log.warning("stripe checkout failed user=%s: %s", user_id, e, exc_info=False)
-        raise HTTPException(status_code=400, detail="No se pudo crear la sesión de checkout")
+        mp_response = sdk.preapproval().create(payload)
+    except Exception as e:  # SDK puede tirar excepciones genéricas
+        log.warning("mp preapproval create failed user=%s: %s", user_id, e)
+        raise HTTPException(status_code=400, detail="No se pudo crear la suscripción")
 
-    return CheckoutResponse(url=session.url)
+    response_body = extract_response_body(mp_response)
+    init_point = response_body.get("init_point")
+    subscription_id = response_body.get("id")
 
+    if not init_point or not subscription_id:
+        log.warning("mp preapproval missing fields user=%s body=%s", user_id, response_body)
+        raise HTTPException(status_code=400, detail="Respuesta inválida de Mercado Pago")
 
-@router.post("/portal", response_model=PortalResponse)
-@limiter.limit("10/minute;30/hour")
-async def customer_portal(
-    request: Request,
-    user_id: str = Depends(require_auth),
-    db: AsyncSession = Depends(get_db),
-) -> PortalResponse:
-    s = get_stripe()
+    # Persistimos el subscription_id y email para que el webhook pueda correlacionar
+    # incluso si external_reference llegara a faltar.
+    user.mp_subscription_id = str(subscription_id)
+    user.mp_customer_email = user.email
+    await db.commit()
 
-    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
-    user = result.scalars().first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not user.stripe_customer_id:
-        raise HTTPException(status_code=400, detail="No billing account found")
-
-    return_url = f"{settings.ALLOWED_ORIGINS[0]}/precios"
-
-    try:
-        session = s.billing_portal.Session.create(
-            customer=user.stripe_customer_id,
-            return_url=return_url,
-        )
-    except stripe.error.StripeError as e:
-        log.warning("stripe portal failed user=%s: %s", user_id, e, exc_info=False)
-        raise HTTPException(status_code=400, detail="No se pudo abrir el portal de facturación")
-
-    return PortalResponse(url=session.url)
+    return CheckoutResponse(url=str(init_point), subscription_id=str(subscription_id))
 
 
 @router.get("/status", response_model=BillingStatusResponse)
@@ -183,112 +151,204 @@ async def billing_status(
     user_id: str = Depends(require_auth),
     db: AsyncSession = Depends(get_db),
 ) -> BillingStatusResponse:
-    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
-    user = result.scalars().first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
+    user = await _get_user(user_id, db)
     return BillingStatusResponse(
         plan=user.plan,
         expires_at=user.plan_expires_at.isoformat() if user.plan_expires_at else None,
     )
 
 
+@router.post("/cancel", response_model=CancelResponse)
+@limiter.limit("10/minute;30/hour")
+async def cancel_subscription(
+    request: Request,
+    user_id: str = Depends(require_auth),
+    db: AsyncSession = Depends(get_db),
+) -> CancelResponse:
+    """Cancela la suscripción activa del usuario en MP (status='cancelled')."""
+    user = await _get_user(user_id, db)
+
+    if not user.mp_subscription_id:
+        raise HTTPException(status_code=400, detail="No active subscription")
+
+    sdk = get_mp_sdk()
+    try:
+        sdk.preapproval().update(user.mp_subscription_id, {"status": "cancelled"})
+    except Exception as e:
+        log.warning("mp cancel failed user=%s: %s", user_id, e)
+        raise HTTPException(status_code=400, detail="No se pudo cancelar la suscripción")
+
+    # Optimista: marcamos free localmente. El webhook confirmará y refrescará.
+    user.plan = "free"
+    user.plan_expires_at = None
+    await db.commit()
+
+    return CancelResponse(status="cancelled")
+
+
 @router.post("/webhook")
-async def stripe_webhook(
+async def mercadopago_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> JSONResponse:
-    """Recibe eventos de Stripe. No requiere JWT — valida con webhook secret."""
-    _build_price_map()
-    s = get_stripe()
+    """Recibe notificaciones de MP. Valida HMAC con MP_WEBHOOK_SECRET."""
+    _refresh_plan_map()
 
-    payload = await request.body()
-    sig_header = request.headers.get("stripe-signature", "")
+    signature_header = request.headers.get("x-signature", "")
+    request_id = request.headers.get("x-request-id", "")
 
     try:
-        event = s.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-        )
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid payload")
-    except stripe.error.SignatureVerificationError:
+        body_json: dict[str, Any] = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    data = body_json.get("data") or {}
+    data_id = str(data.get("id") or "")
+    event_type = str(body_json.get("type") or "")
+
+    if not data_id:
+        raise HTTPException(status_code=400, detail="Missing data.id")
+
+    if not verify_mp_signature(signature_header, request_id, data_id):
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    event_type: str = event["type"]
-
-    if event_type == "checkout.session.completed":
-        await _handle_checkout_completed(event["data"]["object"], db)
-    elif event_type in (
-        "customer.subscription.updated",
-        "customer.subscription.deleted",
-    ):
-        await _handle_subscription_change(event["data"]["object"], db)
+    if event_type == "subscription_preapproval":
+        await _handle_preapproval_event(data_id, db)
+    elif event_type == "subscription_authorized_payment":
+        await _handle_authorized_payment_event(data_id, db)
+    # Otros tipos: ignorar silenciosamente (200 OK).
 
     return JSONResponse(content={"status": "ok"})
 
 
 # ─── Webhook handlers ──────────────────────────────────────────────────────────
 
-async def _handle_checkout_completed(
-    session_obj: dict, db: AsyncSession
-) -> None:
-    """Actualiza plan del usuario tras checkout exitoso."""
-    customer_id: str = session_obj.get("customer", "")
-    subscription_id: str = session_obj.get("subscription", "")
+async def _find_user_for_subscription(
+    external_reference: str | None,
+    subscription_id: str,
+    payer_email: str | None,
+    db: AsyncSession,
+) -> User | None:
+    """Resuelve el User asociado a una suscripción.
 
-    if not customer_id or not subscription_id:
-        return
-
-    s = get_stripe()
-    subscription = s.Subscription.retrieve(subscription_id)
-    price_id = subscription["items"]["data"][0]["price"]["id"]
-    new_plan = PRICE_TO_PLAN.get(price_id, "free")
-    period_end = subscription.get("current_period_end")
+    Estrategia (en orden):
+    1. external_reference como UUID → User.id
+    2. mp_subscription_id == subscription_id
+    3. mp_customer_email == payer_email
+    """
+    if external_reference:
+        try:
+            user_uuid = uuid.UUID(external_reference)
+        except (ValueError, AttributeError):
+            user_uuid = None
+        if user_uuid is not None:
+            result = await db.execute(select(User).where(User.id == user_uuid))
+            user = result.scalars().first()
+            if user is not None:
+                return user
 
     result = await db.execute(
-        select(User).where(User.stripe_customer_id == customer_id)
+        select(User).where(User.mp_subscription_id == subscription_id)
     )
     user = result.scalars().first()
-    if user:
-        user.plan = new_plan
-        if period_end:
-            from datetime import datetime, timezone
-            user.plan_expires_at = datetime.fromtimestamp(
-                period_end, tz=timezone.utc
-            )
-        await db.commit()
+    if user is not None:
+        return user
+
+    if payer_email:
+        result = await db.execute(
+            select(User).where(User.mp_customer_email == payer_email)
+        )
+        user = result.scalars().first()
+        if user is not None:
+            return user
+
+    return None
 
 
-async def _handle_subscription_change(
-    subscription_obj: dict, db: AsyncSession
-) -> None:
-    """Actualiza plan cuando la suscripción cambia o se cancela."""
-    customer_id: str = subscription_obj.get("customer", "")
-    sub_status: str = subscription_obj.get("status", "")
-
-    if not customer_id:
+async def _handle_preapproval_event(subscription_id: str, db: AsyncSession) -> None:
+    """Procesa un evento de subscription_preapproval (autorizado/cancelado/pausado)."""
+    sdk = get_mp_sdk()
+    try:
+        mp_response = sdk.preapproval().get(subscription_id)
+    except Exception as e:
+        log.warning("mp preapproval fetch failed id=%s: %s", subscription_id, e)
         return
 
-    if sub_status in ("canceled", "unpaid", "incomplete_expired"):
-        new_plan = "free"
-        period_end = None
+    sub = extract_response_body(mp_response)
+    if not sub:
+        return
+
+    sub_status = str(sub.get("status") or "")
+    plan_id = str(sub.get("preapproval_plan_id") or "")
+    external_reference = sub.get("external_reference")
+    payer_email = sub.get("payer_email")
+    next_payment = _parse_iso_datetime(sub.get("next_payment_date"))
+
+    user = await _find_user_for_subscription(
+        external_reference if isinstance(external_reference, str) else None,
+        subscription_id,
+        payer_email if isinstance(payer_email, str) else None,
+        db,
+    )
+    if user is None:
+        log.info("mp webhook: user not found subscription=%s", subscription_id)
+        return
+
+    # Idempotencia: si el estado ya refleja el evento, no re-escribir.
+    if sub_status == "authorized":
+        new_plan = PLAN_TO_TIER.get(plan_id, user.plan)
+        already_synced = (
+            user.plan == new_plan
+            and user.mp_subscription_id == subscription_id
+            and user.plan_expires_at == next_payment
+        )
+        if already_synced:
+            return
+        user.plan = new_plan
+        user.mp_subscription_id = subscription_id
+        if next_payment is not None:
+            user.plan_expires_at = next_payment
+    elif sub_status in ("cancelled", "paused"):
+        if user.plan == "free" and user.plan_expires_at is None:
+            return
+        user.plan = "free"
+        user.plan_expires_at = None
     else:
-        price_id = subscription_obj["items"]["data"][0]["price"]["id"]
-        new_plan = PRICE_TO_PLAN.get(price_id, "free")
-        period_end = subscription_obj.get("current_period_end")
+        # 'pending' u otros: nada que persistir aún.
+        return
 
-    result = await db.execute(
-        select(User).where(User.stripe_customer_id == customer_id)
+    await db.commit()
+
+
+async def _handle_authorized_payment_event(payment_id: str, db: AsyncSession) -> None:
+    """Procesa un pago recurrente exitoso. Refresca plan_expires_at."""
+    sdk = get_mp_sdk()
+    try:
+        mp_response = sdk.preapproval().get(payment_id)
+    except Exception:
+        # Algunos SDKs exponen authorized_payment como recurso aparte. Si falla,
+        # no rompemos el webhook — MP reintentará y la fuente de verdad está
+        # en subscription_preapproval.
+        return
+
+    sub = extract_response_body(mp_response)
+    if not sub:
+        return
+
+    next_payment = _parse_iso_datetime(sub.get("next_payment_date"))
+    if next_payment is None:
+        return
+
+    external_reference = sub.get("external_reference")
+    payer_email = sub.get("payer_email")
+    user = await _find_user_for_subscription(
+        external_reference if isinstance(external_reference, str) else None,
+        str(sub.get("id") or payment_id),
+        payer_email if isinstance(payer_email, str) else None,
+        db,
     )
-    user = result.scalars().first()
-    if user:
-        user.plan = new_plan
-        if period_end:
-            from datetime import datetime, timezone
-            user.plan_expires_at = datetime.fromtimestamp(
-                period_end, tz=timezone.utc
-            )
-        else:
-            user.plan_expires_at = None
-        await db.commit()
+    if user is None or user.plan_expires_at == next_payment:
+        return
+
+    user.plan_expires_at = next_payment
+    await db.commit()

@@ -18,7 +18,7 @@ Listo para producción. Próximas tareas opcionales: QA visual de light-mode + r
 - **Frontend:** Vite + React 18 + TypeScript strict + Vitest + Tailwind CSS v4 + mathjs + nerdamer.js (CAS local)
 - **Backend:** Python 3.13 + FastAPI + SymPy + pytest + Redis (Upstash) + PostgreSQL (Supabase) + Alembic
 - **Auth:** JWT RS256 (passlib + bcrypt 4.0.1, claves RSA con cache de proceso)
-- **Pagos:** Stripe (checkout, portal, webhook)
+- **Pagos:** Mercado Pago (preapproval, cancel, webhook con HMAC)
 - **Deploy:** Vercel (frontend) + Render.com (backend) + GitHub Actions CI/CD
 - **PWA:** vite-plugin-pwa con Workbox (NetworkFirst para API, CacheFirst para assets)
 - **Alias:** `@engine/` → `frontend/src/engine/`
@@ -91,7 +91,7 @@ POST /support
 - Alembic con driver síncrono (psycopg2 / sqlite) en `env.py`; FastAPI con async (asyncpg / aiosqlite)
 - `vite/client` en `tsconfig.json` `types[]` para `ImportMeta.env` en CI
 - Tailwind CSS v4: tokens en `@theme`; light mode como `html.light` con override de variables
-- Stripe: webhook idempotente, plan persistido en `users.plan`
+- Mercado Pago: webhook con verificación HMAC-SHA256 (`x-signature` + `x-request-id`), idempotente, plan persistido en `users.plan` y `users.plan_expires_at`
 - Sync de historial: `mergeHistories(remote, local)` — preserva `starred` local; remote es source of truth para timestamps
 
 ## Deuda técnica
@@ -126,4 +126,4 @@ alembic upgrade head
 ## Variables de entorno requeridas
 
 - **Frontend (`frontend/.env`):** `VITE_BACKEND_URL`, `VITE_USE_BACKEND`
-- **Backend (`services/math-engine/.env`):** `DATABASE_URL`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `REDIS_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- **Backend (`services/math-engine/.env`):** `DATABASE_URL`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `REDIS_URL`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `MP_PLAN_PRO_MONTHLY`, `MP_PLAN_PRO_ANNUAL`, `MP_PLAN_ENTERPRISE_MONTHLY`, `MP_PLAN_ENTERPRISE_ANNUAL`

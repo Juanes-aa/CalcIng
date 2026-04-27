@@ -1,3 +1,12 @@
+import os
+
+# Asegurar APP_ENV=testing ANTES de cualquier import del proyecto que cargue
+# core.config. pytest.ini lo declara en la sección `env =` pero eso requiere
+# pytest-env (no listado en requirements.txt). Esta línea garantiza que el
+# rate-limiter de SlowAPI quede deshabilitado durante la suite.
+os.environ.setdefault("APP_ENV", "testing")
+os.environ.setdefault("RATELIMIT_STORAGE_URL", "memory://")
+
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession

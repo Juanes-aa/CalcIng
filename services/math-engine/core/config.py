@@ -52,20 +52,21 @@ class Settings(BaseSettings):
     JWT_PRIVATE_KEY: str = ""
     JWT_PUBLIC_KEY: str = ""
 
-    # Stripe
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_PRICE_PRO_MONTHLY: str = ""
-    STRIPE_PRICE_PRO_ANNUAL: str = ""
-    STRIPE_PRICE_ENTERPRISE_MONTHLY: str = ""
-    STRIPE_PRICE_ENTERPRISE_ANNUAL: str = ""
+    # Mercado Pago
+    MP_ACCESS_TOKEN: str = ""
+    MP_WEBHOOK_SECRET: str = ""
+    MP_PLAN_PRO_MONTHLY: str = ""
+    MP_PLAN_PRO_ANNUAL: str = ""
+    MP_PLAN_ENTERPRISE_MONTHLY: str = ""
+    MP_PLAN_ENTERPRISE_ANNUAL: str = ""
 
     @model_validator(mode="after")
     def _enforce_production_invariants(self) -> "Settings":
         """En producción, refuerza requisitos críticos de seguridad.
 
         - JWT_PRIVATE_KEY y JWT_PUBLIC_KEY DEBEN estar definidas (sin fallback efímero).
-        - STRIPE_WEBHOOK_SECRET DEBE estar definido (sin él, el webhook es vulnerable).
+        - MP_ACCESS_TOKEN y MP_WEBHOOK_SECRET DEBEN estar definidos.
+        - Los 4 plan IDs de Mercado Pago DEBEN estar definidos.
         - DATABASE_URL no puede ser SQLite local.
         """
         if self.APP_ENV != "production":
@@ -75,8 +76,18 @@ class Settings(BaseSettings):
             missing.append("JWT_PRIVATE_KEY")
         if not self.JWT_PUBLIC_KEY:
             missing.append("JWT_PUBLIC_KEY")
-        if not self.STRIPE_WEBHOOK_SECRET:
-            missing.append("STRIPE_WEBHOOK_SECRET")
+        if not self.MP_ACCESS_TOKEN:
+            missing.append("MP_ACCESS_TOKEN")
+        if not self.MP_WEBHOOK_SECRET:
+            missing.append("MP_WEBHOOK_SECRET")
+        if not self.MP_PLAN_PRO_MONTHLY:
+            missing.append("MP_PLAN_PRO_MONTHLY")
+        if not self.MP_PLAN_PRO_ANNUAL:
+            missing.append("MP_PLAN_PRO_ANNUAL")
+        if not self.MP_PLAN_ENTERPRISE_MONTHLY:
+            missing.append("MP_PLAN_ENTERPRISE_MONTHLY")
+        if not self.MP_PLAN_ENTERPRISE_ANNUAL:
+            missing.append("MP_PLAN_ENTERPRISE_ANNUAL")
         if self.DATABASE_URL.startswith("sqlite"):
             missing.append("DATABASE_URL (sqlite no permitido en producción)")
         if missing:

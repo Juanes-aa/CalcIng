@@ -172,11 +172,11 @@ class TestErrorOpacity:
         assert ".py" not in body
 
     @pytest.mark.anyio
-    async def test_billing_error_does_not_leak_stripe_internals(self, test_app):
-        """Un error en /billing no debe exponer mensaje crudo de Stripe."""
-        # Sin auth: 401 directo, sin tocar Stripe (igual no debe leak).
+    async def test_billing_error_does_not_leak_provider_internals(self, test_app):
+        """Un error en /billing no debe exponer mensaje crudo del proveedor (Mercado Pago)."""
+        # Sin auth: 401 directo, sin tocar el SDK (igual no debe leak).
         response = await test_app.post(
-            "/billing/create-checkout", json={"price_id": "px_invalid"}
+            "/billing/create-checkout", json={"plan_id": "plan_invalid"}
         )
         assert response.status_code == 401
 

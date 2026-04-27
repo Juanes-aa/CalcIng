@@ -66,7 +66,7 @@ app.add_middleware(
     allow_origin_regex=_localhost_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "Stripe-Signature"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Signature", "X-Request-Id"],
     expose_headers=["Retry-After"],
     max_age=600,
 )
