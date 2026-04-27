@@ -1,8 +1,12 @@
-import { useState, useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useState, useMemo, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
 import {
   type HistoryEntry,
   saveHistory, relativeTime, isToday, isThisWeek,
+  loadHistorialSync, isOnline, mergeHistories,
 } from '@engine/historial';
+import { fetchHistory } from '../../services/historyService';
+import type { TranslationKey } from '@engine/i18n';
+import { useI18n } from '../../hooks/useI18n';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,26 +40,67 @@ function formatResultDisplay(value: string): string {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function EmptyState({ filter }: { filter: TabFilter }) {
-  const msgs: Record<TabFilter, string> = {
-    all:     'No hay cálculos en el historial.\nPresiona = en la calculadora para empezar.',
-    today:   'No hay cálculos hoy.',
-    week:    'No hay cálculos esta semana.',
-    starred: 'No hay cálculos destacados.\nUsa ★ para marcar los importantes.',
+  const { t } = useI18n();
+  const keys: Record<TabFilter, TranslationKey> = {
+    all:     'history.empty.all',
+    today:   'history.empty.today',
+    week:    'history.empty.week',
+    starred: 'history.empty.starred',
   };
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-3 text-(--color-on-surface-dim) px-8 text-center">
       <span className="text-4xl opacity-20">⌚</span>
-      <p className="text-xs leading-relaxed whitespace-pre-line">{msgs[filter]}</p>
+      <p className="text-xs leading-relaxed whitespace-pre-line">{t(keys[filter])}</p>
     </div>
   );
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+type SyncSource = 'synced' | 'local' | 'loading';
+
 export function HistorialView({ history, setHistory, onInsert }: HistorialViewProps) {
-  const [tab,      setTab]      = useState<TabFilter>('all');
-  const [search,   setSearch]   = useState('');
-  const [selected, setSelected] = useState<string | null>(history[0]?.id ?? null);
+  const { t, locale } = useI18n();
+  const [tab,        setTab]        = useState<TabFilter>('all');
+  const [search,     setSearch]     = useState('');
+  const [selected,   setSelected]   = useState<string | null>(history[0]?.id ?? null);
+  const [syncSource, setSyncSource] = useState<SyncSource>('loading');
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSyncSource('loading');
+    loadHistorialSync().then(result => {
+      if (cancelled) return;
+      setHistory(result.entries);
+      setSyncSource(result.source);
+    });
+    if (isOnline()) {
+      fetchHistory().then(page => {
+        if (!cancelled) setNextCursor(page.nextCursor);
+      }).catch(() => { /* cursor stays null */ });
+    }
+    return () => { cancelled = true; };
+  }, [setHistory]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await fetchHistory(nextCursor);
+      const newEntries = mergeHistories(page.items, []);
+      setHistory(prev => {
+        const existingKeys = new Set(prev.map(e => `${e.expression}::${e.result}`));
+        const unique = newEntries.filter(e => !existingKeys.has(`${e.expression}::${e.result}`));
+        const updated = [...prev, ...unique];
+        saveHistory(updated);
+        return updated;
+      });
+      setNextCursor(page.nextCursor);
+    } catch { /* ignore */ }
+    setLoadingMore(false);
+  }, [nextCursor, loadingMore, setHistory]);
 
   // ── Filtro ──────────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -128,12 +173,28 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
         {/* Header */}
         <div className="px-7 pt-7 pb-4 shrink-0">
           <div className="flex items-center justify-between mb-5">
-            <h1 className="text-2xl font-black text-(--color-on-surface) uppercase tracking-widest">History</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-(--color-on-surface) uppercase tracking-widest">{t('history.title')}</h1>
+              <span className={`flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase ${
+                syncSource === 'synced' ? 'text-emerald-400' :
+                syncSource === 'loading' ? 'text-amber-400 animate-pulse' :
+                'text-(--color-on-surface-dim)'
+              }`}>
+                {syncSource === 'synced' && (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                  </svg>
+                )}
+                {t(syncSource === 'synced' ? 'history.sync.synced' :
+                   syncSource === 'loading' ? 'history.sync.loading' :
+                   'history.sync.local')}
+              </span>
+            </div>
             <div className="flex items-center gap-1 p-1 bg-(--color-surface-mid) rounded-xl">
-              <button onClick={() => setTab('all')}     className={tabCls('all')}>All</button>
-              <button onClick={() => setTab('today')}   className={tabCls('today')}>Today</button>
-              <button onClick={() => setTab('week')}    className={tabCls('week')}>This Week</button>
-              <button onClick={() => setTab('starred')} className={tabCls('starred')}>Starred</button>
+              <button onClick={() => setTab('all')}     className={tabCls('all')}>{t('history.tab.all')}</button>
+              <button onClick={() => setTab('today')}   className={tabCls('today')}>{t('history.tab.today')}</button>
+              <button onClick={() => setTab('week')}    className={tabCls('week')}>{t('history.tab.week')}</button>
+              <button onClick={() => setTab('starred')} className={tabCls('starred')}>{t('history.tab.starred')}</button>
             </div>
           </div>
 
@@ -144,7 +205,7 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
             </svg>
             <input
               type="text"
-              placeholder="Filter calculations by expression or result..."
+              placeholder={t('history.search.placeholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full bg-(--color-surface-mid) text-(--color-on-surface) text-sm pl-10 pr-4 py-3 rounded-xl border border-(--color-outline)/20 focus:border-(--color-primary-cta)/50 focus:outline-none transition-colors placeholder:text-(--color-on-surface-dim)"
@@ -179,11 +240,11 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h12"/>
                       </svg>
-                      <span className="uppercase tracking-widest font-bold">Calculadora</span>
+                      <span className="uppercase tracking-widest font-bold">{t('history.list.calculator')}</span>
                       <span className="text-(--color-primary) ml-1">· {entry.angleMode}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-(--color-on-surface-dim)">{relativeTime(entry.timestamp)}</span>
+                      <span className="text-[10px] text-(--color-on-surface-dim)">{relativeTime(entry.timestamp, locale)}</span>
                       <button
                         onClick={e => { e.stopPropagation(); toggleStar(entry.id); }}
                         className={`text-sm transition-all ${entry.starred ? 'text-yellow-400' : 'text-(--color-on-surface-dim) hover:text-yellow-400'}`}
@@ -206,12 +267,22 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
               );
             })}
 
+            {nextCursor && isOnline() && (
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="mt-2 self-center text-[11px] text-(--color-primary-cta) hover:text-(--color-primary-cta)/80 transition-colors font-mono uppercase tracking-widest disabled:opacity-40"
+              >
+                {loadingMore ? '...' : t('history.sync.loadMore')}
+              </button>
+            )}
+
             {history.length > 0 && (
               <button
                 onClick={clearAll}
                 className="mt-2 self-center text-[11px] text-(--color-on-surface-dim) hover:text-red-400 transition-colors font-mono uppercase tracking-widest"
               >
-                Limpiar historial
+                {t('history.list.clearAll')}
               </button>
             )}
           </div>
@@ -222,13 +293,13 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
       <aside className="w-72 shrink-0 border-l border-(--color-outline)/15 flex flex-col overflow-hidden">
         <div className="px-5 pt-6 pb-4 shrink-0 border-b border-(--color-outline)/10 flex items-center justify-between">
           <span className="text-[10px] font-bold uppercase tracking-widest text-(--color-on-surface-dim)">
-            Calculation Detail
+            {t('history.detail.title')}
           </span>
           {sel && (
             <div className="flex gap-1">
               <button
                 onClick={() => sel && onInsert?.(sel.result)}
-                title="Insertar resultado en calculadora"
+                title={t('history.action.insertResult')}
                 className="p-1.5 rounded-lg text-(--color-on-surface-dim) hover:text-(--color-primary) hover:bg-(--color-primary-cta)/10 transition-all"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,7 +308,7 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
               </button>
               <button
                 onClick={() => sel && deleteEntry(sel.id)}
-                title="Eliminar entrada"
+                title={t('history.action.delete')}
                 className="p-1.5 rounded-lg text-(--color-on-surface-dim) hover:text-red-400 hover:bg-red-500/10 transition-all"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +325,7 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
               {/* Expression */}
               <div className="p-3 bg-(--color-surface-mid) rounded-xl border border-(--color-outline)/10">
                 <div className="text-[9px] font-bold uppercase tracking-widest text-(--color-on-surface-dim) mb-2 flex items-center gap-1.5">
-                  <span className="px-1.5 py-0.5 bg-(--color-surface-high) rounded text-[9px]">EXPRESSION</span>
+                  <span className="px-1.5 py-0.5 bg-(--color-surface-high) rounded text-[9px]">{t('history.detail.expression')}</span>
                 </div>
                 <div className="font-mono text-sm text-(--color-on-surface) leading-relaxed break-all">
                   {sel.expression}
@@ -264,7 +335,7 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
               {/* Output Result */}
               <div className="p-3 bg-(--color-surface-mid) rounded-xl border border-(--color-outline)/10">
                 <div className="text-[9px] font-bold uppercase tracking-widest text-(--color-on-surface-dim) mb-2">
-                  Output Result
+                  {t('history.detail.output')}
                 </div>
                 {(() => {
                   const { value, unit } = parseResultUnit(sel.result);
@@ -282,20 +353,20 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
               {/* Step-by-step */}
               <div className="flex flex-col gap-2">
                 <div className="text-[9px] font-bold uppercase tracking-widest text-(--color-on-surface-dim)">
-                  Step-by-step Resolution
+                  {t('history.detail.steps')}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex gap-2 items-start">
                     <div className="w-2 h-2 rounded-full border-2 border-(--color-outline)/40 mt-1.5 shrink-0" />
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-(--color-on-surface-dim)">Expresión de entrada</span>
+                      <span className="text-[11px] text-(--color-on-surface-dim)">{t('history.detail.stepInput')}</span>
                       <span className="font-mono text-[11px] text-(--color-on-surface) break-all">{sel.expression}</span>
                     </div>
                   </div>
                   <div className="flex gap-2 items-start">
                     <div className="w-2 h-2 rounded-full bg-(--color-primary-cta) mt-1.5 shrink-0" />
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-(--color-on-surface-dim)">Evaluación numérica</span>
+                      <span className="text-[11px] text-(--color-on-surface-dim)">{t('history.detail.stepEval')}</span>
                       <span className="font-mono text-[11px] text-(--color-success) break-all">= {sel.result}</span>
                     </div>
                   </div>
@@ -305,31 +376,31 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
               {/* Metadata */}
               <div className="p-3 bg-(--color-surface) rounded-xl border border-(--color-outline)/10">
                 <div className="text-[9px] uppercase tracking-widest text-(--color-on-surface-dim) mb-2">
-                  Variables Mapping
+                  {t('history.detail.variables')}
                 </div>
                 <table className="w-full text-[11px]">
                   <thead>
                     <tr className="text-(--color-on-surface-dim) uppercase tracking-widest text-[9px]">
-                      <th className="text-left pb-1.5">Var</th>
-                      <th className="text-left pb-1.5">Value</th>
-                      <th className="text-left pb-1.5">Info</th>
+                      <th className="text-left pb-1.5">{t('history.detail.varVar')}</th>
+                      <th className="text-left pb-1.5">{t('history.detail.varValue')}</th>
+                      <th className="text-left pb-1.5">{t('history.detail.varInfo')}</th>
                     </tr>
                   </thead>
                   <tbody className="font-mono">
                     <tr>
                       <td className="text-(--color-primary) pr-3">expr</td>
                       <td className="text-(--color-on-surface) pr-3 break-all max-w-[80px] truncate">{sel.expression}</td>
-                      <td className="text-(--color-on-surface-dim)">input</td>
+                      <td className="text-(--color-on-surface-dim)">{t('history.detail.varInput')}</td>
                     </tr>
                     <tr>
                       <td className="text-(--color-primary) pr-3 pt-1">mode</td>
                       <td className="text-(--color-on-surface) pr-3 pt-1">{sel.angleMode}</td>
-                      <td className="text-(--color-on-surface-dim) pt-1">angle</td>
+                      <td className="text-(--color-on-surface-dim) pt-1">{t('history.detail.varAngle')}</td>
                     </tr>
                     <tr>
                       <td className="text-(--color-primary) pr-3 pt-1">t</td>
                       <td className="text-(--color-on-surface) pr-3 pt-1">{new Date(sel.timestamp).toLocaleTimeString()}</td>
-                      <td className="text-(--color-on-surface-dim) pt-1">time</td>
+                      <td className="text-(--color-on-surface-dim) pt-1">{t('history.detail.varTime')}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -343,12 +414,12 @@ export function HistorialView({ history, setHistory, onInsert }: HistorialViewPr
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                Export Result Data
+                {t('history.detail.export')}
               </button>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-(--color-on-surface-dim) text-xs text-center px-4">
-              Selecciona un cálculo para ver sus detalles
+              {t('history.detail.empty')}
             </div>
           )}
         </div>

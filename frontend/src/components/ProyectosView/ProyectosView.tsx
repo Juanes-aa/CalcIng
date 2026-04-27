@@ -1,4 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useI18n } from '../../hooks/useI18n';
+import { isOnline } from '@engine/historial';
+import {
+  listProjects, createProject as apiCreateProject, deleteProject as apiDeleteProject,
+  type Project,
+} from '../../services/projectsService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -7,6 +13,15 @@ interface Proyecto {
   nombre:      string;
   descripcion: string;
   creadoEn:    number;
+}
+
+function fromBackend(p: Project): Proyecto {
+  return {
+    id:          p.id,
+    nombre:      p.name,
+    descripcion: p.description,
+    creadoEn:    new Date(p.created_at).getTime(),
+  };
 }
 
 interface ProyectosViewProps {
@@ -56,6 +71,7 @@ interface CrearFormProps {
 }
 
 function CrearForm({ onCrear, onCancelar }: CrearFormProps): React.ReactElement {
+  const { t } = useI18n();
   const [nombre,      setNombre]      = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [error,       setError]       = useState('');
@@ -63,21 +79,21 @@ function CrearForm({ onCrear, onCancelar }: CrearFormProps): React.ReactElement 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     const trimmed = nombre.trim();
-    if (!trimmed) { setError('El nombre es obligatorio'); return; }
+    if (!trimmed) { setError(t('projects.form.errorName')); return; }
     onCrear({ id: genId(), nombre: trimmed, descripcion: descripcion.trim(), creadoEn: Date.now() });
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 bg-(--color-surface-low) rounded-xl border border-(--color-primary-cta)/20">
       <h3 className="text-sm font-bold text-(--color-on-surface) font-display uppercase tracking-widest">
-        Nuevo proyecto
+        {t('projects.form.title')}
       </h3>
       <div className="flex flex-col gap-1.5">
-        <label className={labelCls}>Nombre *</label>
+        <label className={labelCls}>{t('projects.form.name')}</label>
         <input
           data-testid="proyecto-nombre-input"
           type="text"
-          placeholder="ej: Cálculo de vigas"
+          placeholder={t('projects.form.namePlaceholder')}
           value={nombre}
           onChange={e => { setNombre(e.target.value); setError(''); }}
           className={inputCls}
@@ -86,11 +102,11 @@ function CrearForm({ onCrear, onCancelar }: CrearFormProps): React.ReactElement 
         {error && <span className="text-xs text-red-400 font-mono px-1">{error}</span>}
       </div>
       <div className="flex flex-col gap-1.5">
-        <label className={labelCls}>Descripción (opcional)</label>
+        <label className={labelCls}>{t('projects.form.desc')}</label>
         <input
           data-testid="proyecto-descripcion-input"
           type="text"
-          placeholder="ej: Proyecto de estructuras metálicas"
+          placeholder={t('projects.form.descPlaceholder')}
           value={descripcion}
           onChange={e => setDescripcion(e.target.value)}
           className={inputCls}
@@ -98,10 +114,10 @@ function CrearForm({ onCrear, onCancelar }: CrearFormProps): React.ReactElement 
       </div>
       <div className="flex gap-3 justify-end">
         <button type="button" onClick={onCancelar} className={btnGhost}>
-          Cancelar
+          {t('projects.form.cancel')}
         </button>
         <button type="submit" data-testid="proyecto-crear-btn" className={btnPrimary}>
-          Crear proyecto
+          {t('projects.form.submit')}
         </button>
       </div>
     </form>
@@ -116,6 +132,7 @@ interface ProyectoCardProps {
 }
 
 function ProyectoCard({ proyecto, onEliminar }: ProyectoCardProps): React.ReactElement {
+  const { t } = useI18n();
   const [confirmar, setConfirmar] = useState(false);
 
   return (
@@ -133,7 +150,7 @@ function ProyectoCard({ proyecto, onEliminar }: ProyectoCardProps): React.ReactE
           </span>
         )}
         <span className="text-[10px] text-(--color-on-surface-dim) font-mono mt-1">
-          Creado el {formatDate(proyecto.creadoEn)}
+          {t('projects.card.createdOn', { date: formatDate(proyecto.creadoEn) })}
         </span>
       </div>
 
@@ -144,20 +161,20 @@ function ProyectoCard({ proyecto, onEliminar }: ProyectoCardProps): React.ReactE
               onClick={() => onEliminar(proyecto.id)}
               className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors px-2 py-1"
             >
-              Confirmar
+              {t('projects.card.confirm')}
             </button>
             <button
               onClick={() => setConfirmar(false)}
               className={btnGhost}
             >
-              No
+              {t('projects.card.no')}
             </button>
           </>
         ) : (
           <button
             onClick={() => setConfirmar(true)}
             className="p-1.5 rounded-lg text-(--color-on-surface-dim) hover:text-red-400 hover:bg-red-400/10 transition-all"
-            title="Eliminar proyecto"
+            title={t('projects.card.deleteTooltip')}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -172,22 +189,58 @@ function ProyectoCard({ proyecto, onEliminar }: ProyectoCardProps): React.ReactE
 
 // ─── ProyectosView ────────────────────────────────────────────────────────────
 
+type SyncSource = 'synced' | 'local' | 'loading';
+
 export function ProyectosView({ onInsert: _onInsert }: ProyectosViewProps): React.ReactElement {
+  const { t } = useI18n();
   const [proyectos,   setProyectos]   = useState<Proyecto[]>(loadProyectos);
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [syncSource,  setSyncSource]  = useState<SyncSource>('loading');
 
-  function handleCrear(p: Proyecto): void {
+  useEffect(() => {
+    let cancelled = false;
+    if (!isOnline()) {
+      setSyncSource('local');
+      return;
+    }
+    setSyncSource('loading');
+    listProjects()
+      .then(remote => {
+        if (cancelled) return;
+        const converted = remote.map(fromBackend);
+        setProyectos(converted);
+        saveProyectos(converted);
+        setSyncSource('synced');
+      })
+      .catch(() => {
+        if (!cancelled) setSyncSource('local');
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleCrear = useCallback((p: Proyecto): void => {
     const nuevos = [p, ...proyectos];
     setProyectos(nuevos);
     saveProyectos(nuevos);
     setMostrarForm(false);
-  }
+    if (isOnline()) {
+      apiCreateProject(p.nombre, p.descripcion)
+        .then(remote => {
+          setProyectos(prev => prev.map(x => x.id === p.id ? fromBackend(remote) : x));
+          saveProyectos(proyectos);
+        })
+        .catch(() => { /* keep local version */ });
+    }
+  }, [proyectos]);
 
-  function handleEliminar(id: string): void {
+  const handleEliminar = useCallback((id: string): void => {
     const nuevos = proyectos.filter(p => p.id !== id);
     setProyectos(nuevos);
     saveProyectos(nuevos);
-  }
+    if (isOnline()) {
+      apiDeleteProject(id).catch(() => { /* already removed locally */ });
+    }
+  }, [proyectos]);
 
   return (
     <section
@@ -197,13 +250,24 @@ export function ProyectosView({ onInsert: _onInsert }: ProyectosViewProps): Reac
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-(--color-outline)/15 shrink-0">
         <div>
-          <h2 className="text-sm font-bold text-(--color-on-surface) font-display uppercase tracking-widest">
-            Proyectos
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-sm font-bold text-(--color-on-surface) font-display uppercase tracking-widest">
+              {t('projects.title')}
+            </h2>
+            <span className={`text-[10px] font-mono tracking-widest uppercase ${
+              syncSource === 'synced' ? 'text-emerald-400' :
+              syncSource === 'loading' ? 'text-amber-400 animate-pulse' :
+              'text-(--color-on-surface-dim)'
+            }`}>
+              {t(syncSource === 'synced' ? 'history.sync.synced' :
+                 syncSource === 'loading' ? 'history.sync.loading' :
+                 'history.sync.local')}
+            </span>
+          </div>
           <p className="text-[10px] text-(--color-on-surface-dim) mt-0.5">
             {proyectos.length === 0
-              ? 'Sin proyectos guardados'
-              : `${proyectos.length} proyecto${proyectos.length !== 1 ? 's' : ''}`}
+              ? t('projects.empty')
+              : t(proyectos.length !== 1 ? 'projects.countPlural' : 'projects.count', { n: proyectos.length })}
           </p>
         </div>
         {!mostrarForm && (
@@ -215,7 +279,7 @@ export function ProyectosView({ onInsert: _onInsert }: ProyectosViewProps): Reac
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
             </svg>
-            Nuevo proyecto
+            {t('projects.newBtn')}
           </button>
         )}
       </div>
@@ -235,16 +299,16 @@ export function ProyectosView({ onInsert: _onInsert }: ProyectosViewProps): Reac
               </svg>
             </div>
             <div>
-              <p className="text-sm font-bold text-(--color-on-surface) font-display">Sin proyectos aún</p>
+              <p className="text-sm font-bold text-(--color-on-surface) font-display">{t('projects.emptyTitle')}</p>
               <p className="text-xs text-(--color-on-surface-dim) mt-1">
-                Crea un proyecto para organizar tus cálculos
+                {t('projects.emptyDesc')}
               </p>
             </div>
             <button
               onClick={() => setMostrarForm(true)}
               className={btnPrimary}
             >
-              Crear primer proyecto
+              {t('projects.emptyAction')}
             </button>
           </div>
         ) : (

@@ -34,8 +34,8 @@ describe('CalculatorKeypad', () => {
       render(<CalculatorKeypad onKeyPress={vi.fn()} />)
       expect(getKey('+')).toBeInTheDocument()
       expect(getKey('-')).toBeInTheDocument()
-      expect(getKey('*')).toBeInTheDocument()
-      expect(getKey('/')).toBeInTheDocument()
+      expect(getKey('×')).toBeInTheDocument()
+      expect(getKey('÷')).toBeInTheDocument()
     })
 
     it('renderiza la tecla de igual', () => {
@@ -115,17 +115,17 @@ describe('CalculatorKeypad', () => {
       expect(onKeyPress).toHaveBeenCalledWith('-')
     })
 
-    it('llama a onKeyPress con "*" al presionar *', async () => {
+    it('llama a onKeyPress con "*" al presionar ×', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('*'))
+      await userEvent.click(getKey('×'))
       expect(onKeyPress).toHaveBeenCalledWith('*')
     })
 
-    it('llama a onKeyPress con "/" al presionar /', async () => {
+    it('llama a onKeyPress con "/" al presionar ÷', async () => {
       const onKeyPress = vi.fn()
       render(<CalculatorKeypad onKeyPress={onKeyPress} />)
-      await userEvent.click(getKey('/'))
+      await userEvent.click(getKey('÷'))
       expect(onKeyPress).toHaveBeenCalledWith('/')
     })
 
@@ -319,22 +319,22 @@ describe('CalculatorKeypad', () => {
 
 describe('Modo ángulo activo — clase CSS', () => {
 
-  test('tecla RAD tiene clase active cuando angleMode es RAD', () => {
+  test('tecla RAD activa cuando angleMode es RAD', () => {
     render(<CalculatorKeypad onKeyPress={() => {}} angleMode="RAD" />)
     const radBtn = screen.getByText('RAD')
-    expect(radBtn.className).toContain('active')
+    expect(radBtn).toHaveAttribute('aria-pressed', 'true')
   })
 
-  test('tecla DEG tiene clase active cuando angleMode es DEG', () => {
+  test('tecla DEG activa cuando angleMode es DEG', () => {
     render(<CalculatorKeypad onKeyPress={() => {}} angleMode="DEG" />)
     const degBtn = screen.getByText('DEG')
-    expect(degBtn.className).toContain('active')
+    expect(degBtn).toHaveAttribute('aria-pressed', 'true')
   })
 
-  test('tecla RAD NO tiene clase active cuando angleMode es DEG', () => {
+  test('tecla RAD NO está activa cuando angleMode es DEG', () => {
     render(<CalculatorKeypad onKeyPress={() => {}} angleMode="DEG" />)
     const radBtn = screen.getByText('RAD')
-    expect(radBtn.className).not.toContain('active')
+    expect(radBtn).toHaveAttribute('aria-pressed', 'false')
   })
 
   test('tecla activa tiene aria-pressed=true', () => {

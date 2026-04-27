@@ -1,6 +1,7 @@
+import uuid
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_, or_
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
@@ -11,6 +12,7 @@ from core.auth_deps import require_auth
 
 router = APIRouter(prefix="/users/me", tags=["history"])
 
+
 class ProblemOut(BaseModel):
     id: str
     expression: str
@@ -20,9 +22,23 @@ class ProblemOut(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class HistoryResponse(BaseModel):
     items: list[ProblemOut]
     next_cursor: Optional[str]
+
+
+def _parse_cursor(cursor: str) -> tuple[datetime, uuid.UUID | None]:
+    """Parsea un cursor con formato '{iso_timestamp}_{uuid}' (nuevo)
+    o sólo '{iso_timestamp}' (legacy, sin desempate por id)."""
+    if "_" in cursor:
+        ts_part, id_part = cursor.rsplit("_", 1)
+        try:
+            return datetime.fromisoformat(ts_part), uuid.UUID(id_part)
+        except (ValueError, TypeError):
+            return datetime.fromisoformat(cursor), None
+    return datetime.fromisoformat(cursor), None
+
 
 @router.get("/history", response_model=HistoryResponse)
 async def get_history(
@@ -31,15 +47,24 @@ async def get_history(
     user_id: str = Depends(require_auth),
     db: AsyncSession = Depends(get_db),
 ) -> HistoryResponse:
-    import uuid
+    # Orden estable: (created_at DESC, id DESC) — id desempata timestamps duplicados.
     query = (
         select(Problem)
         .where(Problem.user_id == uuid.UUID(user_id))
-        .order_by(Problem.created_at.desc())
+        .order_by(Problem.created_at.desc(), Problem.id.desc())
     )
     if cursor:
-        cursor_dt = datetime.fromisoformat(cursor)
-        query = query.where(Problem.created_at < cursor_dt)
+        cursor_dt, cursor_id = _parse_cursor(cursor)
+        if cursor_id is not None:
+            # (created_at, id) < (cursor_dt, cursor_id) en orden DESC.
+            query = query.where(
+                or_(
+                    Problem.created_at < cursor_dt,
+                    and_(Problem.created_at == cursor_dt, Problem.id < cursor_id),
+                )
+            )
+        else:
+            query = query.where(Problem.created_at < cursor_dt)
 
     query = query.limit(limit + 1)
     result = await db.execute(query)
@@ -50,7 +75,8 @@ async def get_history(
 
     next_cursor: str | None = None
     if has_more:
-        next_cursor = items[-1].created_at.isoformat()
+        last = items[-1]
+        next_cursor = f"{last.created_at.isoformat()}_{last.id}"
 
     return HistoryResponse(
         items=[

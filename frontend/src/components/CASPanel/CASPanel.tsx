@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useCAS } from '../../hooks/useCAS';
 import type { CASOperation } from '../../hooks/useCAS';
 import type { DetailLevel } from '@engine/stepEngine/types';
+import type { TranslationKey } from '@engine/i18n';
+import { useI18n } from '../../hooks/useI18n';
 import { StepViewer } from './StepViewer';
 
 const VARIABLE_OPS = new Set<CASOperation>(['differentiate', 'integrate', 'solveEquation']);
 const ORDER_OPS    = new Set<CASOperation>(['differentiate']);
 
 export function CASPanel(): JSX.Element {
+  const { t } = useI18n();
   const {
     expression, variable, order, operation, status, result, errorMsg, steps,
     setExpression, setVariable, setOrder, execute, reset,
@@ -39,7 +42,7 @@ export function CASPanel(): JSX.Element {
               : 'text-(--color-on-surface-dim) hover:text-(--color-on-surface)'
           }`}
         >
-          Simbólico
+          {t('cas.tab.symbolic')}
         </button>
         <button
           type="button"
@@ -50,7 +53,7 @@ export function CASPanel(): JSX.Element {
               : 'text-(--color-on-surface-dim) hover:text-(--color-on-surface)'
           }`}
         >
-          Pasos
+          {t('cas.tab.steps')}
         </button>
       </div>
 
@@ -59,13 +62,13 @@ export function CASPanel(): JSX.Element {
 
           {/* ── CAS Input ── */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="cas-expr" className={labelCls}>CAS Input</label>
+            <label htmlFor="cas-expr" className={labelCls}>{t('cas.input.label')}</label>
             <input
               id="cas-expr"
               data-testid="cas-expression-input"
               type="text"
               value={expression}
-              placeholder="Ingresa una expresión..."
+              placeholder={t('cas.input.placeholder')}
               onChange={(e) => setExpression(e.target.value)}
               className={inputCls}
             />
@@ -74,13 +77,13 @@ export function CASPanel(): JSX.Element {
           {/* ── Operación pills ── */}
           <div className="grid grid-cols-2 gap-2">
             {([
-              { label: 'Simplificar', op: 'simplify'     },
-              { label: 'Expandir',    op: 'expand'        },
-              { label: 'Resolver',    op: 'solveEquation' },
-              { label: 'Derivar',     op: 'differentiate' },
-              { label: 'Integrar',    op: 'integrate'     },
-              { label: 'Factorizar',  op: 'factor'        },
-            ] as const).map(({ label, op }) => (
+              { labelKey: 'cas.op.simplify',      op: 'simplify'     },
+              { labelKey: 'cas.op.expand',        op: 'expand'        },
+              { labelKey: 'cas.op.solve',         op: 'solveEquation' },
+              { labelKey: 'cas.op.differentiate', op: 'differentiate' },
+              { labelKey: 'cas.op.integrate',     op: 'integrate'     },
+              { labelKey: 'cas.op.factor',        op: 'factor'        },
+            ] as const satisfies readonly { labelKey: TranslationKey; op: CASOperation }[]).map(({ labelKey, op }) => (
               <button
                 key={op}
                 type="button"
@@ -92,7 +95,7 @@ export function CASPanel(): JSX.Element {
                     : 'border-(--color-outline)/20 text-(--color-primary) hover:bg-(--color-primary-cta)/10'
                 }`}
               >
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -100,13 +103,13 @@ export function CASPanel(): JSX.Element {
           {/* ── Variable (condicional) ── */}
           {!hideVariable && (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="cas-var" className={labelCls}>Variable</label>
+              <label htmlFor="cas-var" className={labelCls}>{t('cas.variable.label')}</label>
               <input
                 id="cas-var"
                 data-testid="cas-variable-input"
                 type="text"
                 value={variable}
-                placeholder="ej: x"
+                placeholder={t('cas.variable.placeholder')}
                 onChange={(e) => setVariable(e.target.value)}
                 className={inputCls}
               />
@@ -114,14 +117,14 @@ export function CASPanel(): JSX.Element {
           )}
           {hideVariable && (
             <input data-testid="cas-variable-input" type="text" value={variable}
-              placeholder="x"
+              placeholder={t('cas.variable.placeholder')}
               onChange={(e) => setVariable(e.target.value)} hidden />
           )}
 
           {/* ── Orden (condicional) ── */}
           {!hideOrder && (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="cas-order" className={labelCls}>Orden</label>
+              <label htmlFor="cas-order" className={labelCls}>{t('cas.order.label')}</label>
               <input
                 id="cas-order"
                 data-testid="cas-order-input"
@@ -146,7 +149,7 @@ export function CASPanel(): JSX.Element {
               disabled={isLoading}
               className="py-2.5 bg-(--color-primary-cta) text-white text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_12px_rgba(37,99,235,0.25)]"
             >
-              {isLoading ? 'Calculando…' : 'Ejecutar'}
+              {isLoading ? t('cas.executing') : t('cas.execute')}
             </button>
             <button
               data-testid="cas-reset-button"
@@ -154,18 +157,18 @@ export function CASPanel(): JSX.Element {
               disabled={isLoading}
               className="px-4 py-2.5 text-(--color-on-surface-dim) text-sm font-bold rounded-xl border border-(--color-outline)/30 hover:text-(--color-on-surface) hover:border-(--color-outline)/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Reset
+              {t('cas.reset')}
             </button>
           </div>
 
           {/* ── Output box ── */}
           <div className="bg-(--color-surface) rounded-xl p-4 border border-(--color-outline)/10 min-h-[120px] flex flex-col gap-2">
             <span className="text-[10px] text-(--color-on-surface-dim) uppercase tracking-widest">
-              Respuesta simbólica:
+              {t('cas.output.label')}
             </span>
             {status === 'idle' && (
               <span className="text-(--color-on-surface-dim) text-sm font-mono leading-relaxed">
-                Ingresa una expresión y selecciona una operación para comenzar.
+                {t('cas.output.idle')}
               </span>
             )}
             {status === 'success' && (
@@ -181,7 +184,7 @@ export function CASPanel(): JSX.Element {
             )}
             {status === 'loading' && (
               <span className="text-(--color-on-surface-dim) text-sm font-mono animate-pulse">
-                Calculando…
+                {t('cas.executing')}
               </span>
             )}
           </div>
@@ -197,15 +200,15 @@ export function CASPanel(): JSX.Element {
             onChange={(e) => setLevel(e.target.value as DetailLevel)}
             className="w-full bg-(--color-surface-high) text-(--color-on-surface-dim) text-sm px-3 py-2.5 rounded-xl border border-(--color-outline)/20 focus:outline-none focus:border-(--color-primary-cta) transition-colors cursor-pointer shrink-0"
           >
-            <option value="beginner">Principiante</option>
-            <option value="intermediate">Intermedio</option>
-            <option value="advanced">Avanzado</option>
+            <option value="beginner">{t('cas.steps.level.beginner')}</option>
+            <option value="intermediate">{t('cas.steps.level.intermediate')}</option>
+            <option value="advanced">{t('cas.steps.level.advanced')}</option>
           </select>
 
           {/* ── Pasos ── */}
           {steps.length === 0 ? (
             <span className="text-(--color-on-surface-dim) text-sm font-mono leading-relaxed">
-              Ejecuta una operación en la pestaña Simbólico para ver los pasos.
+              {t('cas.steps.empty')}
             </span>
           ) : (
             <StepViewer steps={steps} level={level} />
@@ -218,11 +221,11 @@ export function CASPanel(): JSX.Element {
       <div className="px-4 py-3 border-t border-(--color-outline)/10 bg-(--color-surface-high)/50">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-bold text-(--color-on-surface-dim) uppercase tracking-widest">
-            Estado del Motor
+            {t('cas.status.title')}
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-(--color-success) font-bold uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-(--color-success) animate-pulse" />
-            Online
+            {t('cas.status.online')}
           </span>
         </div>
         <div className="w-full bg-(--color-surface-highest) h-1 rounded-full overflow-hidden">

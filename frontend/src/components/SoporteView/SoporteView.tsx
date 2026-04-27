@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useI18n } from '../../hooks/useI18n';
+import type { TranslationKey } from '@engine/i18n';
+import { submitTicket } from '../../services/supportService';
 
 const SERVICES = [
   { name: 'API_GATEWAY',  uptime: '99.9%',  status: 'ONLINE'   },
@@ -13,44 +16,53 @@ const STATUS_STYLE: Record<string, string> = {
   DOWN:     'text-red-400    bg-red-400/10    border border-red-400/30',
 };
 
-const CATEGORIES = [
-  'Technical Computation Error',
-  'Account & Billing',
-  'Feature Request',
-  'Bug Report',
-  'API Integration',
-  'Other',
+const CATEGORY_KEYS: TranslationKey[] = [
+  'support.cat.techError',
+  'support.cat.billing',
+  'support.cat.feature',
+  'support.cat.bug',
+  'support.cat.api',
+  'support.cat.other',
 ];
 
-const FAQS: { q: string; a: string }[] = [
-  {
-    q: 'How do I export high-precision constants to LaTeX?',
-    a: "Utilice la herramienta de exportación en la barra de navegación inferior o presione [CTRL+E]. Seleccione el formato 'LaTeX' y la precisión de decimales deseada para generar la cadena de código compatible con editores científicos.",
-  },
-  {
-    q: '¿Cuál es el límite de cómputo en la versión gratuita?',
-    a: 'La versión gratuita permite hasta 500 operaciones simbólicas por día y acceso a las bibliotecas estándar de cálculo. Para operaciones ilimitadas, considera el plan Premium.',
-  },
-  {
-    q: '¿Es posible integrar la API de CalcIng en entornos Python?',
-    a: 'Sí. CalcIng expone una REST API autenticada. Puedes instalar el cliente oficial con pip install calcing-client y autenticarte con tu Engineering ID.',
-  },
+const FAQ_KEYS: { q: TranslationKey; a: TranslationKey }[] = [
+  { q: 'support.faq.q1', a: 'support.faq.a1' },
+  { q: 'support.faq.q2', a: 'support.faq.a2' },
+  { q: 'support.faq.q3', a: 'support.faq.a3' },
 ];
 
 export function SoporteView() {
+  const { t } = useI18n();
   const [fullName,    setFullName]    = useState('');
   const [engId,       setEngId]       = useState('');
-  const [category,    setCategory]    = useState(CATEGORIES[0]);
+  const [category,    setCategory]    = useState(CATEGORY_KEYS[0]);
   const [description, setDescription] = useState('');
   const [critical,    setCritical]    = useState(false);
   const [openFaq,     setOpenFaq]     = useState<number | null>(0);
   const [submitted,   setSubmitted]   = useState(false);
+  const [submitting,  setSubmitting]  = useState(false);
+  const [error,       setError]       = useState<string | null>(null);
 
-  function handleDispatch() {
-    if (!fullName.trim() || !description.trim()) return;
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-    setFullName(''); setEngId(''); setDescription(''); setCritical(false);
+  async function handleDispatch(): Promise<void> {
+    if (!fullName.trim() || !description.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitTicket({
+        full_name:   fullName.trim(),
+        eng_id:      engId.trim(),
+        category:    category ?? 'other',
+        description: description.trim(),
+        critical,
+      });
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3000);
+      setFullName(''); setEngId(''); setDescription(''); setCritical(false);
+    } catch {
+      setError(t('support.form.error'));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -59,17 +71,17 @@ export function SoporteView() {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div className="text-center space-y-3">
         <h1 className="text-4xl font-mono font-black tracking-[0.15em] uppercase text-on-surface">
-          Centro de Soporte
+          {t('support.hero.title')}
         </h1>
-        <p className="text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
-          Sistemas de diagnóstico y canales de comunicación técnica para ingenieros de CalcIng.
+        <p className="text-sm text-on-surface-dim max-w-lg mx-auto leading-relaxed">
+          {t('support.hero.subtitle')}
         </p>
       </div>
 
       {/* ── Contact cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Discord */}
-        <div className="relative flex flex-col gap-3 p-5 rounded-xl bg-surface-low border border-white/8 hover:border-blue-500/30 transition-colors">
+        <div className="relative flex flex-col gap-3 p-5 rounded-xl bg-surface-low border border-outline/20 hover:border-blue-500/30 transition-colors">
           <span className="absolute top-4 right-4 text-[9px] font-mono tracking-widest text-blue-400 uppercase">Live Support</span>
           <div className="w-10 h-10 rounded-lg bg-blue-500/15 border border-blue-500/25 flex items-center justify-center text-blue-400">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -78,18 +90,18 @@ export function SoporteView() {
           </div>
           <div>
             <h3 className="font-mono font-bold text-on-surface text-sm">Discord Server</h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              Únete a nuestra comunidad para asistencia en tiempo real y discusiones técnicas.
+            <p className="text-xs text-on-surface-dim mt-1 leading-relaxed">
+              {t('support.discord.desc')}
             </p>
           </div>
           <a href="#" onClick={e => e.preventDefault()} className="mt-auto text-[11px] font-mono font-bold text-blue-400 hover:text-blue-300 tracking-wider uppercase flex items-center gap-1 transition-colors">
-            Connect to Server
+            {t('support.discord.link')}
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </a>
         </div>
 
         {/* GitHub */}
-        <div className="relative flex flex-col gap-3 p-5 rounded-xl bg-surface-low border border-white/8 hover:border-emerald-500/30 transition-colors">
+        <div className="relative flex flex-col gap-3 p-5 rounded-xl bg-surface-low border border-outline/20 hover:border-emerald-500/30 transition-colors">
           <span className="absolute top-4 right-4 text-[9px] font-mono tracking-widest text-emerald-400 uppercase">Open Source</span>
           <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -98,18 +110,18 @@ export function SoporteView() {
           </div>
           <div>
             <h3 className="font-mono font-bold text-on-surface text-sm">GitHub Repos</h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              Reporta bugs, sugiere funciones o contribuye a nuestras bibliotecas de cálculo.
+            <p className="text-xs text-on-surface-dim mt-1 leading-relaxed">
+              {t('support.github.desc')}
             </p>
           </div>
           <a href="#" onClick={e => e.preventDefault()} className="mt-auto text-[11px] font-mono font-bold text-emerald-400 hover:text-emerald-300 tracking-wider uppercase flex items-center gap-1 transition-colors">
-            View Repositories
+            {t('support.github.link')}
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </a>
         </div>
 
         {/* Email */}
-        <div className="relative flex flex-col gap-3 p-5 rounded-xl bg-surface-low border border-white/8 hover:border-violet-500/30 transition-colors">
+        <div className="relative flex flex-col gap-3 p-5 rounded-xl bg-surface-low border border-outline/20 hover:border-violet-500/30 transition-colors">
           <span className="absolute top-4 right-4 text-[9px] font-mono tracking-widest text-violet-400 uppercase">Direct Contact</span>
           <div className="w-10 h-10 rounded-lg bg-violet-500/15 border border-violet-500/25 flex items-center justify-center text-violet-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,12 +130,12 @@ export function SoporteView() {
           </div>
           <div>
             <h3 className="font-mono font-bold text-on-surface text-sm">Email Support</h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              Para consultas comerciales o problemas de cuenta críticos y privados.
+            <p className="text-xs text-on-surface-dim mt-1 leading-relaxed">
+              {t('support.email.desc')}
             </p>
           </div>
           <a href="mailto:soporte@calcing.app" className="mt-auto text-[11px] font-mono font-bold text-violet-400 hover:text-violet-300 tracking-wider uppercase flex items-center gap-1 transition-colors">
-            Send an Email
+            {t('support.email.link')}
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </a>
         </div>
@@ -133,29 +145,29 @@ export function SoporteView() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* System Status */}
-        <div className="rounded-xl bg-surface-low border border-white/8 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/8">
+        <div className="rounded-xl bg-surface-low border border-outline/20 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-outline/20">
             <span className="text-[11px] font-mono font-bold tracking-widest text-on-surface uppercase">
-              System_Status
+              {t('support.status.title')}
             </span>
             <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>
-              Live_Feed
+              {t('support.status.live')}
             </span>
           </div>
           <table className="w-full text-xs font-mono">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-5 py-2 text-[10px] tracking-widest text-slate-500 uppercase font-normal">Service</th>
-                <th className="text-left px-3 py-2 text-[10px] tracking-widest text-slate-500 uppercase font-normal">Uptime</th>
-                <th className="text-left px-3 py-2 text-[10px] tracking-widest text-slate-500 uppercase font-normal">Status</th>
+              <tr className="border-b border-outline/15">
+                <th className="text-left px-5 py-2 text-[10px] tracking-widest text-on-surface-dim uppercase font-normal">{t('support.table.service')}</th>
+                <th className="text-left px-3 py-2 text-[10px] tracking-widest text-on-surface-dim uppercase font-normal">{t('support.table.uptime')}</th>
+                <th className="text-left px-3 py-2 text-[10px] tracking-widest text-on-surface-dim uppercase font-normal">{t('support.table.status')}</th>
               </tr>
             </thead>
             <tbody>
               {SERVICES.map(svc => (
-                <tr key={svc.name} className="border-b border-white/5 last:border-0">
-                  <td className="px-5 py-3 text-slate-300 tracking-wide">{svc.name}</td>
-                  <td className="px-3 py-3 text-slate-400">{svc.uptime}</td>
+                <tr key={svc.name} className="border-b border-outline/15 last:border-0">
+                  <td className="px-5 py-3 text-on-surface tracking-wide">{svc.name}</td>
+                  <td className="px-3 py-3 text-on-surface-dim">{svc.uptime}</td>
                   <td className="px-3 py-3">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${STATUS_STYLE[svc.status]}`}>
                       {svc.status}
@@ -165,64 +177,64 @@ export function SoporteView() {
               ))}
             </tbody>
           </table>
-          <div className="px-5 py-3 border-t border-white/5">
-            <p className="text-[10px] font-mono text-slate-500 leading-relaxed">
-              ★ Incident: REDIS_CACHE maintenance scheduled for node migration. Expected restoration in 4h.
+          <div className="px-5 py-3 border-t border-outline/15">
+            <p className="text-[10px] font-mono text-on-surface-dim leading-relaxed">
+              {t('support.incident')}
             </p>
           </div>
         </div>
 
         {/* Ticket Form */}
-        <div className="rounded-xl bg-surface-low border border-white/8 p-5 flex flex-col gap-4">
+        <div className="rounded-xl bg-surface-low border border-outline/20 p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-primary-cta shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
             </svg>
-            <h2 className="font-mono font-bold text-on-surface text-sm tracking-wider">Submit Technical Ticket</h2>
+            <h2 className="font-mono font-bold text-on-surface text-sm tracking-wider">{t('support.ticket.title')}</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-mono tracking-[0.15em] text-slate-500 uppercase mb-1">Full Name</label>
+              <label className="block text-[10px] font-mono tracking-[0.15em] text-on-surface-dim uppercase mb-1">{t('support.ticket.fullName')}</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
-                placeholder="e.g. Dr. Ana Thothe"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-on-surface placeholder-slate-600 focus:outline-none focus:border-primary-cta/50 transition-all"
+                placeholder={t('support.ticket.fullNamePh')}
+                className="w-full bg-surface-mid border border-outline/25 rounded-lg px-3 py-2 text-xs font-mono text-on-surface placeholder:text-on-surface-dim/60 focus:outline-none focus:border-primary-cta/50 transition-all"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono tracking-[0.15em] text-slate-500 uppercase mb-1">Engineering ID</label>
+              <label className="block text-[10px] font-mono tracking-[0.15em] text-on-surface-dim uppercase mb-1">{t('support.ticket.engId')}</label>
               <input
                 type="text"
                 value={engId}
                 onChange={e => setEngId(e.target.value)}
-                placeholder="CALC-XXXX-XXXX"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-on-surface placeholder-slate-600 focus:outline-none focus:border-primary-cta/50 transition-all"
+                placeholder={t('support.ticket.engIdPh')}
+                className="w-full bg-surface-mid border border-outline/25 rounded-lg px-3 py-2 text-xs font-mono text-on-surface placeholder:text-on-surface-dim/60 focus:outline-none focus:border-primary-cta/50 transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.15em] text-slate-500 uppercase mb-1">Inquiry Category</label>
+            <label className="block text-[10px] font-mono tracking-[0.15em] text-on-surface-dim uppercase mb-1">{t('support.ticket.category')}</label>
             <select
               value={category}
-              onChange={e => setCategory(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-on-surface focus:outline-none focus:border-primary-cta/50 transition-all appearance-none"
+              onChange={e => setCategory(e.target.value as TranslationKey)}
+              className="w-full bg-surface-mid border border-outline/25 rounded-lg px-3 py-2 text-xs font-mono text-on-surface focus:outline-none focus:border-primary-cta/50 transition-all appearance-none"
             >
-              {CATEGORIES.map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>)}
+              {CATEGORY_KEYS.map(c => <option key={c} value={c} className="bg-gray-900">{t(c)}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.15em] text-slate-500 uppercase mb-1">Detailed Description</label>
+            <label className="block text-[10px] font-mono tracking-[0.15em] text-on-surface-dim uppercase mb-1">{t('support.ticket.description')}</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Provide mathematical context or steps to reproduce..."
+              placeholder={t('support.ticket.descPh')}
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-on-surface placeholder-slate-600 focus:outline-none focus:border-primary-cta/50 transition-all resize-none"
+              className="w-full bg-surface-mid border border-outline/25 rounded-lg px-3 py-2 text-xs font-mono text-on-surface placeholder:text-on-surface-dim/60 focus:outline-none focus:border-primary-cta/50 transition-all resize-none"
             />
           </div>
 
@@ -234,15 +246,26 @@ export function SoporteView() {
                 onChange={e => setCritical(e.target.checked)}
                 className="w-3.5 h-3.5 accent-primary-cta"
               />
-              <span className="text-[10px] font-mono tracking-[0.15em] text-slate-400 uppercase">Critical Priority</span>
+              <span className="text-[10px] font-mono tracking-[0.15em] text-on-surface-dim uppercase">{t('support.ticket.critical')}</span>
             </label>
-            <button
-              onClick={handleDispatch}
-              disabled={!fullName.trim() || !description.trim()}
-              className="px-5 py-2 bg-primary-cta text-white text-[11px] font-mono font-bold tracking-widest uppercase rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {submitted ? '✓ Dispatched' : 'Dispatch Ticket'}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                onClick={handleDispatch}
+                disabled={!fullName.trim() || !description.trim() || submitting}
+                className="px-5 py-2 bg-primary-cta text-white text-[11px] font-mono font-bold tracking-widest uppercase rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {submitted
+                  ? t('support.ticket.dispatched')
+                  : submitting
+                    ? t('support.ticket.dispatching')
+                    : t('support.ticket.dispatch')}
+              </button>
+              {error && (
+                <span data-testid="support-error" className="text-[10px] font-mono text-red-400">
+                  {error}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -251,29 +274,29 @@ export function SoporteView() {
       <div>
         <div className="text-center mb-6">
           <h2 className="text-lg font-mono font-black tracking-[0.2em] uppercase text-on-surface">
-            Frequently Asked Queries
+            {t('support.faq.title')}
           </h2>
           <div className="w-10 h-0.5 bg-primary-cta mx-auto mt-2 rounded-full"/>
         </div>
 
         <div className="space-y-2">
-          {FAQS.map((faq, i) => (
-            <div key={i} className="rounded-xl border border-white/8 bg-surface-low overflow-hidden">
+          {FAQ_KEYS.map((faq, i) => (
+            <div key={i} className="rounded-xl border border-outline/20 bg-surface-low overflow-hidden">
               <button
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/5 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-surface-mid transition-colors"
               >
-                <span className="text-sm font-mono text-on-surface pr-4">{faq.q}</span>
+                <span className="text-sm font-mono text-on-surface pr-4">{t(faq.q)}</span>
                 <svg
-                  className={`w-4 h-4 shrink-0 text-slate-500 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 shrink-0 text-on-surface-dim transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
                 </svg>
               </button>
               {openFaq === i && (
-                <div className="px-5 pb-4 border-t border-white/5">
-                  <p className="text-xs text-slate-400 leading-relaxed pt-3 font-mono">{faq.a}</p>
+                <div className="px-5 pb-4 border-t border-outline/15">
+                  <p className="text-xs text-on-surface-dim leading-relaxed pt-3 font-mono">{t(faq.a)}</p>
                 </div>
               )}
             </div>

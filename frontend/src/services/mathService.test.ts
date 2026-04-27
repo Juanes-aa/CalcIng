@@ -41,6 +41,7 @@ afterEach(() => {
 describe('mathService', () => {
   describe('isBackendEnabled', () => {
     it('retorna false cuando VITE_USE_BACKEND no está definido', () => {
+      vi.stubEnv('VITE_USE_BACKEND', '')
       expect(isBackendEnabled()).toBe(false)
     })
 

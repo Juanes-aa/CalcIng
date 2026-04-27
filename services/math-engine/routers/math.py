@@ -3,12 +3,15 @@ routers/math.py — Endpoints matemáticos de CalcIng Math Engine.
 """
 
 import asyncio
+import logging
 import uuid as uuid_module
 from concurrent.futures import ProcessPoolExecutor
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sympy import SympifyError
+
+log = logging.getLogger("calcing.math")
 
 import core.cache as _cache
 from core.auth_deps import optional_auth, get_plan_from_token
@@ -21,8 +24,14 @@ from models.schemas import (
     DifferentiateResponse,
     EvaluateRequest,
     EvaluateResponse,
+    ExpandRequest,
+    ExpandResponse,
+    FactorRequest,
+    FactorResponse,
     IntegrateRequest,
     IntegrateResponse,
+    SimplifyRequest,
+    SimplifyResponse,
     SolveEquationRequest,
     SolveEquationResponse,
     SolveRequest,
@@ -34,20 +43,38 @@ router = APIRouter()
 TIMEOUT_SECONDS = 10
 _executor = ProcessPoolExecutor(max_workers=settings.MAX_WORKERS)
 
+# Blacklist extendida: cubre vectores conocidos de RCE en sympify/parse_expr
+# (lambdas, acceso a clases internas, builtins peligrosos, atributos mágicos).
+# Esto se suma a la whitelist de caracteres en models/schemas.py.
+_FORBIDDEN_TOKENS: tuple[str, ...] = (
+    "import", "exec", "eval", "open", "os.", "sys.", "__",
+    "lambda", "Lambda", "class", "def ",
+    "getattr", "setattr", "delattr", "globals", "locals", "vars",
+    "compile", "input", "breakpoint", "help",
+    "subprocess", "system", "popen", "getenv",
+    "file", "object", "type(", "super",
+)
+
 
 def _sanitize(expression: str) -> str:
-    """Sanitización básica: rechaza tokens peligrosos y AST profundo."""
-    forbidden = ["import", "exec", "eval", "open", "os.", "sys.", "__"]
-    for token in forbidden:
-        if token in expression:
+    """Sanitización defensiva: rechaza tokens peligrosos y AST profundo.
+
+    Capa 1 (schemas.py): regex whitelist de caracteres.
+    Capa 2 (aquí): blacklist de identificadores que podrían abusar de sympify/parse_expr.
+    Capa 3 (aquí): límite de tamaño de AST para prevenir DoS por expansión.
+    """
+    lowered = expression.lower()
+    for token in _FORBIDDEN_TOKENS:
+        if token in lowered:
             raise HTTPException(
                 status_code=400,
-                detail=f"Expresión no permitida: contiene '{token}'",
+                detail="Expresión no permitida",
             )
     # Validación de profundidad AST — máx. 100 nodos
     try:
-        from sympy import sympify, preorder_traversal
-        parsed = sympify(expression)
+        from sympy import preorder_traversal
+        from sympy.parsing.sympy_parser import parse_expr
+        parsed = parse_expr(expression, evaluate=False)
         node_count = sum(1 for _ in preorder_traversal(parsed))
         if node_count > 100:
             raise HTTPException(
@@ -57,7 +84,9 @@ def _sanitize(expression: str) -> str:
     except HTTPException:
         raise
     except Exception:
-        pass  # Si sympify falla aquí, el error real vendrá después
+        # Si parse_expr falla aquí, el error real vendrá al ejecutar la operación.
+        # No propagamos detalles internos del parser al cliente.
+        pass
     return expression.strip()
 
 
@@ -104,6 +133,30 @@ def _sympy_evaluate(expr_str: str, var_str: str, value: float) -> float:
     return float(result)
 
 
+def _sympy_simplify(expr_str: str) -> str:
+    from sympy import simplify, sympify
+
+    expr = sympify(expr_str)
+    result = simplify(expr)
+    return str(result)
+
+
+def _sympy_expand(expr_str: str) -> str:
+    from sympy import expand, sympify
+
+    expr = sympify(expr_str)
+    result = expand(expr)
+    return str(result)
+
+
+def _sympy_factor(expr_str: str) -> str:
+    from sympy import factor, sympify
+
+    expr = sympify(expr_str)
+    result = factor(expr)
+    return str(result)
+
+
 # --- Endpoints ---
 
 
@@ -135,7 +188,8 @@ async def solve_expression(
     except asyncio.TimeoutError:
         raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
     except (SympifyError, Exception) as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        log.warning("solve failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
 
     if user_id:
         problem = Problem(
@@ -188,7 +242,8 @@ async def differentiate(
     except asyncio.TimeoutError:
         raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
     except (SympifyError, Exception) as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        log.warning("differentiate failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
 
     steps = [f"d/d{var_str}({expr_str}) orden {req.order} = {result}"]
 
@@ -245,7 +300,8 @@ async def integrate_expression(
     except asyncio.TimeoutError:
         raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
     except (SympifyError, Exception) as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        log.warning("integrate failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
 
     steps = [f"∫({expr_str})d{var_str} = {result} + C"]
 
@@ -294,7 +350,8 @@ async def solve_equation(
     except asyncio.TimeoutError:
         raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
     except (SympifyError, Exception) as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        log.warning("solve_equation failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Ecuación inválida")
 
     steps = [f"Resolviendo {expr_str} = 0 para {var_str}"]
 
@@ -335,6 +392,136 @@ async def evaluate(
     except asyncio.TimeoutError:
         raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
     except (SympifyError, Exception) as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        log.warning("evaluate failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
 
     return EvaluateResponse(result=result)
+
+
+@router.post("/simplify", response_model=SimplifyResponse)
+@limiter.limit("30/minute")
+async def simplify_expression(
+    request: Request,
+    req: SimplifyRequest,
+    plan: str = Depends(get_plan_from_token),
+) -> SimplifyResponse:
+    expr_str = _sanitize(req.expression)
+
+    cache_key = _cache.make_cache_key("simplify", expr_str)
+    cached = await _cache.get_cached(_cache.get_redis_client(), cache_key)
+    if cached is not None:
+        cached_steps = cached["steps"]
+        if plan == "free":
+            cached_steps = cached_steps[:3]
+        return SimplifyResponse(result=cached["result"], steps=cached_steps)
+
+    loop = asyncio.get_event_loop()
+    try:
+        result = await asyncio.wait_for(
+            loop.run_in_executor(_executor, _sympy_simplify, expr_str),
+            timeout=TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
+    except (SympifyError, Exception) as e:
+        log.warning("simplify failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
+
+    steps = [f"simplify({expr_str}) = {result}"]
+
+    await _cache.set_cached(
+        _cache.get_redis_client(),
+        cache_key,
+        {"result": result, "steps": steps},
+    )
+
+    if plan == "free":
+        steps = steps[:3]
+
+    return SimplifyResponse(result=result, steps=steps)
+
+
+@router.post("/expand", response_model=ExpandResponse)
+@limiter.limit("30/minute")
+async def expand_expression(
+    request: Request,
+    req: ExpandRequest,
+    plan: str = Depends(get_plan_from_token),
+) -> ExpandResponse:
+    expr_str = _sanitize(req.expression)
+
+    cache_key = _cache.make_cache_key("expand", expr_str)
+    cached = await _cache.get_cached(_cache.get_redis_client(), cache_key)
+    if cached is not None:
+        cached_steps = cached["steps"]
+        if plan == "free":
+            cached_steps = cached_steps[:3]
+        return ExpandResponse(result=cached["result"], steps=cached_steps)
+
+    loop = asyncio.get_event_loop()
+    try:
+        result = await asyncio.wait_for(
+            loop.run_in_executor(_executor, _sympy_expand, expr_str),
+            timeout=TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
+    except (SympifyError, Exception) as e:
+        log.warning("expand failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
+
+    steps = [f"expand({expr_str}) = {result}"]
+
+    await _cache.set_cached(
+        _cache.get_redis_client(),
+        cache_key,
+        {"result": result, "steps": steps},
+    )
+
+    if plan == "free":
+        steps = steps[:3]
+
+    return ExpandResponse(result=result, steps=steps)
+
+
+@router.post("/factor", response_model=FactorResponse)
+@limiter.limit("30/minute")
+async def factor_expression(
+    request: Request,
+    req: FactorRequest,
+    plan: str = Depends(get_plan_from_token),
+) -> FactorResponse:
+    expr_str = _sanitize(req.expression)
+
+    cache_key = _cache.make_cache_key("factor", expr_str)
+    cached = await _cache.get_cached(_cache.get_redis_client(), cache_key)
+    if cached is not None:
+        cached_steps = cached["steps"]
+        if plan == "free":
+            cached_steps = cached_steps[:3]
+        return FactorResponse(result=cached["result"], steps=cached_steps)
+
+    loop = asyncio.get_event_loop()
+    try:
+        result = await asyncio.wait_for(
+            loop.run_in_executor(_executor, _sympy_factor, expr_str),
+            timeout=TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=408, detail="Tiempo de operación excedido")
+    except (SympifyError, Exception) as e:
+        log.warning("factor failed: %s", e, exc_info=False)
+        raise HTTPException(status_code=400, detail="Expresión inválida")
+
+    steps = [f"factor({expr_str}) = {result}"]
+
+    await _cache.set_cached(
+        _cache.get_redis_client(),
+        cache_key,
+        {"result": result, "steps": steps},
+    )
+
+    if plan == "free":
+        steps = steps[:3]
+
+    return FactorResponse(result=result, steps=steps)

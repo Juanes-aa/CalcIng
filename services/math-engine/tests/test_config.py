@@ -52,7 +52,15 @@ class TestSettingsFromEnv:
             assert s.MAX_WORKERS == 8
 
     def test_app_env_from_env(self):
-        with patch.dict(os.environ, {"APP_ENV": "production"}):
+        # En APP_ENV=production el validador exige secrets reales (regresión de seguridad).
+        # El test debe proveerlos para validar la lectura desde env.
+        with patch.dict(os.environ, {
+            "APP_ENV": "production",
+            "JWT_PRIVATE_KEY": "fake-private-key-for-test",
+            "JWT_PUBLIC_KEY": "fake-public-key-for-test",
+            "STRIPE_WEBHOOK_SECRET": "whsec_test",
+            "DATABASE_URL": "postgresql+asyncpg://user:pass@host/db",
+        }):
             from core.config import Settings
             s = Settings()
             assert s.APP_ENV == "production"

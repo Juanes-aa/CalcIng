@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useI18n } from '../../hooks/useI18n';
+import type { TranslationKey } from '@engine/i18n';
 
 interface Props {
   onClose: () => void;
@@ -6,10 +8,10 @@ interface Props {
 
 type ModuleType = 'calculo' | 'fisica' | 'algebra' | 'estadistica';
 
-const MODULES: { id: ModuleType; name: string; sub: string; color: string; icon: React.ReactNode }[] = [
+const MODULES: { id: ModuleType; nameKey: TranslationKey; sub: string; color: string; icon: React.ReactNode }[] = [
   {
     id: 'calculo',
-    name: 'CÁLCULO GENERAL',
+    nameKey: 'nuevoProy.mod.calc',
     sub: 'STANDARD ENGINE',
     color: 'blue',
     icon: (
@@ -20,7 +22,7 @@ const MODULES: { id: ModuleType; name: string; sub: string; color: string; icon:
   },
   {
     id: 'fisica',
-    name: 'FÍSICA',
+    nameKey: 'nuevoProy.mod.physics',
     sub: 'KINEMATICS V3.1',
     color: 'green',
     icon: (
@@ -31,7 +33,7 @@ const MODULES: { id: ModuleType; name: string; sub: string; color: string; icon:
   },
   {
     id: 'algebra',
-    name: 'ÁLGEBRA LINEAL',
+    nameKey: 'nuevoProy.mod.algebra',
     sub: 'MATRIX OPS',
     color: 'orange',
     icon: (
@@ -42,7 +44,7 @@ const MODULES: { id: ModuleType; name: string; sub: string; color: string; icon:
   },
   {
     id: 'estadistica',
-    name: 'ESTADÍSTICA',
+    nameKey: 'nuevoProy.mod.stats',
     sub: 'DATA MODELING',
     color: 'teal',
     icon: (
@@ -77,6 +79,7 @@ const ICON_PRESETS = [
 ];
 
 export default function NuevoProyecto({ onClose }: Props) {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [moduleType, setModuleType] = useState<ModuleType>('calculo');
@@ -93,21 +96,21 @@ export default function NuevoProyecto({ onClose }: Props) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-2xl bg-[#0f1117] border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="w-full max-w-2xl bg-surface-low border border-outline/25 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-start justify-between px-8 pt-8 pb-5 border-b border-white/5">
+        <div className="flex items-start justify-between px-8 pt-8 pb-5 border-b border-outline/15">
           <div>
             <h2 className="text-xl font-mono font-bold tracking-widest text-on-surface uppercase">
-              Nuevo Proyecto
+              {t('nuevoProy.title')}
             </h2>
-            <p className="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1 font-mono">
-              Initialize Engineering Environment V2.4
+            <p className="text-[10px] text-on-surface-dim tracking-[0.2em] uppercase mt-1 font-mono">
+              {t('nuevoProy.subtitle')}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-dim hover:text-on-surface hover:bg-surface-mid transition-all"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -120,36 +123,36 @@ export default function NuevoProyecto({ onClose }: Props) {
 
           {/* Project Name */}
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.2em] text-slate-400 uppercase mb-2">
-              Project Name
+            <label className="block text-[10px] font-mono tracking-[0.2em] text-on-surface-dim uppercase mb-2">
+              {t('nuevoProy.projectName')}
             </label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="e.g. Structural Analysis - Sector 7"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-on-surface placeholder-slate-600 focus:outline-none focus:border-primary-cta/50 focus:ring-1 focus:ring-primary-cta/30 transition-all font-mono"
+              placeholder={t('nuevoProy.projectNamePh')}
+              className="w-full bg-surface-mid border border-outline/25 rounded-lg px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-dim/60 focus:outline-none focus:border-primary-cta/50 focus:ring-1 focus:ring-primary-cta/30 transition-all font-mono"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.2em] text-slate-400 uppercase mb-2">
-              Description
+            <label className="block text-[10px] font-mono tracking-[0.2em] text-on-surface-dim uppercase mb-2">
+              {t('nuevoProy.description')}
             </label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Define mission parameters and technical constraints..."
+              placeholder={t('nuevoProy.descriptionPh')}
               rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-on-surface placeholder-slate-600 focus:outline-none focus:border-primary-cta/50 focus:ring-1 focus:ring-primary-cta/30 transition-all resize-none font-mono"
+              className="w-full bg-surface-mid border border-outline/25 rounded-lg px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-dim/60 focus:outline-none focus:border-primary-cta/50 focus:ring-1 focus:ring-primary-cta/30 transition-all resize-none font-mono"
             />
           </div>
 
           {/* Module Type */}
           <div>
-            <label className="block text-[10px] font-mono tracking-[0.2em] text-slate-400 uppercase mb-3">
-              Select Module Type
+            <label className="block text-[10px] font-mono tracking-[0.2em] text-on-surface-dim uppercase mb-3">
+              {t('nuevoProy.selectModule')}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {MODULES.map(mod => (
@@ -158,16 +161,16 @@ export default function NuevoProyecto({ onClose }: Props) {
                   onClick={() => setModuleType(mod.id)}
                   className={`flex items-center gap-3 p-4 rounded-xl border transition-all text-left ${
                     moduleType === mod.id
-                      ? `bg-white/5 ${MODULE_SELECTED[mod.color]}`
-                      : 'bg-white/[0.02] border-white/8 hover:bg-white/5 hover:border-white/15'
+                      ? `bg-surface-mid ${MODULE_SELECTED[mod.color]}`
+                      : 'bg-surface-mid/40 border-outline/20 hover:bg-surface-mid hover:border-outline/35'
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${MODULE_COLORS[mod.color]}`}>
                     {mod.icon}
                   </div>
                   <div>
-                    <p className="text-xs font-mono font-bold text-on-surface tracking-wider">{mod.name}</p>
-                    <p className="text-[10px] text-slate-500 tracking-widest uppercase mt-0.5">{mod.sub}</p>
+                    <p className="text-xs font-mono font-bold text-on-surface tracking-wider">{t(mod.nameKey)}</p>
+                    <p className="text-[10px] text-on-surface-dim tracking-widest uppercase mt-0.5">{mod.sub}</p>
                   </div>
                   {moduleType === mod.id && (
                     <div className={`ml-auto w-2 h-2 rounded-full ${mod.color === 'blue' ? 'bg-blue-400' : mod.color === 'green' ? 'bg-emerald-400' : mod.color === 'orange' ? 'bg-orange-400' : 'bg-teal-400'}`} />
@@ -181,8 +184,8 @@ export default function NuevoProyecto({ onClose }: Props) {
           <div className="flex gap-8">
             {/* Icon Preset */}
             <div className="flex-1">
-              <label className="block text-[10px] font-mono tracking-[0.2em] text-slate-400 uppercase mb-3">
-                Icon Preset
+              <label className="block text-[10px] font-mono tracking-[0.2em] text-on-surface-dim uppercase mb-3">
+                {t('nuevoProy.iconPreset')}
               </label>
               <div className="flex gap-2">
                 {ICON_PRESETS.map((icon, i) => (
@@ -192,7 +195,7 @@ export default function NuevoProyecto({ onClose }: Props) {
                     className={`w-10 h-10 flex items-center justify-center rounded-lg border transition-all ${
                       iconPreset === i
                         ? 'bg-primary-cta/20 border-primary-cta/50 text-primary'
-                        : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/25 hover:text-slate-200'
+                        : 'bg-surface-mid border-outline/25 text-on-surface-dim hover:border-outline/40 hover:text-on-surface'
                     }`}
                   >
                     {icon}
@@ -203,15 +206,15 @@ export default function NuevoProyecto({ onClose }: Props) {
 
             {/* Visual ID */}
             <div>
-              <label className="block text-[10px] font-mono tracking-[0.2em] text-slate-400 uppercase mb-3">
-                Visual ID
+              <label className="block text-[10px] font-mono tracking-[0.2em] text-on-surface-dim uppercase mb-3">
+                {t('nuevoProy.visualId')}
               </label>
               <div className="flex gap-2 items-center">
                 {VISUAL_COLORS.map((color, i) => (
                   <button
                     key={i}
                     onClick={() => setVisualId(i)}
-                    className={`w-8 h-8 rounded-full transition-all ${visualId === i ? 'ring-2 ring-offset-2 ring-offset-[#0f1117] scale-110' : 'opacity-70 hover:opacity-100'}`}
+                    className={`w-8 h-8 rounded-full transition-all ${visualId === i ? 'ring-2 ring-offset-2 ring-offset-(--color-surface-low) scale-110' : 'opacity-70 hover:opacity-100'}`}
                     style={{ backgroundColor: color, ...(visualId === i ? { ringColor: color } : {}) }}
                   />
                 ))}
@@ -221,19 +224,19 @@ export default function NuevoProyecto({ onClose }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-white/5">
+        <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-outline/15">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 text-sm text-slate-400 hover:text-slate-200 transition-colors font-mono tracking-wider"
+            className="px-6 py-2.5 text-sm text-on-surface-dim hover:text-on-surface transition-colors font-mono tracking-wider"
           >
-            Cancelar
+            {t('nuevoProy.cancel')}
           </button>
           <button
             onClick={handleSubmit}
             disabled={!name.trim()}
             className="px-6 py-2.5 bg-primary-cta text-white text-sm font-mono font-bold tracking-wider rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Crear Proyecto
+            {t('nuevoProy.create')}
           </button>
         </div>
       </div>

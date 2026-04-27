@@ -156,3 +156,26 @@ class TestRefresh:
         })
         new_token = refresh.json()["access_token"]
         assert new_token != original_token
+
+    @pytest.mark.anyio
+    async def test_refresh_includes_plan_from_db(self, test_app):
+        """El access_token renovado incluye el plan real del usuario"""
+        import json, base64
+        await test_app.post("/auth/register", json={
+            "email": "planrefresh@example.com",
+            "password": "SecurePass123!"
+        })
+        login = await test_app.post("/auth/login", json={
+            "email": "planrefresh@example.com",
+            "password": "SecurePass123!"
+        })
+        refresh_token = login.json()["refresh_token"]
+        refresh_resp = await test_app.post("/auth/refresh", json={
+            "refresh_token": refresh_token
+        })
+        assert refresh_resp.status_code == 200
+        new_token = refresh_resp.json()["access_token"]
+        payload_b64 = new_token.split(".")[1]
+        payload_b64 += "=" * (-len(payload_b64) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(payload_b64))
+        assert payload["plan"] == "free"

@@ -1,3 +1,5 @@
+import { useI18n } from '../../hooks/useI18n';
+
 interface CalculatorDisplayProps {
   expression: string;
   result: string;
@@ -5,11 +7,12 @@ interface CalculatorDisplayProps {
 }
 
 export function CalculatorDisplay({ expression, result, isError }: CalculatorDisplayProps) {
+  const { t } = useI18n();
   return (
     <div className="bg-(--color-surface-low) rounded-xl border border-(--color-outline)/20 p-4 flex flex-col justify-between min-h-[140px] transition-all focus-within:shadow-[0_0_20px_rgba(37,99,235,0.15)]">
       <div className="flex justify-between items-start mb-1">
         <span className="text-[9px] text-(--color-primary)/50 font-mono tracking-widest uppercase">
-          Input: Main_Buffer
+          {t('calc.display.input')}
         </span>
       </div>
       <div className="flex flex-col gap-2">

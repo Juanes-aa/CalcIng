@@ -30,6 +30,13 @@ def _generate_rsa_pair() -> tuple[bytes, bytes]:
 def _ensure_cached_pair() -> None:
     global _cached_private_pem, _cached_public_pem
     if _cached_private_pem is None:
+        # En producción NUNCA aceptar par efímero: revela una misconfig grave
+        # (rotación al reiniciar invalida sesiones; clave nunca rotada por humano).
+        if settings.APP_ENV == "production":
+            raise RuntimeError(
+                "JWT_PRIVATE_KEY/JWT_PUBLIC_KEY no configuradas en producción. "
+                "El par RSA efímero está deshabilitado por seguridad."
+            )
         _cached_private_pem, _cached_public_pem = _generate_rsa_pair()
 
 

@@ -64,6 +64,7 @@ describe('AuthModal', () => {
     it('submitting login form calls authService.login with email and password', async () => {
       vi.mocked(authService.login).mockResolvedValue({
         access_token: 'at', refresh_token: 'rt', token_type: 'bearer',
+        first_name: null, last_name: null, plan: 'free',
       })
       renderModal()
       fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'test@example.com' } })
@@ -77,6 +78,7 @@ describe('AuthModal', () => {
     it('on login success calls onSuccess with the email', async () => {
       vi.mocked(authService.login).mockResolvedValue({
         access_token: 'at', refresh_token: 'rt', token_type: 'bearer',
+        first_name: null, last_name: null, plan: 'free',
       })
       renderModal()
       fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'user@example.com' } })
@@ -108,7 +110,7 @@ describe('AuthModal', () => {
       fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'pass' } })
       fireEvent.submit(screen.getByTestId('auth-form'))
       expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeDisabled()
-      resolveLogin({ access_token: 'at', refresh_token: 'rt', token_type: 'bearer' })
+      resolveLogin({ access_token: 'at', refresh_token: 'rt', token_type: 'bearer', first_name: null, last_name: null, plan: 'free' })
       await waitFor(() => expect(screen.getByRole('button', { name: 'Iniciar sesión' })).not.toBeDisabled())
     })
   })
@@ -119,6 +121,7 @@ describe('AuthModal', () => {
       vi.mocked(authService.register).mockResolvedValue({ id: 'u1', email: 'a@b.com' })
       vi.mocked(authService.login).mockResolvedValue({
         access_token: 'at', refresh_token: 'rt', token_type: 'bearer',
+        first_name: null, last_name: null, plan: 'free',
       })
       renderModal()
       fireEvent.click(screen.getByRole('button', { name: 'Regístrate' }))

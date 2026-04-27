@@ -101,3 +101,99 @@ class EvaluateRequest(BaseModel):
 
 class EvaluateResponse(BaseModel):
     result: Any
+
+
+class SimplifyRequest(BaseModel):
+    expression: str
+
+    @field_validator("expression")
+    @classmethod
+    def validate_expression(cls, v: str) -> str:
+        return _validate_expr(v)
+
+
+class SimplifyResponse(BaseModel):
+    result: str
+    steps: list[str] = []
+    execution_mode: str = "process_pool"
+
+
+class ExpandRequest(BaseModel):
+    expression: str
+
+    @field_validator("expression")
+    @classmethod
+    def validate_expression(cls, v: str) -> str:
+        return _validate_expr(v)
+
+
+class ExpandResponse(BaseModel):
+    result: str
+    steps: list[str] = []
+    execution_mode: str = "process_pool"
+
+
+class FactorRequest(BaseModel):
+    expression: str
+
+    @field_validator("expression")
+    @classmethod
+    def validate_expression(cls, v: str) -> str:
+        return _validate_expr(v)
+
+
+class FactorResponse(BaseModel):
+    result: str
+    steps: list[str] = []
+    execution_mode: str = "process_pool"
+
+
+# ── Premium: Graph 3D ───────────────────────────────────────────────────────
+
+class Graph3DRequest(BaseModel):
+    expression: str
+    x_range: list[float] = [-5.0, 5.0]
+    y_range: list[float] = [-5.0, 5.0]
+    resolution: int = 50
+
+    @field_validator("expression")
+    @classmethod
+    def validate_expression(cls, v: str) -> str:
+        return _validate_expr(v)
+
+    @field_validator("resolution")
+    @classmethod
+    def validate_resolution(cls, v: int) -> int:
+        if v < 10 or v > 200:
+            raise ValueError("Resolution debe estar entre 10 y 200")
+        return v
+
+
+class Graph3DResponse(BaseModel):
+    image_base64: str
+    format: str = "png"
+
+
+# ── Premium: Export ──────────────────────────────────────────────────────────
+
+class ExportRequest(BaseModel):
+    expression: str
+    format: str = "latex"
+
+    @field_validator("expression")
+    @classmethod
+    def validate_expression(cls, v: str) -> str:
+        return _validate_expr(v)
+
+    @field_validator("format")
+    @classmethod
+    def validate_format(cls, v: str) -> str:
+        if v not in ("latex", "png"):
+            raise ValueError("Format debe ser 'latex' o 'png'")
+        return v
+
+
+class ExportResponse(BaseModel):
+    content: str
+    format: str
+    content_type: str

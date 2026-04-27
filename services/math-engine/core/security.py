@@ -5,16 +5,36 @@ from passlib.context import CryptContext
 from core.keys import get_private_key, get_public_key
 
 ALGORITHM = "RS256"
-ACCESS_TOKEN_TTL_MINUTES = 60
+# Acortado de 60 → 15 min: limita ventana de uso si un access token es robado.
+# Refresh sigue siendo 30 días para no degradar UX.
+ACCESS_TOKEN_TTL_MINUTES = 15
 REFRESH_TOKEN_TTL_DAYS = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt con cost 12 (default). En producción >=12 es estándar OWASP 2024.
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+
+# Hash precomputado de un password dummy para verificación timing-safe en login
+# cuando el usuario NO existe (evita user enumeration por diferencia de tiempos).
+_DUMMY_HASH = pwd_context.hash("dummy-password-for-timing-safety")
+
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
+
+
+def dummy_verify(plain: str) -> None:
+    """Ejecuta una verificación bcrypt contra un hash dummy.
+
+    Se usa cuando el email no existe en login para que el tiempo de respuesta
+    sea indistinguible del caso "usuario existe pero password incorrecto".
+    Mitiga ataques de enumeración de usuarios por timing.
+    """
+    pwd_context.verify(plain, _DUMMY_HASH)
+
 
 def create_access_token(subject: str, plan: str = "free") -> str:
     expire = datetime.now(timezone.utc) + timedelta(

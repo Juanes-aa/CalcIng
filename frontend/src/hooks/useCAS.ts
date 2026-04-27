@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { CASEngine, CASResult } from '@engine/cas/casEngine';
-import { nerdamerAdapter } from '@engine/cas/nerdamerAdapter';
+import { getActiveCASEngine } from '@engine/cas/casSelector';
 import type { MathStep } from '@engine/stepEngine/types';
 import { buildSteps } from '@engine/stepEngine/stepBuilder';
 import type { StepOperation } from '@engine/stepEngine/types';
@@ -38,7 +38,7 @@ function getErrorMessage(err: unknown): string {
   return String(err);
 }
 
-export function useCAS(engine: CASEngine = nerdamerAdapter): CASHookState {
+export function useCAS(engine: CASEngine = getActiveCASEngine()): CASHookState {
   const [expression, setExpression] = useState<string>('');
   const [variable,   setVariable]   = useState<string>('x');
   const [order,      setOrder]      = useState<number>(1);

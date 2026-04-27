@@ -336,3 +336,126 @@ async def test_integrate_executes_in_separate_process(client):
         "El campo 'execution_mode' debe ser 'process_pool' cuando "
         "ProcessPoolExecutor está activo."
     )
+
+
+# --- SIMPLIFY ---
+
+@pytest.mark.anyio
+async def test_simplify_basic(client):
+    response = await client.post("/simplify", json={
+        "expression": "x + x"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] == "2*x"
+
+
+@pytest.mark.anyio
+async def test_simplify_trig_identity(client):
+    response = await client.post("/simplify", json={
+        "expression": "sin(x)**2 + cos(x)**2"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] == "1"
+
+
+@pytest.mark.anyio
+async def test_simplify_returns_steps(client):
+    response = await client.post("/simplify", json={
+        "expression": "x + x"
+    })
+    data = response.json()
+    assert "steps" in data
+    assert isinstance(data["steps"], list)
+
+
+@pytest.mark.anyio
+async def test_simplify_returns_execution_mode(client):
+    response = await client.post("/simplify", json={
+        "expression": "x + x"
+    })
+    data = response.json()
+    assert data.get("execution_mode") == "process_pool"
+
+
+# --- EXPAND ---
+
+@pytest.mark.anyio
+async def test_expand_binomial(client):
+    response = await client.post("/expand", json={
+        "expression": "(x + 1)**2"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] == "x**2 + 2*x + 1"
+
+
+@pytest.mark.anyio
+async def test_expand_product(client):
+    response = await client.post("/expand", json={
+        "expression": "(x + 1)*(x - 1)"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] == "x**2 - 1"
+
+
+@pytest.mark.anyio
+async def test_expand_returns_steps(client):
+    response = await client.post("/expand", json={
+        "expression": "(x + 1)**2"
+    })
+    data = response.json()
+    assert "steps" in data
+    assert isinstance(data["steps"], list)
+
+
+@pytest.mark.anyio
+async def test_expand_returns_execution_mode(client):
+    response = await client.post("/expand", json={
+        "expression": "(x + 1)**2"
+    })
+    data = response.json()
+    assert data.get("execution_mode") == "process_pool"
+
+
+# --- FACTOR ---
+
+@pytest.mark.anyio
+async def test_factor_quadratic(client):
+    response = await client.post("/factor", json={
+        "expression": "x**2 - 5*x + 6"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] == "(x - 3)*(x - 2)"
+
+
+@pytest.mark.anyio
+async def test_factor_difference_of_squares(client):
+    response = await client.post("/factor", json={
+        "expression": "x**2 - 4"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] == "(x - 2)*(x + 2)"
+
+
+@pytest.mark.anyio
+async def test_factor_returns_steps(client):
+    response = await client.post("/factor", json={
+        "expression": "x**2 - 5*x + 6"
+    })
+    data = response.json()
+    assert "steps" in data
+    assert isinstance(data["steps"], list)
+
+
+@pytest.mark.anyio
+async def test_factor_returns_execution_mode(client):
+    response = await client.post("/factor", json={
+        "expression": "x**2 - 5*x + 6"
+    })
+    data = response.json()
+    assert data.get("execution_mode") == "process_pool"

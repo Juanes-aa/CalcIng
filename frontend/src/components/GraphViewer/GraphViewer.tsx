@@ -7,6 +7,8 @@ import {
   numericalIntegral,
 } from '@engine/graphEngine/evaluator';
 import type { Point } from '@engine/graphEngine/evaluator';
+import { useTheme } from '../../hooks/useTheme';
+import { useI18n } from '../../hooks/useI18n';
 
 interface ZoomWindow {
   xMin: number; xMax: number;
@@ -20,6 +22,8 @@ const COLORS       = ['#00e5ff', '#ff4081', '#76ff03', '#ffab40', '#e040fb', '#f
 const DERIV_COLOR  = '#ff6b6b';
 
 export function GraphViewer() {
+  const { t } = useI18n();
+  const theme = useTheme();
   const [mode, setMode] = useState<'cartesian' | 'parametric' | 'polar'>('cartesian');
   const [exprs,       setExprs]       = useState<string[]>(['']);
   const [paramExprs,  setParamExprs]  = useState<{ x: string; y: string }[]>([{ x: '', y: '' }]);
@@ -87,10 +91,19 @@ export function GraphViewer() {
     const toCanvasX = (x: number) => ((x - z.xMin) / (z.xMax - z.xMin)) * W;
     const toCanvasY = (y: number) => H - ((y - z.yMin) / (z.yMax - z.yMin)) * H;
 
-    ctx.fillStyle = '#0d1117';
+    const cssVar = (name: string, fallback: string): string => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    };
+    const bgCanvas = cssVar('--color-surface', '#0d1117');
+    const gridColor = cssVar('--color-outline', '#1f2937');
+    const axisColor = cssVar('--color-on-surface-dim', '#374151');
+
+    ctx.fillStyle = bgCanvas;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.strokeStyle = '#1f2937';
+    ctx.strokeStyle = gridColor;
+    ctx.globalAlpha = 0.25;
     ctx.lineWidth = 1;
     for (let x = Math.ceil(z.xMin); x <= z.xMax; x++) {
       const px = toCanvasX(x);
@@ -100,8 +113,9 @@ export function GraphViewer() {
       const py = toCanvasY(y);
       ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
     }
+    ctx.globalAlpha = 1;
 
-    ctx.strokeStyle = '#374151';
+    ctx.strokeStyle = axisColor;
     ctx.lineWidth = 2;
     const axisY = toCanvasY(0);
     ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(W, axisY); ctx.stroke();
@@ -155,7 +169,7 @@ export function GraphViewer() {
         drawCurve(ctx, pts, COLORS[idx % COLORS.length], W, H, z);
       });
     }
-  }, [exprs, paramExprs, polarExprs, zoom, mode, tMin, tMax, showDeriv, showArea, areaA, areaB, drawCurve]);
+  }, [exprs, paramExprs, polarExprs, zoom, mode, tMin, tMax, showDeriv, showArea, areaA, areaB, drawCurve, theme]);
 
   useEffect(() => { draw(); }, [draw]);
 
@@ -344,13 +358,13 @@ export function GraphViewer() {
     : null;
 
   return (
-    <section data-testid="graph-viewer" className="flex flex-1 min-h-0 overflow-hidden rounded-xl border border-blue-900/15 bg-[#0d1117]">
+    <section data-testid="graph-viewer" className="flex flex-1 min-h-0 overflow-hidden rounded-xl border border-outline/25 bg-surface-low">
 
       {/* ── Inputs ocultos para tests ── */}
       <select data-testid="graph-mode-select" value={mode} onChange={e => setMode(e.target.value as 'cartesian' | 'parametric' | 'polar')} className="sr-only">
-        <option value="cartesian">Cartesiano</option>
-        <option value="parametric">Paramétrico</option>
-        <option value="polar">Polar</option>
+        <option value="cartesian">{t('graph.mode.cartesian')}</option>
+        <option value="parametric">{t('graph.mode.parametric')}</option>
+        <option value="polar">{t('graph.mode.polar')}</option>
       </select>
       {mode === 'cartesian' && (
         <input data-testid="graph-deriv-toggle"  type="checkbox" checked={showDeriv} onChange={e => setShowDeriv(e.target.checked)}  className="sr-only" />
@@ -359,10 +373,10 @@ export function GraphViewer() {
         <input data-testid="graph-area-toggle"   type="checkbox" checked={showArea}  onChange={e => setShowArea(e.target.checked)}   className="sr-only" />
       )}
       {exprs.length < MAX_FNS && (
-        <button data-testid="graph-add-fn"       onClick={addFn}       className="sr-only">+ función</button>
+        <button data-testid="graph-add-fn"       onClick={addFn}       className="sr-only">{t('graph.addFunction')}</button>
       )}
-      <button data-testid="graph-clear-button" onClick={handleClear} className="sr-only">Limpiar</button>
-      <button data-testid="graph-plot-button"  onClick={draw}        className="sr-only">Graficar</button>
+      <button data-testid="graph-clear-button" onClick={handleClear} className="sr-only">{t('graph.action.clear')}</button>
+      <button data-testid="graph-plot-button"  onClick={draw}        className="sr-only">{t('graph.action.plot')}</button>
       <input data-testid="graph-xmin" type="number" value={xMin} onChange={e => setXMin(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
       <input data-testid="graph-xmax" type="number" value={xMax} onChange={e => setXMax(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
       <input data-testid="graph-ymin" type="number" value={yMin} onChange={e => setYMin(Number(e.target.value))} onBlur={applyRange} className="sr-only" />
@@ -376,11 +390,11 @@ export function GraphViewer() {
       )}
 
       {/* ── Panel izquierdo ── */}
-      <aside className="w-[260px] shrink-0 flex flex-col border-r border-blue-900/20 bg-[#0c0e14] overflow-y-auto">
+      <aside className="w-[260px] shrink-0 flex flex-col border-r border-outline/25 bg-surface-low overflow-y-auto">
 
         {/* Selector de modo */}
-        <div className="p-3 border-b border-blue-900/15">
-          <div className="flex bg-[#0d1117] p-0.5 rounded-lg gap-0.5">
+        <div className="p-3 border-b border-outline/20">
+          <div className="flex bg-surface p-0.5 rounded-lg gap-0.5">
             {(['cartesian', 'parametric', 'polar'] as const).map(m => (
               <button
                 key={m}
@@ -389,20 +403,20 @@ export function GraphViewer() {
                   mode === m && !showArea ? 'bg-primary-cta text-white' : 'text-on-surface-dim hover:text-on-surface'
                 }`}
               >
-                {m === 'cartesian' ? 'Cart.' : m === 'parametric' ? 'Param.' : 'Polar'}
+                {t(`graph.mode.${m}`)}
               </button>
             ))}
           </div>
         </div>
 
         {/* Lista de funciones */}
-        <div className="flex flex-col p-3 gap-2 border-b border-blue-900/15">
+        <div className="flex flex-col p-3 gap-2 border-b border-outline/20">
           <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">
-            {mode === 'cartesian' ? 'Funciones' : mode === 'parametric' ? 'Curvas paramétricas' : 'Funciones polares'}
+            {mode === 'cartesian' ? t('graph.section.functions') : mode === 'parametric' ? t('graph.section.paramCurves') : t('graph.section.polarFunctions')}
           </span>
 
           {mode === 'cartesian' && exprs.map((expr, i) => (
-            <div key={i} className="flex items-center gap-2 bg-[#0d1117] rounded-lg px-2.5 py-1.5 group">
+            <div key={i} className="flex items-center gap-2 bg-surface rounded-lg px-2.5 py-1.5 group">
               <div className="w-2.5 h-2.5 rounded-sm shrink-0 cursor-pointer" style={{ background: COLORS[i % COLORS.length] }} />
               <span className="text-[10px] text-on-surface-dim font-mono shrink-0">f{i+1}=</span>
               <input
@@ -421,7 +435,7 @@ export function GraphViewer() {
           ))}
 
           {mode === 'parametric' && paramExprs.map((pe, i) => (
-            <div key={i} className="flex flex-col gap-1 bg-[#0d1117] rounded-lg px-2.5 py-1.5 group">
+            <div key={i} className="flex flex-col gap-1 bg-surface rounded-lg px-2.5 py-1.5 group">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
                 <span className="text-[10px] text-on-surface-dim font-mono shrink-0">x{i+1}=</span>
@@ -436,7 +450,7 @@ export function GraphViewer() {
           ))}
 
           {mode === 'polar' && polarExprs.map((re, i) => (
-            <div key={i} className="flex items-center gap-2 bg-[#0d1117] rounded-lg px-2.5 py-1.5 group">
+            <div key={i} className="flex items-center gap-2 bg-surface rounded-lg px-2.5 py-1.5 group">
               <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
               <span className="text-[10px] text-on-surface-dim font-mono shrink-0">r{i+1}=</span>
               <input data-testid={`graph-polar-r-${i}`} type="text" value={re} onChange={e => updatePolar(i, e.target.value)} placeholder="1+cos(θ)" className="flex-1 bg-transparent text-on-surface font-mono text-sm focus:outline-none placeholder:text-outline/30 min-w-0" />
@@ -446,38 +460,38 @@ export function GraphViewer() {
 
           {exprs.length < MAX_FNS && (
             <button onClick={addFn}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] text-on-surface-dim hover:text-primary-cta hover:bg-primary-cta/5 transition-all border border-dashed border-blue-900/30 hover:border-primary-cta/30">
-              <span className="text-base leading-none">+</span> Agregar función
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] text-on-surface-dim hover:text-primary-cta hover:bg-primary-cta/5 transition-all border border-dashed border-outline/35 hover:border-primary-cta/30">
+              <span className="text-base leading-none">+</span> {t('graph.addFunction')}
             </button>
           )}
         </div>
 
         {/* Opciones condicionales */}
         {mode === 'cartesian' && (
-          <div className="p-3 flex flex-col gap-2 border-b border-blue-900/15">
-            <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">Opciones</span>
+          <div className="p-3 flex flex-col gap-2 border-b border-outline/20">
+            <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">{t('graph.section.options')}</span>
             <label className="flex items-center gap-2 cursor-pointer">
               <div onClick={() => setShowDeriv(v => !v)}
-                className={`w-8 h-4 rounded-full transition-all duration-200 flex items-center px-0.5 ${showDeriv ? 'bg-primary-cta' : 'bg-blue-900/40'}`}>
+                className={`w-8 h-4 rounded-full transition-all duration-200 flex items-center px-0.5 ${showDeriv ? 'bg-primary-cta' : 'bg-surface-high'}`}>
                 <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showDeriv ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
-              <span className="text-xs text-on-surface-dim">Mostrar f'(x)</span>
+              <span className="text-xs text-on-surface-dim">{t('graph.opt.derivative')}</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <div onClick={() => setShowArea(v => !v)}
-                className={`w-8 h-4 rounded-full transition-all duration-200 flex items-center px-0.5 ${showArea ? 'bg-primary-cta' : 'bg-blue-900/40'}`}>
+                className={`w-8 h-4 rounded-full transition-all duration-200 flex items-center px-0.5 ${showArea ? 'bg-primary-cta' : 'bg-surface-high'}`}>
                 <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showArea ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
-              <span className="text-xs text-on-surface-dim">Área bajo curva</span>
+              <span className="text-xs text-on-surface-dim">{t('graph.opt.area')}</span>
             </label>
             {showArea && (
               <div className="flex items-center gap-2 pl-10">
                 <span className="text-[10px] text-on-surface-dim font-mono">a=</span>
                 <input data-testid="graph-area-a" type="number" value={areaA} onChange={e => setAreaA(Number(e.target.value))}
-                  className="w-14 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+                  className="w-14 bg-surface text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-outline/25 focus:outline-none focus:border-primary-cta" />
                 <span className="text-[10px] text-on-surface-dim font-mono">b=</span>
                 <input data-testid="graph-area-b" type="number" value={areaB} onChange={e => setAreaB(Number(e.target.value))}
-                  className="w-14 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+                  className="w-14 bg-surface text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-outline/25 focus:outline-none focus:border-primary-cta" />
               </div>
             )}
             {showArea && areaValue !== null && (
@@ -490,33 +504,33 @@ export function GraphViewer() {
 
         {/* Rango t para param/polar */}
         {(mode === 'parametric' || mode === 'polar') && (
-          <div className="p-3 flex flex-col gap-2 border-b border-blue-900/15">
-            <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">Rango t</span>
+          <div className="p-3 flex flex-col gap-2 border-b border-outline/20">
+            <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">{t('graph.section.tRange')}</span>
             <div className="flex items-center gap-2">
               <input data-testid="graph-tmin" type="number" value={tMin} onChange={e => setTMin(Number(e.target.value))}
-                className="flex-1 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+                className="flex-1 bg-surface text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-outline/25 focus:outline-none focus:border-primary-cta" />
               <span className="text-on-surface-dim text-xs">→</span>
               <input data-testid="graph-tmax" type="number" value={tMax} onChange={e => setTMax(Number(e.target.value))}
-                className="flex-1 bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+                className="flex-1 bg-surface text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-outline/25 focus:outline-none focus:border-primary-cta" />
             </div>
           </div>
         )}
 
         {/* Ventana de visualización */}
-        <div className="p-3 flex flex-col gap-2 border-b border-blue-900/15">
-          <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">Ventana</span>
+        <div className="p-3 flex flex-col gap-2 border-b border-outline/20">
+          <span className="text-[9px] font-bold text-on-surface-dim uppercase tracking-[0.15em]">{t('graph.section.window')}</span>
           <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
             {([
-              { id: 'graph-xmin', label: 'x min', val: xMin, set: setXMin },
-              { id: 'graph-xmax', label: 'x max', val: xMax, set: setXMax },
-              { id: 'graph-ymin', label: 'y min', val: yMin, set: setYMin },
-              { id: 'graph-ymax', label: 'y max', val: yMax, set: setYMax },
+              { id: 'graph-xmin', label: t('graph.window.xMin'), val: xMin, set: setXMin },
+              { id: 'graph-xmax', label: t('graph.window.xMax'), val: xMax, set: setXMax },
+              { id: 'graph-ymin', label: t('graph.window.yMin'), val: yMin, set: setYMin },
+              { id: 'graph-ymax', label: t('graph.window.yMax'), val: yMax, set: setYMax },
             ] as const).map(({ id, label, val, set }) => (
               <div key={id} className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-on-surface-dim uppercase tracking-wider">{label}</span>
                 <input type="number" value={val}
                   onChange={e => set(Number(e.target.value))} onBlur={applyRange}
-                  className="w-full bg-[#0d1117] text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-blue-900/20 focus:outline-none focus:border-primary-cta" />
+                  className="w-full bg-surface text-on-surface font-mono text-xs px-2 py-1 rounded-lg border border-outline/25 focus:outline-none focus:border-primary-cta" />
               </div>
             ))}
           </div>
@@ -526,16 +540,16 @@ export function GraphViewer() {
         <div className="p-3 flex flex-col gap-2 mt-auto">
           <button onClick={draw}
             className="w-full py-2 bg-primary-cta text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_2px_12px_rgba(37,99,235,0.3)]">
-            Graficar
+            {t('graph.action.plot')}
           </button>
           <div className="flex gap-2">
             <button onClick={handleClear}
-              className="flex-1 py-1.5 text-xs text-on-surface-dim border border-blue-900/20 rounded-lg hover:text-on-surface hover:border-blue-900/40 transition-all">
-              Limpiar
+              className="flex-1 py-1.5 text-xs text-on-surface-dim border border-outline/25 rounded-lg hover:text-on-surface hover:border-outline/50 transition-all">
+              {t('graph.action.clear')}
             </button>
             <button data-testid="graph-export-button" onClick={handleExport}
-              className="flex-1 py-1.5 text-xs text-on-surface-dim border border-blue-900/20 rounded-lg hover:text-on-surface hover:border-blue-900/40 transition-all">
-              PNG
+              className="flex-1 py-1.5 text-xs text-on-surface-dim border border-outline/25 rounded-lg hover:text-on-surface hover:border-outline/50 transition-all">
+              {t('graph.action.png')}
             </button>
           </div>
         </div>
@@ -574,13 +588,13 @@ export function GraphViewer() {
 
         {/* Zoom controls — flotantes esquina superior derecha */}
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
-          <button data-testid="graph-zoom-in"    onClick={zoomIn}                      className="w-8 h-8 flex items-center justify-center bg-[#0c0e14]/90 backdrop-blur text-on-surface-dim border border-blue-900/25 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm font-bold">+</button>
-          <button data-testid="graph-zoom-out"   onClick={zoomOut}                     className="w-8 h-8 flex items-center justify-center bg-[#0c0e14]/90 backdrop-blur text-on-surface-dim border border-blue-900/25 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm font-bold">−</button>
-          <button data-testid="graph-zoom-reset" onClick={() => setZoom(DEFAULT_ZOOM)} className="w-8 h-8 flex items-center justify-center bg-[#0c0e14]/90 backdrop-blur text-on-surface-dim border border-blue-900/25 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm">↺</button>
+          <button data-testid="graph-zoom-in"    onClick={zoomIn}                      className="w-8 h-8 flex items-center justify-center bg-surface-low/90 backdrop-blur text-on-surface-dim border border-outline/30 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm font-bold">+</button>
+          <button data-testid="graph-zoom-out"   onClick={zoomOut}                     className="w-8 h-8 flex items-center justify-center bg-surface-low/90 backdrop-blur text-on-surface-dim border border-outline/30 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm font-bold">−</button>
+          <button data-testid="graph-zoom-reset" onClick={() => setZoom(DEFAULT_ZOOM)} className="w-8 h-8 flex items-center justify-center bg-surface-low/90 backdrop-blur text-on-surface-dim border border-outline/30 rounded-lg hover:text-white hover:bg-primary-cta/80 transition-all text-sm">↺</button>
         </div>
 
         {/* Barra de coordenadas — fija abajo */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-1.5 bg-[#0c0e14]/80 backdrop-blur-sm border-t border-blue-900/15">
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-1.5 bg-surface-low/80 backdrop-blur-sm border-t border-outline/20">
           <span className="font-mono text-[10px] text-on-surface-dim">
             {tooltip.visible && cursorX !== null
               ? <>
@@ -591,7 +605,7 @@ export function GraphViewer() {
                     <span className="text-primary-cta">{tooltip.fx.toFixed(4)}</span>
                   </>}
                 </>
-              : <span className="opacity-40">Mueve el cursor sobre la gráfica</span>
+              : <span className="opacity-40">{t('graph.cursor.idle')}</span>
             }
           </span>
           <span className="font-mono text-[9px] text-on-surface-dim/40">

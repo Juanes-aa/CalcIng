@@ -1,58 +1,79 @@
 import { useState } from 'react';
+import { useI18n } from '../../hooks/useI18n';
+import type { TranslationKey } from '@engine/i18n';
+import { createCheckout, openCustomerPortal } from '../../services/billingService';
 
 interface PreciosViewProps {
   currentPlan?: string;
+  isLoggedIn?: boolean;
+  onRequestLogin?: () => void;
 }
 
-const PLANS = [
+const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {
+  pro: {
+    monthly: import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY ?? '',
+    annual: import.meta.env.VITE_STRIPE_PRICE_PRO_ANNUAL ?? '',
+  },
+  enterprise: {
+    monthly: import.meta.env.VITE_STRIPE_PRICE_ENTERPRISE_MONTHLY ?? '',
+    annual: import.meta.env.VITE_STRIPE_PRICE_ENTERPRISE_ANNUAL ?? '',
+  },
+};
+
+const PLANS: {
+  id: string; name: string; price: { monthly: number; annual: number };
+  subKey: TranslationKey; color: string;
+  featureKeys: { key: TranslationKey; included: boolean }[];
+  ctaKey: TranslationKey; ctaStyle: string;
+}[] = [
   {
     id: 'free',
     name: 'FREE',
     price: { monthly: 0, annual: 0 },
-    sub: 'ENTRY LEVEL RESEARCH',
+    subKey: 'pricing.free.sub',
     color: 'slate',
-    features: [
-      { text: '100 Basic Calculations/day', included: true },
-      { text: 'Standard Library Access',    included: true },
-      { text: '2 Local Projects',           included: false },
-      { text: 'No API Access',              included: false },
+    featureKeys: [
+      { key: 'pricing.free.f1', included: true },
+      { key: 'pricing.free.f2', included: true },
+      { key: 'pricing.free.f3', included: false },
+      { key: 'pricing.free.f4', included: false },
     ],
-    cta: 'GET STARTED',
-    ctaStyle: 'border border-white/15 text-slate-300 hover:bg-white/5',
+    ctaKey: 'pricing.free.cta',
+    ctaStyle: 'border border-outline/30 text-on-surface hover:bg-surface-mid',
   },
   {
     id: 'pro',
     name: 'PRO',
     price: { monthly: 9, annual: 7 },
-    sub: 'ADVANCED ENGINEERING',
+    subKey: 'pricing.pro.sub',
     color: 'blue',
-    features: [
-      { text: 'Unlimited High-Precision Calc', included: true },
-      { text: 'Full Scientific Constants Lib',  included: true },
-      { text: 'Unlimited Cloud Projects',       included: true },
-      { text: 'Extended Export Options',        included: true },
-      { text: 'Basic API Webhooks',             included: true },
+    featureKeys: [
+      { key: 'pricing.pro.f1', included: true },
+      { key: 'pricing.pro.f2', included: true },
+      { key: 'pricing.pro.f3', included: true },
+      { key: 'pricing.pro.f4', included: true },
+      { key: 'pricing.pro.f5', included: true },
     ],
-    cta: 'UPGRADE NOW',
+    ctaKey: 'pricing.pro.cta',
     ctaStyle: 'bg-primary-cta text-white hover:brightness-110',
   },
   {
     id: 'enterprise',
     name: 'ENTERPRISE',
     price: { monthly: 29, annual: 23 },
-    sub: 'TEAM DEPLOYMENT',
+    subKey: 'pricing.enterprise.sub',
     color: 'slate',
-    features: [
-      { text: 'Everything in Pro',          included: true },
-      { text: 'SSO & Team Auth',            included: true },
-      { text: 'Custom Compute Clusters',    included: true },
-      { text: '24/7 Dedicated Support',     included: true },
-      { text: 'Advanced Admin Console',     included: true },
+    featureKeys: [
+      { key: 'pricing.enterprise.f1', included: true },
+      { key: 'pricing.enterprise.f2', included: true },
+      { key: 'pricing.enterprise.f3', included: true },
+      { key: 'pricing.enterprise.f4', included: true },
+      { key: 'pricing.enterprise.f5', included: true },
     ],
-    cta: 'CONTACT SALES',
-    ctaStyle: 'border border-white/15 text-slate-300 hover:bg-white/5',
+    ctaKey: 'pricing.enterprise.cta',
+    ctaStyle: 'border border-outline/30 text-on-surface hover:bg-surface-mid',
   },
-] as const;
+];
 
 function CheckIcon({ ok }: { ok: boolean }) {
   return ok ? (
@@ -60,14 +81,57 @@ function CheckIcon({ ok }: { ok: boolean }) {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
   ) : (
-    <svg className="w-4 h-4 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-4 h-4 text-on-surface-dim/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
   );
 }
 
-export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
+export function PreciosView({ currentPlan = 'free', isLoggedIn = false, onRequestLogin }: PreciosViewProps) {
+  const { t } = useI18n();
   const [annual, setAnnual] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCheckout(planId: string) {
+    if (!isLoggedIn) {
+      onRequestLogin?.();
+      return;
+    }
+    if (planId === 'free' || planId === currentPlan) return;
+
+    const priceIds = PRICE_IDS[planId];
+    if (!priceIds) return;
+    const priceId = annual ? priceIds.annual : priceIds.monthly;
+    if (!priceId) {
+      setError('Stripe no configurado');
+      return;
+    }
+
+    setLoading(planId);
+    setError(null);
+    try {
+      const { url } = await createCheckout(priceId);
+      window.location.href = url;
+    } catch {
+      setError('Error al crear sesión de pago');
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handlePortal() {
+    setLoading('portal');
+    setError(null);
+    try {
+      const { url } = await openCustomerPortal();
+      window.location.href = url;
+    } catch {
+      setError('Error al abrir el portal de facturación');
+    } finally {
+      setLoading(null);
+    }
+  }
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-10 space-y-14 overflow-y-auto">
@@ -75,26 +139,25 @@ export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-mono font-black text-on-surface tracking-tight">
-          Precision Tiers
+          {t('pricing.hero.title')}
         </h1>
-        <p className="text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
-          Select the computational power required for your engineering workflow.
-          Scale from sandbox experimentation to enterprise-grade cluster processing.
+        <p className="text-sm text-on-surface-dim max-w-lg mx-auto leading-relaxed">
+          {t('pricing.hero.subtitle')}
         </p>
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-3 pt-2">
-          <span className={`text-sm font-mono ${!annual ? 'text-on-surface' : 'text-slate-500'}`}>Monthly</span>
+          <span className={`text-sm font-mono ${!annual ? 'text-on-surface' : 'text-on-surface-dim'}`}>{t('pricing.toggle.monthly')}</span>
           <button
             onClick={() => setAnnual(v => !v)}
-            className={`relative w-11 h-6 rounded-full transition-colors ${annual ? 'bg-primary-cta' : 'bg-white/15'}`}
+            className={`relative w-11 h-6 rounded-full transition-colors ${annual ? 'bg-primary-cta' : 'bg-surface-high'}`}
           >
             <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${annual ? 'translate-x-5' : 'translate-x-0'}`}/>
           </button>
-          <span className={`text-sm font-mono ${annual ? 'text-on-surface' : 'text-slate-500'}`}>Annual</span>
+          <span className={`text-sm font-mono ${annual ? 'text-on-surface' : 'text-on-surface-dim'}`}>{t('pricing.toggle.annual')}</span>
           {annual && (
             <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold tracking-widest uppercase">
-              20% Discount
+              {t('pricing.toggle.discount')}
             </span>
           )}
         </div>
@@ -113,53 +176,71 @@ export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
               className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
                 isPro
                   ? 'border-primary-cta bg-primary-cta/5 shadow-[0_0_40px_rgba(37,99,235,0.15)]'
-                  : 'border-white/10 bg-surface-low'
+                  : 'border-outline/25 bg-surface-low'
               }`}
             >
               {/* "TU PLAN" badge */}
               {isActive && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary-cta text-white text-[10px] font-mono font-black tracking-widest uppercase whitespace-nowrap">
-                  Tu Plan
+                  {t('pricing.badge.yourPlan')}
                 </div>
               )}
 
               {/* Plan name */}
               <div className="mb-4">
-                <p className="text-xs font-mono font-bold tracking-[0.2em] text-slate-400 uppercase mb-1">{plan.name}</p>
+                <p className="text-xs font-mono font-bold tracking-[0.2em] text-on-surface-dim uppercase mb-1">{plan.name}</p>
                 <div className="flex items-end gap-1">
                   <span className="text-4xl font-mono font-black text-on-surface">${price}</span>
-                  <span className="text-slate-500 font-mono text-sm mb-1">/mo</span>
+                  <span className="text-on-surface-dim font-mono text-sm mb-1">{t('pricing.unit')}</span>
                 </div>
-                <p className="text-[10px] font-mono tracking-widest text-slate-500 uppercase mt-1">{plan.sub}</p>
+                <p className="text-[10px] font-mono tracking-widest text-on-surface-dim uppercase mt-1">{t(plan.subKey)}</p>
               </div>
 
               {/* Features */}
               <ul className="flex-1 space-y-2.5 mb-6">
-                {plan.features.map((f, i) => (
+                {plan.featureKeys.map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckIcon ok={f.included}/>
-                    <span className={`text-xs leading-relaxed ${f.included ? 'text-slate-300' : 'text-slate-600'}`}>{f.text}</span>
+                    <span className={`text-xs leading-relaxed ${f.included ? 'text-on-surface' : 'text-on-surface-dim/70'}`}>{t(f.key)}</span>
                   </li>
                 ))}
               </ul>
 
               {/* CTA */}
               <button
-                className={`w-full py-3 rounded-xl font-mono font-bold text-xs tracking-widest uppercase transition-all active:scale-95 ${plan.ctaStyle}`}
+                onClick={() => handleCheckout(plan.id)}
+                disabled={isActive || loading !== null}
+                className={`w-full py-3 rounded-xl font-mono font-bold text-xs tracking-widest uppercase transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${plan.ctaStyle}`}
               >
-                {plan.cta}
+                {loading === plan.id ? '...' : isActive ? t('pricing.badge.yourPlan') : t(plan.ctaKey)}
               </button>
             </div>
           );
         })}
       </div>
 
+      {/* ── Error / Portal ────────────────────────────────────────── */}
+      {error && (
+        <p className="text-center text-xs text-red-400 font-mono">{error}</p>
+      )}
+      {isLoggedIn && currentPlan !== 'free' && (
+        <div className="text-center">
+          <button
+            onClick={handlePortal}
+            disabled={loading !== null}
+            className="text-xs font-mono text-primary-cta underline underline-offset-4 hover:brightness-125 transition-all disabled:opacity-50"
+          >
+            {loading === 'portal' ? '...' : t('pricing.manageSubscription' as TranslationKey)}
+          </button>
+        </div>
+      )}
+
       {/* ── Why CalcIng Engine ───────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-white/8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-outline/20">
         <div className="space-y-6">
           <div>
-            <p className="text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase mb-2">Infrastructure Layer</p>
-            <h2 className="text-2xl font-mono font-black text-on-surface">Why CalcIng Engine?</h2>
+            <p className="text-[10px] font-mono tracking-[0.2em] text-on-surface-dim uppercase mb-2">{t('pricing.why.sectionLabel')}</p>
+            <h2 className="text-2xl font-mono font-black text-on-surface">{t('pricing.why.title')}</h2>
           </div>
           <div className="space-y-5">
             {[
@@ -170,8 +251,8 @@ export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
                   </svg>
                 ),
                 color: 'text-blue-400 bg-blue-500/15 border-blue-500/25',
-                title: 'Ultra-Low Latency',
-                desc: 'Global edge network ensures your mathematical modeling runs in real-time without computational bottleneck.',
+                titleKey: 'pricing.why.latency' as TranslationKey,
+                descKey: 'pricing.why.latencyDesc' as TranslationKey,
               },
               {
                 icon: (
@@ -180,17 +261,17 @@ export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
                   </svg>
                 ),
                 color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/25',
-                title: 'Encrypted Logic',
-                desc: 'End-to-end encryption for your proprietary formulas and data sets. Not even we can see your inputs.',
+                titleKey: 'pricing.why.encrypted' as TranslationKey,
+                descKey: 'pricing.why.encryptedDesc' as TranslationKey,
               },
             ].map(item => (
-              <div key={item.title} className="flex gap-4">
+              <div key={item.titleKey} className="flex gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${item.color}`}>
                   {item.icon}
                 </div>
                 <div>
-                  <h4 className="font-mono font-bold text-sm text-on-surface mb-1">{item.title}</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+                  <h4 className="font-mono font-bold text-sm text-on-surface mb-1">{t(item.titleKey)}</h4>
+                  <p className="text-xs text-on-surface-dim leading-relaxed">{t(item.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -198,7 +279,7 @@ export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
         </div>
 
         {/* Status card */}
-        <div className="rounded-2xl border border-white/8 bg-surface-low overflow-hidden flex flex-col">
+        <div className="rounded-2xl border border-outline/20 bg-surface-low overflow-hidden flex flex-col">
           <div className="flex-1 p-6 space-y-3">
             {[
               { label: 'API_GATEWAY',  val: '99.9%',  ok: true  },
@@ -207,16 +288,16 @@ export function PreciosView({ currentPlan = 'free' }: PreciosViewProps) {
               { label: 'REDIS_CACHE',  val: '90.08%', ok: false },
             ].map(s => (
               <div key={s.label} className="flex items-center justify-between">
-                <span className="text-xs font-mono text-slate-400 tracking-widest">{s.label}</span>
+                <span className="text-xs font-mono text-on-surface-dim tracking-widest">{s.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-slate-500">{s.val}</span>
+                  <span className="text-xs font-mono text-on-surface-dim">{s.val}</span>
                   <span className={`w-2 h-2 rounded-full ${s.ok ? 'bg-emerald-400' : 'bg-red-400'}`}/>
                 </div>
               </div>
             ))}
           </div>
-          <div className="px-6 py-3 border-t border-white/8 bg-black/20">
-            <p className="text-[10px] font-mono text-slate-600 tracking-widest">SYS_STATUS: OPTIMAL [v4.2.0]</p>
+          <div className="px-6 py-3 border-t border-outline/20 bg-surface-highest/40">
+            <p className="text-[10px] font-mono text-on-surface-dim/70 tracking-widest">SYS_STATUS: OPTIMAL [v4.2.0]</p>
           </div>
         </div>
       </div>

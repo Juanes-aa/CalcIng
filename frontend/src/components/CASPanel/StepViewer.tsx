@@ -1,5 +1,6 @@
 import type { MathStep, DetailLevel } from '@engine/stepEngine/types';
 import { RULE_BOOK } from '@engine/stepEngine/ruleBook';
+import { useI18n } from '../../hooks/useI18n';
 
 interface StepViewerProps {
   steps: MathStep[];
@@ -7,6 +8,7 @@ interface StepViewerProps {
 }
 
 export function StepViewer({ steps, level }: StepViewerProps) {
+  const { t } = useI18n();
   if (steps.length === 0) return null;
 
   return (
@@ -39,7 +41,7 @@ export function StepViewer({ steps, level }: StepViewerProps) {
                   data-testid={`step-key-${n}`}
                   className="ml-auto text-[9px] bg-success/10 text-success px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
                 >
-                  Paso clave
+                  {t('cas.step.keyStep')}
                 </span>
               )}
             </div>

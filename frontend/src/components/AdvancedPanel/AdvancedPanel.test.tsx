@@ -1,8 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { AdvancedPanel } from './AdvancedPanel';
 
 // ─── GRUPO 1: Render base ─────────────────────────────────────────────────────
+// Nota: el tab "Constantes" se movió a su propio componente ConstantesView.
+// AdvancedPanel ahora expone 5 tabs: Estadística, Complejos, Matrices, Conversiones, Bases.
 
 describe('AdvancedPanel — render base', () => {
 
@@ -11,9 +13,8 @@ describe('AdvancedPanel — render base', () => {
     expect(screen.getByTestId('advanced-panel')).toBeInTheDocument()
   })
 
-  test('renderiza tabs: Constantes, Estadística, Complejos, Matrices, Conversiones, Bases', () => {
+  test('renderiza tabs: Estadística, Complejos, Matrices, Conversiones, Bases', () => {
     render(<AdvancedPanel />)
-    expect(screen.getByTestId('tab-constants')).toBeInTheDocument()
     expect(screen.getByTestId('tab-stats')).toBeInTheDocument()
     expect(screen.getByTestId('tab-complex')).toBeInTheDocument()
     expect(screen.getByTestId('tab-matrix')).toBeInTheDocument()
@@ -26,40 +27,11 @@ describe('AdvancedPanel — render base', () => {
     expect(screen.getByTestId('tab-stats').getAttribute('aria-selected')).toBe('true')
   })
 
-  test('click en tab Estadística activa ese tab', () => {
+  test('click en tab Complejos activa ese tab y desactiva Estadística', () => {
     render(<AdvancedPanel />)
-    fireEvent.click(screen.getByTestId('tab-stats'))
-    expect(screen.getByTestId('tab-stats').getAttribute('aria-selected')).toBe('true')
-    expect(screen.getByTestId('tab-constants').getAttribute('aria-selected')).toBe('false')
-  })
-
-})
-
-// ─── GRUPO 2: Tab Constantes ──────────────────────────────────────────────────
-
-describe('AdvancedPanel — Tab Constantes', () => {
-
-  test('muestra al menos 10 constantes en la lista', () => {
-    render(<AdvancedPanel />)
-    fireEvent.click(screen.getByTestId('tab-constants'))
-    const items = screen.getAllByTestId(/^constant-item-/)
-    expect(items.length).toBeGreaterThanOrEqual(10)
-  })
-
-  test('cada constante muestra símbolo y valor', () => {
-    render(<AdvancedPanel />)
-    fireEvent.click(screen.getByTestId('tab-constants'))
-    const piItem = screen.getByTestId('constant-item-PI')
-    expect(piItem).toBeInTheDocument()
-    expect(piItem.textContent).toContain('π')
-  })
-
-  test('botón insertar de PI llama onInsert con el valor numérico de PI', () => {
-    const onInsert = vi.fn()
-    render(<AdvancedPanel onInsert={onInsert} />)
-    fireEvent.click(screen.getByTestId('tab-constants'))
-    fireEvent.click(screen.getByTestId('constant-insert-PI'))
-    expect(onInsert).toHaveBeenCalledWith(String(Math.PI))
+    fireEvent.click(screen.getByTestId('tab-complex'))
+    expect(screen.getByTestId('tab-complex').getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByTestId('tab-stats').getAttribute('aria-selected')).toBe('false')
   })
 
 })

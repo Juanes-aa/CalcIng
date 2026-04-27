@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import * as estadistica from '@engine/estadistica';
 import * as complejos from '@engine/complejos';
+import { useI18n } from '../../hooks/useI18n';
 import {
   parseMatrixString, matAdd, matSub, matMul, matScale,
   matDet, matInverse, matTranspose, formatMatrix,
 } from '@engine/matrix';
 import { convert, UNITS } from '@engine/units';
+import type { UnitEntry, UnitCategory } from '@engine/units';
+import type { Locale } from '@engine/ajustes';
 import {
   convertDecimalToBinary, convertDecimalToHex, convertDecimalToOctal,
   convertBinaryToDecimal, convertHexToDecimal, convertOctalToDecimal,
 } from '@engine/bases';
-import { CONSTANTS } from '@engine/constants';
 
 // ── Clases compartidas ────────────────────────────────────────────────────────
 
@@ -31,7 +33,7 @@ interface AdvancedPanelProps {
   // onInsert se mantiene por compatibilidad con App.tsx aunque ya no se usa en este panel
 }
 
-type ActiveTab = 'constants' | 'stats' | 'complex' | 'matrix' | 'convert' | 'bases';
+type ActiveTab = 'stats' | 'complex' | 'matrix' | 'convert' | 'bases';
 
 type StatsOp = 'mean' | 'median' | 'variance' | 'stdDev' | 'sampleVariance' | 'sampleStdDev' | 'range';
 
@@ -57,46 +59,10 @@ function initialConvertResult(): string {
   }
 }
 
-// ─── TabConstants ─────────────────────────────────────────────────────────────
-
-function TabConstants({ onInsert }: { onInsert?: (value: string) => void }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className={labelCls}>Constantes físicas y matemáticas</label>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-        {Object.entries(CONSTANTS).map(([id, c]) => (
-          <div
-            key={id}
-            data-testid={`constant-item-${id}`}
-            className={`${cardCls} flex items-center justify-between gap-3`}
-          >
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-base text-(--color-primary) font-bold shrink-0">{c.symbol}</span>
-                <span className={`${labelCls} truncate`}>{c.label}</span>
-              </div>
-              <span className="font-mono text-xs text-(--color-on-surface) break-all">
-                {c.value}{c.unit ? ` ${c.unit}` : ''}
-              </span>
-            </div>
-            <button
-              type="button"
-              data-testid={`constant-insert-${id}`}
-              onClick={() => onInsert?.(String(c.value))}
-              className="shrink-0 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-(--color-primary-cta)/15 text-(--color-primary-cta) hover:bg-(--color-primary-cta)/25 transition-colors"
-            >
-              Insertar
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── TabStats ─────────────────────────────────────────────────────────────────
 
 function TabStats() {
+  const { t } = useI18n();
   const [input,  setInput]  = useState('');
   const [op,     setOp]     = useState<StatsOp>('mean');
   const [result, setResult] = useState<string>('');
@@ -110,7 +76,7 @@ function TabStats() {
     setError('');
     try {
       const datos = parseData(input);
-      if (datos.length === 0) { setError('Ingresa al menos un número'); setResult(''); return; }
+      if (datos.length === 0) { setError(t('advanced.stats.needNumber')); setResult(''); return; }
       let value: number;
       switch (op) {
         case 'mean':           value = estadistica.mean(datos); break;
@@ -133,11 +99,11 @@ function TabStats() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Datos (separados por coma)</label>
+          <label className={labelCls}>{t('advanced.stats.data')}</label>
           <input
             data-testid="stats-input"
             type="text"
-            placeholder="ej: 2, 4, 6, 8, 10"
+            placeholder={t('advanced.stats.placeholder')}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && runOp()}
@@ -145,29 +111,29 @@ function TabStats() {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Operación</label>
+          <label className={labelCls}>{t('advanced.common.operation')}</label>
           <select
             data-testid="stats-op-select"
             value={op}
             onChange={e => setOp(e.target.value as StatsOp)}
             className={selectCls}
           >
-            <option value="mean">Media</option>
-            <option value="median">Mediana</option>
-            <option value="variance">Varianza (pob.)</option>
-            <option value="stdDev">Desv. estándar (pob.)</option>
-            <option value="sampleVariance">Varianza (muestral)</option>
-            <option value="sampleStdDev">Desv. estándar (muestral)</option>
-            <option value="range">Rango</option>
+            <option value="mean">{t('advanced.stats.op.mean')}</option>
+            <option value="median">{t('advanced.stats.op.median')}</option>
+            <option value="variance">{t('advanced.stats.op.variance')}</option>
+            <option value="stdDev">{t('advanced.stats.op.stdDev')}</option>
+            <option value="sampleVariance">{t('advanced.stats.op.sampleVar')}</option>
+            <option value="sampleStdDev">{t('advanced.stats.op.sampleStd')}</option>
+            <option value="range">{t('advanced.stats.op.range')}</option>
           </select>
         </div>
         <button data-testid="stats-calc-button" onClick={runOp} className={btnCls}>
-          Calcular
+          {t('advanced.common.calculate')}
         </button>
         {error && <div className="font-mono text-xs text-red-400 px-1">{error}</div>}
       </div>
       <div className="flex flex-col gap-1.5">
-        <label className={labelCls}>Resultado</label>
+        <label className={labelCls}>{t('advanced.common.result')}</label>
         <div data-testid="stats-result" className={resultCls + ' text-base'}>{result}</div>
       </div>
     </div>
@@ -177,6 +143,7 @@ function TabStats() {
 // ─── TabComplex ───────────────────────────────────────────────────────────────
 
 function TabComplex() {
+  const { t } = useI18n();
   const [z1Real, setZ1Real] = useState('0');
   const [z1Imag, setZ1Imag] = useState('0');
   const [z2Real, setZ2Real] = useState('0');
@@ -220,40 +187,40 @@ function TabComplex() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Operación</label>
+          <label className={labelCls}>{t('advanced.common.operation')}</label>
           <select data-testid="complex-op-select" value={complexOp}
             onChange={e => setComplexOp(e.target.value)} className={selectCls}>
-            <option value="cAdd">Suma  (z1 + z2)</option>
-            <option value="cSub">Resta  (z1 − z2)</option>
-            <option value="cMul">Multiplicación  (z1 × z2)</option>
-            <option value="cDiv">División  (z1 / z2)</option>
-            <option value="cModulus">Módulo  |z1|</option>
-            <option value="cArgument">Argumento  arg(z1)</option>
-            <option value="cConjugate">Conjugado  z̄1</option>
-            <option value="cPower">Potencia  z1ⁿ  (n = Re z2, entero)</option>
-            <option value="cSqrt">Raíz cuadrada  √z1</option>
+            <option value="cAdd">{t('advanced.complex.op.add')}</option>
+            <option value="cSub">{t('advanced.complex.op.sub')}</option>
+            <option value="cMul">{t('advanced.complex.op.mul')}</option>
+            <option value="cDiv">{t('advanced.complex.op.div')}</option>
+            <option value="cModulus">{t('advanced.complex.op.mod')}</option>
+            <option value="cArgument">{t('advanced.complex.op.arg')}</option>
+            <option value="cConjugate">{t('advanced.complex.op.conj')}</option>
+            <option value="cPower">{t('advanced.complex.op.pow')}</option>
+            <option value="cSqrt">{t('advanced.complex.op.sqrt')}</option>
           </select>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>z1 real</label>
+            <label className={labelCls}>{t('advanced.complex.z1real')}</label>
             <input data-testid="complex-z1-real" type="number" value={z1Real}
               onChange={e => setZ1Real(e.target.value)} className={numInCls} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>z1 imag</label>
+            <label className={labelCls}>{t('advanced.complex.z1imag')}</label>
             <input data-testid="complex-z1-imag" type="number" value={z1Imag}
               onChange={e => setZ1Imag(e.target.value)} className={numInCls} />
           </div>
           {needsZ2 && (
             <>
               <div className="flex flex-col gap-1.5">
-                <label className={labelCls}>z2 real</label>
+                <label className={labelCls}>{t('advanced.complex.z2real')}</label>
                 <input data-testid="complex-z2-real" type="number" value={z2Real}
                   onChange={e => setZ2Real(e.target.value)} className={numInCls} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className={labelCls}>z2 imag</label>
+                <label className={labelCls}>{t('advanced.complex.z2imag')}</label>
                 <input data-testid="complex-z2-imag" type="number" value={z2Imag}
                   onChange={e => setZ2Imag(e.target.value)} className={numInCls} />
               </div>
@@ -261,19 +228,19 @@ function TabComplex() {
           )}
         </div>
         <button data-testid="complex-calc-button" onClick={handleCalc} className={btnCls}>
-          Calcular
+          {t('advanced.common.calculate')}
         </button>
       </div>
       <div className="flex flex-col gap-3 justify-start">
         {complexResult !== '' && (
           <>
             <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Resultado (forma rectangular)</label>
+              <label className={labelCls}>{t('advanced.complex.resultRect')}</label>
               <div data-testid="complex-result" className={resultCls + ' text-base'}>{complexResult}</div>
             </div>
             {polarStr !== '' && (
               <div className="flex flex-col gap-1.5">
-                <label className={labelCls}>Forma polar</label>
+                <label className={labelCls}>{t('advanced.complex.polar')}</label>
                 <div className={cardCls + ' font-mono text-sm text-(--color-on-surface-dim)'}>{polarStr}</div>
               </div>
             )}
@@ -287,6 +254,7 @@ function TabComplex() {
 // ─── TabMatrix ────────────────────────────────────────────────────────────────
 
 function TabMatrix() {
+  const { t } = useI18n();
   const [matrixA,  setMatrixA]  = useState('');
   const [matrixB,  setMatrixB]  = useState('');
   const [scalar,   setScalar]   = useState('2');
@@ -309,7 +277,7 @@ function TabMatrix() {
         if      (matrixOp === 'matAdd') res = formatMatrix(matAdd(A, B));
         else if (matrixOp === 'matSub') res = formatMatrix(matSub(A, B));
         else if (matrixOp === 'matMul') res = formatMatrix(matMul(A, B));
-        else res = 'Operación no soportada';
+        else res = t('advanced.matrix.opNotSupp');
       }
       setResult(res);
     } catch (e) {
@@ -321,46 +289,46 @@ function TabMatrix() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Operación</label>
+          <label className={labelCls}>{t('advanced.common.operation')}</label>
           <select data-testid="matrix-op-select" value={matrixOp}
             onChange={e => setMatrixOp(e.target.value)} className={selectCls}>
-            <option value="matDet">Determinante</option>
-            <option value="matTranspose">Transpuesta  Aᵀ</option>
-            <option value="matInverse">Inversa  A⁻¹</option>
-            <option value="matScale">Escalar  k·A</option>
-            <option value="matAdd">Suma  A + B</option>
-            <option value="matSub">Resta  A − B</option>
-            <option value="matMul">Multiplicación  A × B</option>
+            <option value="matDet">{t('advanced.matrix.op.det')}</option>
+            <option value="matTranspose">{t('advanced.matrix.op.trans')}</option>
+            <option value="matInverse">{t('advanced.matrix.op.inv')}</option>
+            <option value="matScale">{t('advanced.matrix.op.scale')}</option>
+            <option value="matAdd">{t('advanced.matrix.op.add')}</option>
+            <option value="matSub">{t('advanced.matrix.op.sub')}</option>
+            <option value="matMul">{t('advanced.matrix.op.mul')}</option>
           </select>
         </div>
         {needsScalar && (
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Escalar k</label>
+            <label className={labelCls}>{t('advanced.matrix.scalar')}</label>
             <input type="number" value={scalar} onChange={e => setScalar(e.target.value)} className={numInCls} />
           </div>
         )}
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Matriz A — filas con ";", valores con ","</label>
+          <label className={labelCls}>{t('advanced.matrix.aLabel')}</label>
           <textarea data-testid="matrix-a-input" placeholder="ej: 1,2,3;4,5,6;7,8,9"
             value={matrixA} onChange={e => setMatrixA(e.target.value)}
             rows={5} className={textAreaCls} />
         </div>
         {needsB && (
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Matriz B</label>
+            <label className={labelCls}>{t('advanced.matrix.bLabel')}</label>
             <textarea data-testid="matrix-b-input" placeholder="ej: 1,0,0;0,1,0;0,0,1"
               value={matrixB} onChange={e => setMatrixB(e.target.value)}
               rows={5} className={textAreaCls} />
           </div>
         )}
         <button data-testid="matrix-calc-button" onClick={handleCalc} className={btnCls}>
-          Calcular
+          {t('advanced.common.calculate')}
         </button>
       </div>
       <div className="flex flex-col gap-1.5">
         {result !== '' && (
           <>
-            <label className={labelCls}>Resultado</label>
+            <label className={labelCls}>{t('advanced.common.result')}</label>
             <pre data-testid="matrix-result" className={resultCls + ' whitespace-pre text-xs overflow-x-auto'}>{result}</pre>
           </>
         )}
@@ -371,6 +339,13 @@ function TabMatrix() {
 
 // ─── TabConvert ───────────────────────────────────────────────────────────────
 
+function unitLabel(entry: UnitEntry, locale: Locale): string {
+  return locale === 'en' ? entry.labelEn : entry.label;
+}
+function catLabel(cat: UnitCategory, locale: Locale): string {
+  return locale === 'en' ? cat.labelEn : cat.label;
+}
+
 function calcConvert(value: string, from: string, to: string, cat: string): string {
   try {
     return String(parseFloat(convert(parseFloat(value), from, to, cat).toPrecision(10)));
@@ -380,6 +355,7 @@ function calcConvert(value: string, from: string, to: string, cat: string): stri
 }
 
 function TabConvert() {
+  const { t, locale } = useI18n();
   const defaultCat  = 'longitud';
   const defaultFrom = firstKey(UNITS[defaultCat]!.units as Record<string, unknown>);
   const defaultTo   = secondKey(UNITS[defaultCat]!.units as Record<string, unknown>);
@@ -408,48 +384,48 @@ function TabConvert() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Categoría</label>
+          <label className={labelCls}>{t('advanced.convert.category')}</label>
           <select data-testid="convert-category" value={category}
             onChange={handleCategoryChange} className={selectCls}>
             {Object.entries(UNITS).map(([key, cat]) => (
-              <option key={key} value={key}>{cat.label}</option>
+              <option key={key} value={key}>{catLabel(cat, locale)}</option>
             ))}
           </select>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>De</label>
+            <label className={labelCls}>{t('advanced.convert.from')}</label>
             <select data-testid="convert-from" value={fromUnit}
               onChange={e => { setFromUnit(e.target.value); recalc(convertValue, e.target.value, toUnit, category); }}
               className={selectCls}>
               {Object.keys(catUnits).map(u => (
-                <option key={u} value={u}>{catUnits[u]!.label}</option>
+                <option key={u} value={u}>{unitLabel(catUnits[u]!, locale)}</option>
               ))}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>A</label>
+            <label className={labelCls}>{t('advanced.convert.to')}</label>
             <select data-testid="convert-to" value={toUnit}
               onChange={e => { setToUnit(e.target.value); recalc(convertValue, fromUnit, e.target.value, category); }}
               className={selectCls}>
               {Object.keys(catUnits).map(u => (
-                <option key={u} value={u}>{catUnits[u]!.label}</option>
+                <option key={u} value={u}>{unitLabel(catUnits[u]!, locale)}</option>
               ))}
             </select>
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Valor</label>
+          <label className={labelCls}>{t('advanced.convert.value')}</label>
           <input data-testid="convert-value" type="number" value={convertValue}
             onChange={e => { setConvertValue(e.target.value); recalc(e.target.value, fromUnit, toUnit, category); }}
             className={inputCls} />
         </div>
       </div>
       <div className="flex flex-col gap-3 justify-center">
-        <label className={labelCls}>Resultado</label>
+        <label className={labelCls}>{t('advanced.common.result')}</label>
         <div data-testid="convert-result" className={resultCls + ' text-2xl font-bold tracking-tight'}>{convertResult}</div>
         <div className="text-xs text-(--color-on-surface-dim) font-mono px-1">
-          {catUnits[fromUnit]?.label} → {catUnits[toUnit]?.label}
+          {catUnits[fromUnit] ? unitLabel(catUnits[fromUnit]!, locale) : ''} → {catUnits[toUnit] ? unitLabel(catUnits[toUnit]!, locale) : ''}
         </div>
       </div>
     </div>
@@ -464,6 +440,7 @@ const BASE_LABELS: Record<BaseMode, string> = { dec: 'DEC', bin: 'BIN', hex: 'HE
 const BASE_PLACEHOLDERS: Record<BaseMode, string> = { dec: 'ej: 255', bin: 'ej: 11111111', hex: 'ej: FF', oct: 'ej: 377' };
 
 function TabBases() {
+  const { t } = useI18n();
   const [mode,    setMode]    = useState<BaseMode>('dec');
   const [input,   setInput]   = useState('');
   const [results, setResults] = useState<Partial<Record<BaseMode, string>>>({});
@@ -474,7 +451,7 @@ function TabBases() {
     if (!value.trim()) { setResults({}); return; }
     try {
       let dec: string;
-      if      (base === 'dec') { const n = parseInt(value); if (isNaN(n)) throw new Error('Entero inválido'); dec = String(n); }
+      if      (base === 'dec') { const n = parseInt(value); if (isNaN(n)) throw new Error(t('advanced.bases.invalidInt')); dec = String(n); }
       else if (base === 'bin') dec = convertBinaryToDecimal(value);
       else if (base === 'hex') dec = convertHexToDecimal(value);
       else                     dec = convertOctalToDecimal(value);
@@ -494,7 +471,7 @@ function TabBases() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Base de entrada</label>
+          <label className={labelCls}>{t('advanced.bases.inputBase')}</label>
           <div className="grid grid-cols-4 gap-1.5">
             {(['dec', 'bin', 'hex', 'oct'] as BaseMode[]).map(b => (
               <button key={b} onClick={() => handleModeChange(b)}
@@ -510,7 +487,7 @@ function TabBases() {
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Número en {BASE_LABELS[mode]}</label>
+          <label className={labelCls}>{t('advanced.bases.inputLabel', { base: BASE_LABELS[mode] })}</label>
           <input
             data-testid="bases-input"
             type="text"
@@ -523,7 +500,7 @@ function TabBases() {
         {error && <div className="font-mono text-xs text-red-400 px-1">{error}</div>}
       </div>
       <div className="flex flex-col gap-1.5">
-        <label className={labelCls}>Conversiones</label>
+        <label className={labelCls}>{t('advanced.bases.conversions')}</label>
         <div className="flex flex-col gap-px p-3 bg-(--color-surface) rounded-xl border border-(--color-outline)/10">
           {(['dec', 'bin', 'hex', 'oct'] as BaseMode[]).map((b, i) => (
             <div key={b}>
@@ -546,6 +523,8 @@ function TabBases() {
 // ─── AdvancedPanel ────────────────────────────────────────────────────────────
 
 export function AdvancedPanel({ onInsert: _onInsert }: AdvancedPanelProps) {
+  void _onInsert;
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ActiveTab>('stats');
 
   const tabCls = (tab: ActiveTab) =>
@@ -559,15 +538,13 @@ export function AdvancedPanel({ onInsert: _onInsert }: AdvancedPanelProps) {
       className="flex-1 min-h-0 bg-(--color-surface-low) rounded-xl border border-(--color-outline)/20 flex flex-col overflow-hidden"
     >
       <div className="flex overflow-x-auto border-b border-(--color-outline)/15 shrink-0" role="tablist">
-        <button data-testid="tab-constants" role="tab" aria-selected={activeTab === 'constants'} onClick={() => setActiveTab('constants')} className={tabCls('constants')}>Constantes</button>
-        <button data-testid="tab-stats"     role="tab" aria-selected={activeTab === 'stats'}     onClick={() => setActiveTab('stats')}     className={tabCls('stats')}>Estadística</button>
-        <button data-testid="tab-complex"   role="tab" aria-selected={activeTab === 'complex'}   onClick={() => setActiveTab('complex')}   className={tabCls('complex')}>Complejos</button>
-        <button data-testid="tab-matrix"    role="tab" aria-selected={activeTab === 'matrix'}    onClick={() => setActiveTab('matrix')}    className={tabCls('matrix')}>Matrices</button>
-        <button data-testid="tab-convert"   role="tab" aria-selected={activeTab === 'convert'}   onClick={() => setActiveTab('convert')}   className={tabCls('convert')}>Conversiones</button>
-        <button data-testid="tab-bases"     role="tab" aria-selected={activeTab === 'bases'}     onClick={() => setActiveTab('bases')}     className={tabCls('bases')}>Bases</button>
+        <button data-testid="tab-stats"     role="tab" aria-selected={activeTab === 'stats'}     onClick={() => setActiveTab('stats')}     className={tabCls('stats')}>{t('advanced.tab.stats')}</button>
+        <button data-testid="tab-complex"   role="tab" aria-selected={activeTab === 'complex'}   onClick={() => setActiveTab('complex')}   className={tabCls('complex')}>{t('advanced.tab.complex')}</button>
+        <button data-testid="tab-matrix"    role="tab" aria-selected={activeTab === 'matrix'}    onClick={() => setActiveTab('matrix')}    className={tabCls('matrix')}>{t('advanced.tab.matrix')}</button>
+        <button data-testid="tab-convert"   role="tab" aria-selected={activeTab === 'convert'}   onClick={() => setActiveTab('convert')}   className={tabCls('convert')}>{t('advanced.tab.convert')}</button>
+        <button data-testid="tab-bases"     role="tab" aria-selected={activeTab === 'bases'}     onClick={() => setActiveTab('bases')}     className={tabCls('bases')}>{t('advanced.tab.bases')}</button>
       </div>
       <div className="flex-1 overflow-y-auto p-5">
-        {activeTab === 'constants' && <TabConstants onInsert={_onInsert} />}
         {activeTab === 'stats'     && <TabStats />}
         {activeTab === 'complex'   && <TabComplex />}
         {activeTab === 'matrix'    && <TabMatrix />}

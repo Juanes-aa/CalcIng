@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { register, login } from '../../services/authService'
+import { useI18n } from '../../hooks/useI18n'
 
 interface AuthModalProps {
   onClose: () => void
   onSuccess: (email: string) => void
 }
 
-function mapError(message: string): string {
-  if (message === 'EMAIL_ALREADY_EXISTS') return 'El correo ya está registrado'
-  if (message === 'INVALID_CREDENTIALS') return 'Credenciales inválidas'
-  return 'Ocurrió un error. Intenta de nuevo.'
-}
+// mapError se reemplaza por mapErrorI18n dentro del componente
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -55,6 +52,7 @@ function OAuthButton({ provider }: { provider: 'google' | 'github' }) {
 }
 
 export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
+  const { t } = useI18n()
   const [mode, setMode]               = useState<'login' | 'register'>('login')
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
@@ -77,7 +75,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     setError('')
 
     if (mode === 'register' && confirmPass !== '' && confirmPass !== password) {
-      setError('Las contraseñas no coinciden')
+      setError(t('auth.err.passwordMismatch'))
       return
     }
 
@@ -91,7 +89,12 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
       }
       onSuccess(email)
     } catch (err) {
-      setError(err instanceof Error ? mapError(err.message) : 'Ocurrió un error. Intenta de nuevo.')
+      const msg = err instanceof Error ? err.message : ''
+      setError(
+        msg === 'EMAIL_ALREADY_EXISTS' ? t('auth.err.emailExists')
+        : msg === 'INVALID_CREDENTIALS' ? t('auth.err.invalidCreds')
+        : t('auth.err.generic')
+      )
     } finally {
       setLoading(false)
     }
@@ -104,7 +107,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-[#0c0e14]/75 backdrop-blur-xl flex items-center justify-center z-[1000] p-4"
+      className="fixed inset-0 bg-surface-low/75 backdrop-blur-xl flex items-center justify-center z-[1000] p-4"
       data-testid="auth-modal-backdrop"
       onClick={onClose}
     >
@@ -116,7 +119,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
         {/* ── Cerrar ── */}
         <button
           type="button"
-          aria-label="Cerrar"
+          aria-label={t('auth.close')}
           onClick={onClose}
           className="absolute top-3.5 right-3.5 text-on-surface-dim hover:text-on-surface hover:bg-primary/8 rounded-lg p-1.5 transition-colors"
         >
@@ -128,11 +131,11 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
         {/* ── Logo ── */}
         <div className="flex flex-col items-center gap-1 mb-6">
           <span className="font-mono font-bold text-2xl text-primary uppercase tracking-tighter">CalcIng</span>
-          <span className="text-[10px] text-on-surface-dim uppercase tracking-[0.25em]">Motor de cálculo de ingeniería</span>
+          <span className="text-[10px] text-on-surface-dim uppercase tracking-[0.25em]">{t('auth.tagline')}</span>
         </div>
 
         {/* ── Tab pill switch ── */}
-        <div className="flex w-full bg-[#0c0e14] p-1 rounded-xl gap-1 mb-6">
+        <div className="flex w-full bg-surface-low p-1 rounded-xl gap-1 mb-6">
           <button
             type="button"
             onClick={() => switchMode('login')}
@@ -141,7 +144,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               mode === 'login' ? 'bg-primary-cta text-white shadow' : 'text-on-surface-dim hover:text-on-surface'
             }`}
           >
-            Iniciar sesión
+            {t('auth.login')}
           </button>
           <button
             type="button"
@@ -151,13 +154,13 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               mode === 'register' ? 'bg-primary-cta text-white shadow' : 'text-on-surface-dim hover:text-on-surface'
             }`}
           >
-            Registrarse
+            {t('auth.register')}
           </button>
         </div>
 
         {/* ── Heading semántico — requerido por tests ── */}
         <h2 className="sr-only">
-          {mode === 'login' ? 'Iniciar sesión' : 'Registrarse'}
+          {mode === 'login' ? t('auth.login') : t('auth.register')}
         </h2>
 
         {/* ── Formulario ── */}
@@ -167,11 +170,11 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
           {mode === 'register' && (
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="auth-firstname" className={labelBase}>Nombre</label>
+                <label htmlFor="auth-firstname" className={labelBase}>{t('auth.firstName')}</label>
                 <input
                   id="auth-firstname"
                   type="text"
-                  placeholder="Juan"
+                  placeholder={t('auth.firstNamePh')}
                   className={inputBase}
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
@@ -180,11 +183,11 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="auth-lastname" className={labelBase}>Apellido</label>
+                <label htmlFor="auth-lastname" className={labelBase}>{t('auth.lastName')}</label>
                 <input
                   id="auth-lastname"
                   type="text"
-                  placeholder="Rodríguez"
+                  placeholder={t('auth.lastNamePh')}
                   className={inputBase}
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
@@ -197,24 +200,24 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
 
           {/* Email */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="auth-email" className={labelBase}>Correo electrónico</label>
+            <label htmlFor="auth-email" className={labelBase}>{t('auth.email')}</label>
             <input
               id="auth-email"
               type="email"
-              placeholder="usuario@gmail.com"
+              placeholder={t('auth.emailPh')}
               className={inputBase}
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
               autoComplete="email"
               pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
-              title="Ingresa un correo válido (ej: usuario@gmail.com)"
+              title={t('auth.emailTitle')}
             />
           </div>
 
           {/* Contraseña */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="auth-password" className={labelBase}>Contraseña</label>
+            <label htmlFor="auth-password" className={labelBase}>{t('auth.password')}</label>
             <div className="relative">
               <input
                 id="auth-password"
@@ -228,7 +231,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               />
               <button
                 type="button"
-                aria-label={showPass ? 'Ocultar campo' : 'Mostrar campo'}
+                aria-label={showPass ? t('auth.hide') : t('auth.show')}
                 onClick={() => setShowPass(v => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-dim hover:text-on-surface transition-colors"
               >
@@ -240,7 +243,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
           {/* Confirmar contraseña — solo en registro */}
           {mode === 'register' && (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="auth-confirm" className={labelBase}>Repetir clave</label>
+              <label htmlFor="auth-confirm" className={labelBase}>{t('auth.confirmPassword')}</label>
               <div className="relative">
                 <input
                   id="auth-confirm"
@@ -254,7 +257,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
                 />
                 <button
                   type="button"
-                  aria-label={showConfirm ? 'Ocultar campo' : 'Mostrar campo'}
+                  aria-label={showConfirm ? t('auth.hide') : t('auth.show')}
                   onClick={() => setShowConfirm(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-dim hover:text-on-surface transition-colors"
                 >
@@ -278,16 +281,16 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
             className="w-full py-3.5 bg-primary-cta text-white rounded-xl font-display font-bold text-sm tracking-widest uppercase hover:brightness-110 active:scale-[0.97] disabled:opacity-55 disabled:cursor-not-allowed transition-all"
           >
             {loading
-              ? 'Verificando...'
+              ? t('auth.loading')
               : mode === 'login'
-              ? 'Acceder al Terminal'
-              : 'Crear cuenta gratuita'}
+              ? t('auth.submitLogin')
+              : t('auth.submitRegister')}
           </button>
 
           {/* Divisor OAuth */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-outline/30" />
-            <span className="text-[11px] text-on-surface-dim uppercase tracking-widest">o continúa con</span>
+            <span className="text-[11px] text-on-surface-dim uppercase tracking-widest">{t('auth.orContinue')}</span>
             <div className="flex-1 h-px bg-outline/30" />
           </div>
 
@@ -302,24 +305,24 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
         <div className="mt-5 text-center text-[0.8125rem] text-on-surface-dim">
           {mode === 'login' ? (
             <span>
-              ¿No tienes cuenta?{' '}
+              {t('auth.noAccount')}{' '}
               <button
                 type="button"
                 className="text-primary font-semibold hover:text-on-surface hover:underline transition-colors bg-transparent border-0 p-0 text-inherit cursor-pointer"
                 onClick={() => switchMode('register')}
               >
-                Regístrate
+                {t('auth.signUp')}
               </button>
             </span>
           ) : (
             <span>
-              ¿Ya tienes cuenta?{' '}
+              {t('auth.hasAccount')}{' '}
               <button
                 type="button"
                 className="text-primary font-semibold hover:text-on-surface hover:underline transition-colors bg-transparent border-0 p-0 text-inherit cursor-pointer"
                 onClick={() => switchMode('login')}
               >
-                Inicia sesión
+                {t('auth.signIn')}
               </button>
             </span>
           )}

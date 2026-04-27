@@ -19,13 +19,28 @@
   --font-mono:    "JetBrains Mono", "Fira Code", monospace;
 }
 
+html.light {
+  --color-surface:          #f7f8fb;
+  --color-surface-low:      #eef0f5;
+  --color-surface-mid:      #e3e6ee;
+  --color-surface-high:     #d3d7e2;
+  --color-surface-highest:  #c3c8d4;
+  --color-primary:          #1d3fa8;
+  --color-primary-cta:      #2563eb;
+  --color-on-surface:       #101218;
+  --color-on-surface-dim:   #434655;
+  --color-success:          #0f9d58;
+  --color-error:            #b3261e;
+  --color-outline:          #b8bccb;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #111319;
+  background: var(--color-surface);
 }
 ::-webkit-scrollbar-thumb {
-  background: #33343b;
+  background: var(--color-surface-highest);
   border-radius: 10px;
 }

@@ -76,7 +76,7 @@ describe('App — integración', () => {
   it('9 * 9 = muestra resultado 81', async () => {
     render(<App />);
     await userEvent.click(getKey('9'));
-    await userEvent.click(getKey('*'));
+    await userEvent.click(getKey('×'));
     await userEvent.click(getKey('9'));
     await userEvent.click(getKey('='));
     expect(getDisplay().result).toHaveTextContent('81');
@@ -85,7 +85,7 @@ describe('App — integración', () => {
   it('la expresión permanece visible tras evaluar', async () => {
     render(<App />);
     await userEvent.click(getKey('6'));
-    await userEvent.click(getKey('/'));
+    await userEvent.click(getKey('÷'));
     await userEvent.click(getKey('2'));
     await userEvent.click(getKey('='));
     expect(getDisplay().expression).toHaveTextContent('6/2');

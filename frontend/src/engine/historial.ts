@@ -57,16 +57,22 @@ export function createEntry(
 
 // ─── Formateo de tiempo relativo ─────────────────────────────────────────────
 
-export function relativeTime(ts: number): string {
+import { t, type TranslationKey } from './i18n';
+import type { Locale } from './ajustes';
+import { fetchHistory, type HistoryItemRemote } from '../services/historyService';
+
+export function relativeTime(ts: number, locale: Locale = 'es'): string {
   const diff = Date.now() - ts;
   const min  = Math.floor(diff / 60_000);
   const hr   = Math.floor(diff / 3_600_000);
   const day  = Math.floor(diff / 86_400_000);
-  if (min < 1)   return 'Ahora';
-  if (min < 60)  return `${min} min ago`;
-  if (hr  < 24)  return `${hr} hour${hr > 1 ? 's' : ''} ago`;
-  if (day === 1) return 'Yesterday';
-  return `${day} days ago`;
+  const tt = (key: TranslationKey, params?: Record<string, string | number>) => t(key, locale, params);
+  if (min < 1)   return tt('history.time.now');
+  if (min < 60)  return tt('history.time.minAgo', { n: min });
+  if (hr === 1)  return tt('history.time.hourAgo');
+  if (hr  < 24)  return tt('history.time.hoursAgo', { n: hr });
+  if (day === 1) return tt('history.time.yesterday');
+  return tt('history.time.daysAgo', { n: day });
 }
 
 // ─── Filtros de tiempo ────────────────────────────────────────────────────────
@@ -81,4 +87,64 @@ export function isToday(ts: number): boolean {
 
 export function isThisWeek(ts: number): boolean {
   return Date.now() - ts < 7 * 86_400_000;
+}
+
+// ─── Sync con backend ────────────────────────────────────────────────────────
+
+export function isOnline(): boolean {
+  const token = localStorage.getItem('calcing_token');
+  return token !== null && token !== '';
+}
+
+export function mergeHistories(
+  remote: HistoryItemRemote[],
+  local: HistoryEntry[],
+): HistoryEntry[] {
+  const remoteConverted: HistoryEntry[] = remote.map(r => {
+    const localMatch = local.find(
+      l => l.expression === r.expression && l.result === r.result,
+    );
+    return {
+      id:         r.id,
+      expression: r.expression,
+      result:     r.result,
+      angleMode:  r.type,
+      timestamp:  new Date(r.created_at).getTime(),
+      starred:    localMatch?.starred ?? false,
+    };
+  });
+
+  const remoteKeys = new Set(
+    remote.map(r => `${r.expression}::${r.result}`),
+  );
+
+  const localOnly = local.filter(
+    l => !remoteKeys.has(`${l.expression}::${l.result}`),
+  );
+
+  const merged = [...remoteConverted, ...localOnly];
+  merged.sort((a, b) => b.timestamp - a.timestamp);
+  return merged;
+}
+
+export interface SyncResult {
+  entries: HistoryEntry[];
+  source:  'synced' | 'local';
+}
+
+export async function loadHistorialSync(): Promise<SyncResult> {
+  const local = loadHistory();
+
+  if (!isOnline()) {
+    return { entries: local, source: 'local' };
+  }
+
+  try {
+    const page = await fetchHistory();
+    const merged = mergeHistories(page.items, local);
+    saveHistory(merged);
+    return { entries: merged, source: 'synced' };
+  } catch {
+    return { entries: local, source: 'local' };
+  }
 }

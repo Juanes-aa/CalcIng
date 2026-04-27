@@ -1,16 +1,37 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
+# =============================================================================
+# Secrets y credenciales — NUNCA commitear
+# =============================================================================
 .env
 .env.*
 !.env.example
-venv/
-*.db
-*.sqlite3
+secrets/
+credentials.json
+*.secret
+*credentials*
 
-# Database
+# Claves criptográficas (JWT RSA, SSH, certificados, GPG)
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.der
+*.csr
+*.gpg
+*.asc
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
+# =============================================================================
+# Bases de datos — NUNCA subir datos locales
+# =============================================================================
 *.db
+*.db-journal
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 *.sql
@@ -20,29 +41,145 @@ venv/
 *.journal
 *.wal
 *.shm
-database/
-db/
-databases/
-data/
 
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.eggs/
+build/
+develop-eggs/
+.installed.cfg
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.Python
+venv/
+env/
+ENV/
+.venv/
+.python-version
+
+# Test / coverage / type checking
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+.hypothesis/
+
+# Profiling
+*.prof
+*.lprof
+
+# =============================================================================
 # Node / Frontend
+# =============================================================================
 node_modules/
 dist/
+build/
 .vite/
+.cache/
+.parcel-cache/
+.turbo/
+.next/
+.nuxt/
+out/
+
+# Vite/Vitest
+.vitest-results.json
+*.tsbuildinfo
+
+# Coverage
 coverage/
+.nyc_output/
+lcov.info
+*.lcov
 
-# Alembic
-# NO ignorar alembic/ ni alembic.ini — deben subir al repo
+# PWA / Workbox build artifacts (auto-generados)
+dev-dist/
+public/sw.js
+public/workbox-*.js
+public/registerSW.js
 
-# Tests / CI
-.pytest_cache/
-_tmp_docx/
+# npm/yarn/pnpm
+.npm/
+.yarn/cache/
+.yarn/install-state.gz
+.yarn/build-state.yml
+.pnp.*
+yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# OS
-.DS_Store
-Thumbs.db
+# =============================================================================
+# Logs
+# =============================================================================
+*.log
+logs/
 
-# IDEs
+# =============================================================================
+# Deploy y plataformas
+# =============================================================================
+.vercel/
+.netlify/
+.render/
+.serverless/
+
+# Docker
+.docker/
+
+# Stripe CLI (sesiones locales)
+.stripe/
+
+# =============================================================================
+# Alembic — NO ignorar alembic/ ni alembic.ini, deben subir al repo
+# =============================================================================
+
+# =============================================================================
+# IDEs y editores
+# =============================================================================
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+.history/
+*.code-workspace
+
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# =============================================================================
+# Notas y archivos temporales personales
+# =============================================================================
+_tmp_docx/
+.notes/
+scratch/
+TODO.local
+NOTES.local
+*.local.md
