@@ -278,7 +278,8 @@ export default function App() {
 
         {/* Bottom section */}
         <div className="px-4 pt-4 border-t border-outline/15 flex flex-col gap-1">
-          <button
+          {/* Botón "Nuevo Proyecto" oculto temporalmente hasta que se retome la feature. */}
+          {/* <button
             onClick={() => userEmail ? setShowNuevoProyecto(true) : setShowAuthModal(true)}
             className="w-full flex items-center justify-center gap-2 py-2.5 mb-2 rounded-lg border border-primary-cta/40 text-primary-cta text-xs font-mono font-bold tracking-widest uppercase hover:bg-primary-cta/10 transition-all active:scale-95"
           >
@@ -286,7 +287,7 @@ export default function App() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
             </svg>
             {t('chrome.sidebar.nuevoProyecto')}
-          </button>
+          </button> */}
           <a
             href="#"
             onClick={(e) => { e.preventDefault(); setActiveView('documentacion'); }}
