@@ -29,7 +29,7 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost:5174",
         "https://calcing.netlify.app",
-        "https://calcing.vercel.app",
+        "https://calc-ing.vercel.app",
     ]
 
     # Hosts confiables (Host header). En producción se aplica strict matching.
