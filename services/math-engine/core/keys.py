@@ -40,10 +40,21 @@ def _ensure_cached_pair() -> None:
         _cached_private_pem, _cached_public_pem = _generate_rsa_pair()
 
 
+def _normalize_pem(raw: str) -> bytes:
+    """Convierte una PEM string a bytes normalizando saltos de línea.
+
+    Algunas plataformas (Render, Heroku, etc.) almacenan variables de entorno
+    multilínea como una sola línea con '\n' literales (dos caracteres:
+    backslash + n). `cryptography` no puede parsear esos PEMs. Aquí
+    des-escapamos de forma idempotente: si ya hay saltos reales, no se tocan.
+    """
+    return raw.replace("\\n", "\n").encode()
+
+
 def get_private_key() -> bytes:
     val = settings.JWT_PRIVATE_KEY
     if val:
-        return val.encode()
+        return _normalize_pem(val)
     _ensure_cached_pair()
     return _cached_private_pem  # type: ignore[return-value]
 
@@ -51,11 +62,11 @@ def get_private_key() -> bytes:
 def get_public_key() -> bytes:
     val = settings.JWT_PUBLIC_KEY
     if val:
-        return val.encode()
+        return _normalize_pem(val)
     private_val = settings.JWT_PRIVATE_KEY
     if private_val:
         from cryptography.hazmat.primitives.serialization import load_pem_private_key
-        pk = load_pem_private_key(private_val.encode(), password=None)
+        pk = load_pem_private_key(_normalize_pem(private_val), password=None)
         return pk.public_key().public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
