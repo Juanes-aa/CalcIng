@@ -30,7 +30,7 @@ from core.mercadopago_client import (
     verify_mp_signature,
 )
 from db.database import get_db
-from db.models import User
+from db.models import Plan, User
 
 log = logging.getLogger("calcing.billing")
 
@@ -53,7 +53,13 @@ def _refresh_plan_map() -> None:
 # ─── Schemas ────────────────────────────────────────────────────────────────────
 
 class CheckoutRequest(BaseModel):
-    plan_id: str = Field(..., min_length=1, max_length=200)
+    """Permite dos formatos para retrocompatibilidad:
+    - {tier: "pro", cycle: "monthly"} (preferido; resuelve mp_plan_id desde DB)
+    - {plan_id: "<mp_preapproval_plan_id>"} (legacy)
+    """
+    plan_id: str | None = Field(default=None, max_length=200)
+    tier: str | None = Field(default=None, max_length=50)
+    cycle: str | None = Field(default=None, max_length=10)
 
 
 class CheckoutResponse(BaseModel):
@@ -68,6 +74,25 @@ class CancelResponse(BaseModel):
 class BillingStatusResponse(BaseModel):
     plan: str
     expires_at: str | None
+
+
+class PlanFeature(BaseModel):
+    key: str
+    included: bool
+
+
+class PlanResponse(BaseModel):
+    tier: str
+    name: str
+    subtitle_key: str | None
+    currency: str
+    price_monthly: int
+    price_annual: int
+    has_monthly: bool
+    has_annual: bool
+    features: list[PlanFeature]
+    cta_key: str | None
+    is_recommended: bool
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -96,6 +121,67 @@ def _parse_iso_datetime(value: str | None) -> datetime | None:
 
 # ─── Endpoints ──────────────────────────────────────────────────────────────────
 
+@router.get("/plans", response_model=list[PlanResponse])
+@limiter.limit("60/minute")
+async def list_plans(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> list[PlanResponse]:
+    """Lista planes activos ordenados por `sort_order`."""
+    result = await db.execute(
+        select(Plan).where(Plan.is_active.is_(True)).order_by(Plan.sort_order.asc())
+    )
+    plans = result.scalars().all()
+    out: list[PlanResponse] = []
+    for p in plans:
+        raw_features = p.features if isinstance(p.features, list) else []
+        features: list[PlanFeature] = []
+        for f in raw_features:
+            if isinstance(f, dict) and "key" in f and "included" in f:
+                features.append(PlanFeature(key=str(f["key"]), included=bool(f["included"])))
+        out.append(PlanResponse(
+            tier=p.tier,
+            name=p.name,
+            subtitle_key=p.subtitle_key,
+            currency=p.currency,
+            price_monthly=p.price_monthly,
+            price_annual=p.price_annual,
+            has_monthly=bool(p.mp_plan_monthly_id) or p.tier == "free",
+            has_annual=bool(p.mp_plan_annual_id) or p.tier == "free",
+            features=features,
+            cta_key=p.cta_key,
+            is_recommended=p.is_recommended,
+        ))
+    return out
+
+
+async def _resolve_mp_plan_id(
+    body: CheckoutRequest, db: AsyncSession
+) -> str:
+    """Determina el mp preapproval_plan_id a partir del body.
+
+    Prioriza {tier, cycle} → lookup en tabla plans. Cae a body.plan_id (legacy).
+    """
+    if body.tier and body.cycle:
+        cycle = body.cycle.lower()
+        if cycle not in ("monthly", "annual"):
+            raise HTTPException(status_code=400, detail="Invalid cycle")
+        result = await db.execute(select(Plan).where(Plan.tier == body.tier))
+        plan = result.scalars().first()
+        if plan is None or not plan.is_active:
+            raise HTTPException(status_code=400, detail="Invalid tier")
+        mp_id = plan.mp_plan_monthly_id if cycle == "monthly" else plan.mp_plan_annual_id
+        if not mp_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Plan no configurado en Mercado Pago para este ciclo",
+            )
+        return mp_id
+    if body.plan_id:
+        return body.plan_id
+    raise HTTPException(status_code=400, detail="Missing tier/cycle or plan_id")
+
+
 @router.post("/create-checkout", response_model=CheckoutResponse)
 @limiter.limit("10/minute;30/hour")
 async def create_checkout(
@@ -107,8 +193,22 @@ async def create_checkout(
     """Crea un preapproval en MP en estado 'pending' y retorna el init_point."""
     _refresh_plan_map()
 
-    if body.plan_id not in PLAN_TO_TIER:
-        raise HTTPException(status_code=400, detail="Invalid plan_id")
+    mp_plan_id = await _resolve_mp_plan_id(body, db)
+
+    # Valida que el mp_plan_id esté en el mapeo conocido (settings o DB).
+    # Si vino de DB y no está en settings, lo agregamos al mapa resolviendo el tier.
+    if mp_plan_id not in PLAN_TO_TIER:
+        # Intentar resolver desde DB.
+        result = await db.execute(
+            select(Plan).where(
+                (Plan.mp_plan_monthly_id == mp_plan_id)
+                | (Plan.mp_plan_annual_id == mp_plan_id)
+            )
+        )
+        plan_row = result.scalars().first()
+        if plan_row is None:
+            raise HTTPException(status_code=400, detail="Invalid plan_id")
+        PLAN_TO_TIER[mp_plan_id] = plan_row.tier
 
     user = await _get_user(user_id, db)
 
@@ -116,7 +216,7 @@ async def create_checkout(
     back_url = f"{settings.ALLOWED_ORIGINS[0]}/checkout/success"
 
     payload: dict[str, Any] = {
-        "preapproval_plan_id": body.plan_id,
+        "preapproval_plan_id": mp_plan_id,
         "payer_email": user.email,
         "back_url": back_url,
         "external_reference": str(user.id),

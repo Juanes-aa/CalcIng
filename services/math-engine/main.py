@@ -31,8 +31,14 @@ limiter._default_limits = [f"{settings.RATE_LIMIT_PER_MINUTE}/minute"]
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    from core.cache import redis_client
-    await redis_client.aclose()
+    from core import cache as _cache
+    # `redis_client` es un alias a la función factory; cerramos solo si
+    # el singleton interno se llegó a inicializar.
+    if _cache._redis_client is not None:
+        try:
+            await _cache._redis_client.aclose()
+        except Exception:
+            pass
 
 
 # `docs_url` y `redoc_url` deshabilitados en producción para reducir superficie

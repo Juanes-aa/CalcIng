@@ -1,12 +1,43 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, ForeignKey, Text, JSON, Boolean
+from sqlalchemy import String, DateTime, ForeignKey, Text, JSON, Boolean, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import Uuid
 
 class Base(DeclarativeBase):
     pass
+
+class Plan(Base):
+    """Catálogo de planes de suscripción.
+
+    `tier` es la clave lógica ("free", "pro", "enterprise") y también lo que
+    se guarda en `User.plan`. Los precios son enteros en la unidad más chica
+    representable de la moneda (para COP, enteros = pesos, ya que COP no usa
+    decimales en la práctica). `features` es una lista de objetos
+    `{key: str, included: bool}`.
+    """
+    __tablename__ = "plans"
+
+    tier: Mapped[str] = mapped_column(String(50), primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    subtitle_key: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="COP")
+    price_monthly: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    price_annual: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    mp_plan_monthly_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    mp_plan_annual_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    features: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    cta_key: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    is_recommended: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
 
 class User(Base):
     __tablename__ = "users"
