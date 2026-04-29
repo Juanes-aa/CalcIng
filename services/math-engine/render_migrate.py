@@ -45,10 +45,13 @@ def main() -> None:
     if phantom_detected:
         print(
             f"\n[render_migrate] Phantom or missing revision detected in alembic_version.\n"
-            f"[render_migrate] Stamping DB as HEAD ({HEAD_REVISION}) — no schema changes.\n",
+            f"[render_migrate] Purging alembic_version and stamping HEAD ({HEAD_REVISION}).\n"
+            f"[render_migrate] No schema changes — only the version pointer is rewritten.\n",
             flush=True,
         )
-        run(f"alembic stamp {HEAD_REVISION}")
+        # --purge wipes alembic_version before stamping so the unknown revision
+        # is removed before alembic tries to validate the current state.
+        run(f"alembic stamp {HEAD_REVISION} --purge")
 
     # Always attempt upgrade; if already at HEAD this is a safe no-op.
     run("alembic upgrade head")
