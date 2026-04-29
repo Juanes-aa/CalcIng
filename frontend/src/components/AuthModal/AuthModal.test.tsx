@@ -126,11 +126,11 @@ describe('AuthModal', () => {
       renderModal()
       fireEvent.click(screen.getByRole('button', { name: 'Regístrate' }))
       fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'a@b.com' } })
-      fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'pass123' } })
+      fireEvent.change(screen.getAllByLabelText(/contraseña/i)[0], { target: { value: 'Pass1234' } })
       fireEvent.submit(screen.getByTestId('auth-form'))
       await waitFor(() => {
-        expect(authService.register).toHaveBeenCalledWith('a@b.com', 'pass123', undefined, undefined)
-        expect(authService.login).toHaveBeenCalledWith('a@b.com', 'pass123')
+        expect(authService.register).toHaveBeenCalledWith('a@b.com', 'Pass1234', undefined, undefined)
+        expect(authService.login).toHaveBeenCalledWith('a@b.com', 'Pass1234')
       })
     })
 
@@ -139,10 +139,34 @@ describe('AuthModal', () => {
       renderModal()
       fireEvent.click(screen.getByRole('button', { name: 'Regístrate' }))
       fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'a@b.com' } })
-      fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'pass' } })
+      fireEvent.change(screen.getAllByLabelText(/contraseña/i)[0], { target: { value: 'Pass1234' } })
       fireEvent.submit(screen.getByTestId('auth-form'))
       await waitFor(() => {
         expect(screen.getByRole('alert')).toHaveTextContent('El correo ya está registrado')
+      })
+    })
+
+    it('weak password is rejected client-side and does NOT call register', async () => {
+      renderModal()
+      fireEvent.click(screen.getByRole('button', { name: 'Regístrate' }))
+      fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'a@b.com' } })
+      fireEvent.change(screen.getAllByLabelText(/contraseña/i)[0], { target: { value: 'weakpass' } })
+      fireEvent.submit(screen.getByTestId('auth-form'))
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent(/al menos 8 caracteres/i)
+      })
+      expect(authService.register).not.toHaveBeenCalled()
+    })
+
+    it('on register error (PASSWORD_POLICY from backend) shows the policy message', async () => {
+      vi.mocked(authService.register).mockRejectedValue(new Error('PASSWORD_POLICY'))
+      renderModal()
+      fireEvent.click(screen.getByRole('button', { name: 'Regístrate' }))
+      fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'a@b.com' } })
+      fireEvent.change(screen.getAllByLabelText(/contraseña/i)[0], { target: { value: 'Pass1234' } })
+      fireEvent.submit(screen.getByTestId('auth-form'))
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent(/al menos 8 caracteres/i)
       })
     })
   })

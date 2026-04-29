@@ -10,6 +10,12 @@ interface AuthModalProps {
 
 // mapError se reemplaza por mapErrorI18n dentro del componente
 
+// Política de complejidad: alineada con el backend (auth.py).
+// Min 8 chars + 1 mayúscula + 1 minúscula + 1 dígito.
+function isPasswordCompliant(pw: string): boolean {
+  return pw.length >= 8 && /[a-z]/.test(pw) && /[A-Z]/.test(pw) && /\d/.test(pw)
+}
+
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -79,6 +85,11 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
       return
     }
 
+    if (mode === 'register' && !isPasswordCompliant(password)) {
+      setError(t('auth.err.passwordPolicy'))
+      return
+    }
+
     setLoading(true)
     try {
       if (mode === 'login') {
@@ -92,6 +103,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
       const msg = err instanceof Error ? err.message : ''
       setError(
         msg === 'EMAIL_ALREADY_EXISTS' ? t('auth.err.emailExists')
+        : msg === 'PASSWORD_POLICY' ? t('auth.err.passwordPolicy')
         : msg === 'INVALID_CREDENTIALS' ? t('auth.err.invalidCreds')
         : t('auth.err.generic')
       )
@@ -228,6 +240,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
                 onChange={e => setPassword(e.target.value)}
                 required
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                aria-describedby={mode === 'register' ? 'auth-password-hint' : undefined}
               />
               <button
                 type="button"
@@ -238,6 +251,11 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
                 <EyeIcon open={showPass} />
               </button>
             </div>
+            {mode === 'register' && (
+              <p id="auth-password-hint" className="text-[0.7rem] text-on-surface-dim mt-1">
+                {t('auth.passwordHint')}
+              </p>
+            )}
           </div>
 
           {/* Confirmar contraseña — solo en registro */}

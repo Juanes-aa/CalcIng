@@ -12,22 +12,27 @@ import { AjustesView } from './components/AjustesView/AjustesView';
 import { ProyectosView } from './components/ProyectosView/ProyectosView';
 import { SoporteView } from './components/SoporteView/SoporteView';
 import { DocumentacionView } from './components/DocumentacionView/DocumentacionView';
-import { PreciosView } from './components/PreciosView/PreciosView';
-import { getStoredToken, getStoredName, getStoredPlan, logout, refresh as refreshToken } from './services/authService';
-import { getBillingStatus } from './services/billingService';
+import { CheckoutSuccess } from './components/CheckoutSuccess/CheckoutSuccess';
+import { getStoredToken, getStoredName, logout } from './services/authService';
 import AuthModal from './components/AuthModal/AuthModal';
 import NuevoProyecto from './components/NuevoProyecto/NuevoProyecto';
 import { useI18n } from './hooks/useI18n';
 
-type ActiveView = 'calculadora' | 'graficos' | 'avanzado' | 'constantes' | 'variables' | 'historial' | 'ajustes' | 'proyectos' | 'soporte' | 'documentacion' | 'precios';
+type ActiveView = 'calculadora' | 'graficos' | 'avanzado' | 'constantes' | 'variables' | 'historial' | 'ajustes' | 'proyectos' | 'soporte' | 'documentacion';
 
 export default function App() {
   const { t } = useI18n();
+
+  // Ruta dedicada de retorno de Mercado Pago. Se renderiza full-page,
+  // sin chrome (header / sidebar / nav inferior).
+  if (typeof window !== 'undefined' && window.location.pathname === '/checkout/success') {
+    return <CheckoutSuccess />;
+  }
+
   const { expression, result, isError, angleMode, history, setHistory, setExpression, handleKeyPress } = useCalculator();
   const [activeView,    setActiveView]    = useState<ActiveView>('calculadora');
   const [userEmail,     setUserEmail]     = useState<string | null>(null);
   const [userName,      setUserName]      = useState<string>('');
-  const [userPlan,      setUserPlan]      = useState<string>('free');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showNuevoProyecto, setShowNuevoProyecto] = useState(false);
 
@@ -37,22 +42,6 @@ export default function App() {
     if (token && email) {
       setUserEmail(email);
       setUserName(getStoredName());
-      setUserPlan(getStoredPlan());
-    }
-
-    // Mercado Pago checkout return: sincronizar plan
-    // MP redirige al back_url con ?preapproval_id=...&status=...
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('preapproval_id') && token) {
-      window.history.replaceState({}, '', window.location.pathname);
-      refreshToken()
-        .then(() => getBillingStatus())
-        .then(status => {
-          setUserPlan(status.plan);
-          localStorage.setItem('calcing_plan', status.plan);
-          setActiveView('precios');
-        })
-        .catch(() => { /* silent */ });
     }
   }, []);
 
@@ -60,7 +49,6 @@ export default function App() {
     localStorage.setItem('calcing_email', email);
     setUserEmail(email);
     setUserName(getStoredName());
-    setUserPlan(getStoredPlan());
     setShowAuthModal(false);
   }
 
@@ -69,7 +57,6 @@ export default function App() {
     localStorage.removeItem('calcing_email');
     setUserEmail(null);
     setUserName('');
-    setUserPlan('free');
     setActiveView('calculadora');
   }
 
@@ -157,9 +144,9 @@ export default function App() {
         <div className="flex items-center gap-3" data-testid="auth-section">
           {userEmail ? (
             <>
-              {/* User pill */}
+              {/* User pill — click va a Ajustes */}
               <button
-                onClick={() => setActiveView('precios')}
+                onClick={() => setActiveView('ajustes')}
                 className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-surface-low border border-outline/25 hover:border-primary-cta/40 hover:bg-primary-cta/5 transition-all active:scale-95"
               >
                 <div className="w-7 h-7 rounded-full bg-primary-cta/25 flex items-center justify-center shrink-0">
@@ -170,13 +157,6 @@ export default function App() {
                 <div className="flex flex-col leading-none">
                   <span data-testid="user-email" className="text-xs font-mono font-bold text-on-surface truncate max-w-[140px]">
                     {userName || userEmail}
-                  </span>
-                  <span className={`text-[10px] font-mono uppercase tracking-widest mt-0.5 ${
-                    userPlan === 'pro' ? 'text-amber-400' :
-                    userPlan === 'enterprise' ? 'text-violet-400' :
-                    'text-on-surface-dim'
-                  }`}>
-                    {userPlan}
                   </span>
                 </div>
               </button>
@@ -298,16 +278,6 @@ export default function App() {
 
         {/* Bottom section */}
         <div className="px-4 pt-4 border-t border-outline/15 flex flex-col gap-1">
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); setActiveView('precios'); }}
-            className={`flex items-center gap-2 px-2 py-2 text-[11px] hover:text-on-surface transition-colors uppercase tracking-widest font-display ${activeView === 'precios' ? 'text-primary' : 'text-on-surface-dim'}`}
-          >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            {t('chrome.sidebar.precios')}
-          </a>
           <button
             onClick={() => userEmail ? setShowNuevoProyecto(true) : setShowAuthModal(true)}
             className="w-full flex items-center justify-center gap-2 py-2.5 mb-2 rounded-lg border border-primary-cta/40 text-primary-cta text-xs font-mono font-bold tracking-widest uppercase hover:bg-primary-cta/10 transition-all active:scale-95"
@@ -359,7 +329,6 @@ export default function App() {
           {activeView === 'historial' && <HistorialView history={history} setHistory={setHistory} onInsert={handleKeyPress} />}
           {activeView === 'soporte' && <SoporteView />}
           {activeView === 'documentacion' && <DocumentacionView />}
-          {activeView === 'precios' && <PreciosView currentPlan={userPlan} isLoggedIn={!!userEmail} onRequestLogin={() => setShowAuthModal(true)} />}
           {activeView === 'ajustes' && (
             <AjustesView
               angleMode={angleMode}

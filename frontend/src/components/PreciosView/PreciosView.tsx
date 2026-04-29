@@ -1,79 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useI18n } from '../../hooks/useI18n';
 import type { TranslationKey } from '@engine/i18n';
-import { createCheckout, cancelSubscription, getBillingStatus } from '../../services/billingService';
+import {
+  cancelSubscription,
+  createCheckout,
+  getBillingStatus,
+  getPlans,
+  type Plan,
+} from '../../services/billingService';
 
 interface PreciosViewProps {
   currentPlan?: string;
   isLoggedIn?: boolean;
   onRequestLogin?: () => void;
 }
-
-const PLAN_IDS: Record<string, { monthly: string; annual: string }> = {
-  pro: {
-    monthly: import.meta.env.VITE_MP_PLAN_PRO_MONTHLY ?? '',
-    annual: import.meta.env.VITE_MP_PLAN_PRO_ANNUAL ?? '',
-  },
-  enterprise: {
-    monthly: import.meta.env.VITE_MP_PLAN_ENTERPRISE_MONTHLY ?? '',
-    annual: import.meta.env.VITE_MP_PLAN_ENTERPRISE_ANNUAL ?? '',
-  },
-};
-
-const PLANS: {
-  id: string; name: string; price: { monthly: number; annual: number };
-  subKey: TranslationKey; color: string;
-  featureKeys: { key: TranslationKey; included: boolean }[];
-  ctaKey: TranslationKey; ctaStyle: string;
-}[] = [
-  {
-    id: 'free',
-    name: 'FREE',
-    price: { monthly: 0, annual: 0 },
-    subKey: 'pricing.free.sub',
-    color: 'slate',
-    featureKeys: [
-      { key: 'pricing.free.f1', included: true },
-      { key: 'pricing.free.f2', included: true },
-      { key: 'pricing.free.f3', included: false },
-      { key: 'pricing.free.f4', included: false },
-    ],
-    ctaKey: 'pricing.free.cta',
-    ctaStyle: 'border border-outline/30 text-on-surface hover:bg-surface-mid',
-  },
-  {
-    id: 'pro',
-    name: 'PRO',
-    price: { monthly: 9, annual: 7 },
-    subKey: 'pricing.pro.sub',
-    color: 'blue',
-    featureKeys: [
-      { key: 'pricing.pro.f1', included: true },
-      { key: 'pricing.pro.f2', included: true },
-      { key: 'pricing.pro.f3', included: true },
-      { key: 'pricing.pro.f4', included: true },
-      { key: 'pricing.pro.f5', included: true },
-    ],
-    ctaKey: 'pricing.pro.cta',
-    ctaStyle: 'bg-primary-cta text-white hover:brightness-110',
-  },
-  {
-    id: 'enterprise',
-    name: 'ENTERPRISE',
-    price: { monthly: 29, annual: 23 },
-    subKey: 'pricing.enterprise.sub',
-    color: 'slate',
-    featureKeys: [
-      { key: 'pricing.enterprise.f1', included: true },
-      { key: 'pricing.enterprise.f2', included: true },
-      { key: 'pricing.enterprise.f3', included: true },
-      { key: 'pricing.enterprise.f4', included: true },
-      { key: 'pricing.enterprise.f5', included: true },
-    ],
-    ctaKey: 'pricing.enterprise.cta',
-    ctaStyle: 'border border-outline/30 text-on-surface hover:bg-surface-mid',
-  },
-];
 
 function CheckIcon({ ok }: { ok: boolean }) {
   return ok ? (
@@ -87,31 +27,53 @@ function CheckIcon({ ok }: { ok: boolean }) {
   );
 }
 
+function formatPrice(amount: number, currency: string): string {
+  if (amount === 0) return '0';
+  try {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${amount} ${currency}`;
+  }
+}
+
 export function PreciosView({ currentPlan = 'free', isLoggedIn = false, onRequestLogin }: PreciosViewProps) {
   const { t } = useI18n();
   const [annual, setAnnual] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
 
-  async function handleCheckout(planId: string) {
+  useEffect(() => {
+    let alive = true;
+    getPlans()
+      .then(data => { if (alive) { setPlans(data); setLoadingPlans(false); } })
+      .catch(() => { if (alive) { setError(t('pricing.checkoutError' as TranslationKey)); setLoadingPlans(false); } });
+    return () => { alive = false; };
+  }, [t]);
+
+  async function handleCheckout(plan: Plan) {
     if (!isLoggedIn) {
       onRequestLogin?.();
       return;
     }
-    if (planId === 'free' || planId === currentPlan) return;
+    if (plan.tier === 'free' || plan.tier === currentPlan) return;
 
-    const planIds = PLAN_IDS[planId];
-    if (!planIds) return;
-    const mpPlanId = annual ? planIds.annual : planIds.monthly;
-    if (!mpPlanId) {
+    const cycle = annual ? 'annual' : 'monthly';
+    const isAvailable = annual ? plan.has_annual : plan.has_monthly;
+    if (!isAvailable) {
       setError(t('pricing.notConfigured' as TranslationKey));
       return;
     }
 
-    setLoading(planId);
+    setLoading(plan.tier);
     setError(null);
     try {
-      const { url } = await createCheckout(mpPlanId);
+      const { url } = await createCheckout(plan.tier, cycle);
       window.location.href = url;
     } catch {
       setError(t('pricing.checkoutError' as TranslationKey));
@@ -137,6 +99,12 @@ export function PreciosView({ currentPlan = 'free', isLoggedIn = false, onReques
       setLoading(null);
     }
   }
+
+  // Plan a destacar visualmente: el del usuario, o si es free, el is_recommended.
+  const highlightTier: string =
+    currentPlan !== 'free'
+      ? currentPlan
+      : plans.find(p => p.is_recommended)?.tier ?? '';
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-10 space-y-14 overflow-y-auto">
@@ -169,60 +137,83 @@ export function PreciosView({ currentPlan = 'free', isLoggedIn = false, onReques
       </div>
 
       {/* ── Plan cards ───────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-        {PLANS.map(plan => {
-          const isActive = plan.id === currentPlan;
-          const isPro    = plan.id === 'pro';
-          const price    = annual ? plan.price.annual : plan.price.monthly;
+      {loadingPlans ? (
+        <p className="text-center text-xs font-mono text-on-surface-dim">...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+          {plans.map(plan => {
+            const isActive    = plan.tier === currentPlan;
+            const isHighlight = plan.tier === highlightTier;
+            const price       = annual ? plan.price_annual : plan.price_monthly;
+            const isAvailable = plan.tier === 'free' || (annual ? plan.has_annual : plan.has_monthly);
+            const ctaStyle = isHighlight
+              ? 'bg-primary-cta text-white hover:brightness-110'
+              : 'border border-outline/30 text-on-surface hover:bg-surface-mid';
 
-          return (
-            <div
-              key={plan.id}
-              className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
-                isPro
-                  ? 'border-primary-cta bg-primary-cta/5 shadow-[0_0_40px_rgba(37,99,235,0.15)]'
-                  : 'border-outline/25 bg-surface-low'
-              }`}
-            >
-              {/* "TU PLAN" badge */}
-              {isActive && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary-cta text-white text-[10px] font-mono font-black tracking-widest uppercase whitespace-nowrap">
-                  {t('pricing.badge.yourPlan')}
-                </div>
-              )}
-
-              {/* Plan name */}
-              <div className="mb-4">
-                <p className="text-xs font-mono font-bold tracking-[0.2em] text-on-surface-dim uppercase mb-1">{plan.name}</p>
-                <div className="flex items-end gap-1">
-                  <span className="text-4xl font-mono font-black text-on-surface">${price}</span>
-                  <span className="text-on-surface-dim font-mono text-sm mb-1">{t('pricing.unit')}</span>
-                </div>
-                <p className="text-[10px] font-mono tracking-widest text-on-surface-dim uppercase mt-1">{t(plan.subKey)}</p>
-              </div>
-
-              {/* Features */}
-              <ul className="flex-1 space-y-2.5 mb-6">
-                {plan.featureKeys.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <CheckIcon ok={f.included}/>
-                    <span className={`text-xs leading-relaxed ${f.included ? 'text-on-surface' : 'text-on-surface-dim/70'}`}>{t(f.key)}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <button
-                onClick={() => handleCheckout(plan.id)}
-                disabled={isActive || loading !== null}
-                className={`w-full py-3 rounded-xl font-mono font-bold text-xs tracking-widest uppercase transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${plan.ctaStyle}`}
+            return (
+              <div
+                key={plan.tier}
+                className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
+                  isHighlight
+                    ? 'border-primary-cta bg-primary-cta/5 shadow-[0_0_40px_rgba(37,99,235,0.15)]'
+                    : 'border-outline/25 bg-surface-low'
+                }`}
               >
-                {loading === plan.id ? '...' : isActive ? t('pricing.badge.yourPlan') : t(plan.ctaKey)}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+                {/* "TU PLAN" badge */}
+                {isActive && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary-cta text-white text-[10px] font-mono font-black tracking-widest uppercase whitespace-nowrap">
+                    {t('pricing.badge.yourPlan')}
+                  </div>
+                )}
+
+                {/* Plan name + price */}
+                <div className="mb-4">
+                  <p className="text-xs font-mono font-bold tracking-[0.2em] text-on-surface-dim uppercase mb-1">{plan.name}</p>
+                  <div className="flex items-end gap-1">
+                    <span className="text-3xl md:text-4xl font-mono font-black text-on-surface">
+                      {formatPrice(price, plan.currency)}
+                    </span>
+                    <span className="text-on-surface-dim font-mono text-sm mb-1">{t('pricing.unit')}</span>
+                  </div>
+                  {plan.subtitle_key && (
+                    <p className="text-[10px] font-mono tracking-widest text-on-surface-dim uppercase mt-1">
+                      {t(plan.subtitle_key as TranslationKey)}
+                    </p>
+                  )}
+                </div>
+
+                {/* Features */}
+                <ul className="flex-1 space-y-2.5 mb-6">
+                  {plan.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckIcon ok={f.included}/>
+                      <span className={`text-xs leading-relaxed ${f.included ? 'text-on-surface' : 'text-on-surface-dim/70'}`}>
+                        {t(f.key as TranslationKey)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA */}
+                <button
+                  onClick={() => handleCheckout(plan)}
+                  disabled={isActive || loading !== null || !isAvailable}
+                  title={!isAvailable ? t('pricing.notConfigured' as TranslationKey) : undefined}
+                  className={`w-full py-3 rounded-xl font-mono font-bold text-xs tracking-widest uppercase transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${ctaStyle}`}
+                >
+                  {loading === plan.tier
+                    ? '...'
+                    : isActive
+                      ? t('pricing.badge.yourPlan')
+                      : plan.cta_key
+                        ? t(plan.cta_key as TranslationKey)
+                        : plan.name}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── Error / Portal ────────────────────────────────────────── */}
       {error && (

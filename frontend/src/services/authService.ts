@@ -31,6 +31,7 @@ export async function register(
   })
   if (!response.ok) {
     if (response.status === 409) throw new Error('EMAIL_ALREADY_EXISTS')
+    if (response.status === 422) throw new Error('PASSWORD_POLICY')
     throw new Error(`HTTP_ERROR_${response.status}`)
   }
   const data: RegisterResponse = await response.json()

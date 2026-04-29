@@ -63,6 +63,12 @@ describe('authService', () => {
       await expect(register('a@b.com', 'pass123')).rejects.toThrow('EMAIL_ALREADY_EXISTS')
     })
 
+    it('throws Error("PASSWORD_POLICY") on 422', async () => {
+      vi.stubGlobal('fetch', mockFetch(422, { detail: [{ msg: 'Password must contain at least one uppercase letter' }] }))
+
+      await expect(register('a@b.com', 'pass123')).rejects.toThrow('PASSWORD_POLICY')
+    })
+
     it('throws generic Error on other HTTP errors (500)', async () => {
       vi.stubGlobal('fetch', mockFetch(500, {}))
 

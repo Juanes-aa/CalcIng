@@ -379,6 +379,8 @@ const ES = {
   'auth.err.invalidCreds':          'Credenciales inválidas',
   'auth.err.generic':               'Ocurrió un error. Intenta de nuevo.',
   'auth.err.passwordMismatch':      'Las contraseñas no coinciden',
+  'auth.err.passwordPolicy':        'La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un dígito.',
+  'auth.passwordHint':              'Mínimo 8 caracteres con una mayúscula, una minúscula y un dígito.',
 
   // ── DocumentacionView ──────────────────────────────────────────────────────
   'doc.nav.inicio':                 'Inicio',
@@ -591,6 +593,20 @@ const ES = {
   'pricing.cancelError':            'Error al cancelar la suscripción. Intentá nuevamente.',
   'pricing.checkoutError':          'Error al iniciar el pago. Intentá nuevamente.',
   'pricing.notConfigured':          'Mercado Pago no está configurado para este plan.',
+
+  // Checkout success
+  'checkout.success.title':         'Pago en proceso',
+  'checkout.success.subtitle':      'Estamos confirmando tu suscripción con Mercado Pago.',
+  'checkout.success.processing':    'Verificando estado del pago...',
+  'checkout.success.confirmed':     '¡Suscripción activa!',
+  'checkout.success.confirmedDesc': 'Gracias. Tu plan ya está habilitado.',
+  'checkout.success.timeout':       'Tu pago aún se está procesando. Puede tardar unos minutos en confirmarse.',
+  'checkout.success.plan':          'Plan',
+  'checkout.success.nextBilling':   'Próximo cobro',
+  'checkout.success.amount':        'Importe',
+  'checkout.success.cta.calculator':'Ir a la calculadora',
+  'checkout.success.cta.retry':     'Reintentar',
+  'checkout.success.cta.pricing':   'Volver a precios',
 } as const;
 
 const EN: Record<keyof typeof ES, string> = {
@@ -960,6 +976,8 @@ const EN: Record<keyof typeof ES, string> = {
   'auth.err.invalidCreds':          'Invalid credentials',
   'auth.err.generic':               'An error occurred. Please try again.',
   'auth.err.passwordMismatch':      'Passwords do not match',
+  'auth.err.passwordPolicy':        'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a digit.',
+  'auth.passwordHint':              'At least 8 characters with an uppercase letter, a lowercase letter, and a digit.',
 
   // DocumentacionView
   'doc.nav.inicio':                 'Home',
@@ -1172,6 +1190,20 @@ const EN: Record<keyof typeof ES, string> = {
   'pricing.cancelError':            'Failed to cancel subscription. Please try again.',
   'pricing.checkoutError':          'Failed to start checkout. Please try again.',
   'pricing.notConfigured':          'Mercado Pago is not configured for this plan.',
+
+  // Checkout success
+  'checkout.success.title':         'Payment in progress',
+  'checkout.success.subtitle':      'We are confirming your subscription with Mercado Pago.',
+  'checkout.success.processing':    'Verifying payment status...',
+  'checkout.success.confirmed':     'Subscription active!',
+  'checkout.success.confirmedDesc': 'Thank you. Your plan is now enabled.',
+  'checkout.success.timeout':       'Your payment is still processing. It may take a few minutes to confirm.',
+  'checkout.success.plan':          'Plan',
+  'checkout.success.nextBilling':   'Next billing',
+  'checkout.success.amount':        'Amount',
+  'checkout.success.cta.calculator':'Go to calculator',
+  'checkout.success.cta.retry':     'Retry',
+  'checkout.success.cta.pricing':   'Back to pricing',
 };
 
 export type TranslationKey = keyof typeof ES;
