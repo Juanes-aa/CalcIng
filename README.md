@@ -65,6 +65,6 @@ Copiar `.env.example` a `.env` en cada directorio y completar las variables ante
 
 <div align="center">
 
-Desarrollado por **[Juanes](https://github.com/Juanes-aa)** — SENA, Tecnología en Desarrollo de Software · Colombia
+Desarrollado por **[Juanes](https://github.com/Juanes-aa)** - Medellín · Colombia
 
 </div>
